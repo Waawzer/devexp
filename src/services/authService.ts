@@ -1,4 +1,8 @@
-import { UserInput } from '@/types/user';
+import jwt from 'jsonwebtoken';
+import { NextRequest } from 'next/server';
+import { UserInput } from '@/models/User';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 
 export const authService = {
   async login(email: string, password: string) {
@@ -9,7 +13,7 @@ export const authService = {
     });
 
     if (!response.ok) {
-      throw new Error('Erreur de connexion');
+      throw new Error('Login error');
     }
 
     return response.json();
@@ -23,9 +27,21 @@ export const authService = {
     });
 
     if (!response.ok) {
-      throw new Error('Erreur d\'inscription');
+      throw new Error('Registration error');
     }
 
     return response.json();
+  },
+
+  verifyToken(token: string) {
+    if (!token) {
+      throw new Error('Token missing');
+    }
+
+    try {
+      return jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+      throw new Error('Invalid token');
+    }
   }
 }; 

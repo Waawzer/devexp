@@ -1,4 +1,4 @@
-import { ProjectInput } from '@/types/project';
+import { ProjectInput } from '@/models/Project';
 
 export const projectService = {
   async getProjects() {
