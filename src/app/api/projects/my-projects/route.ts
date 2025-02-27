@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Project from "@/models/Project";
-import { verifyAuth } from "@/lib/auth"; // Changement ici
+import { authService } from "@/services/authService";
 
 export async function GET(req: NextRequest) {
   await dbConnect();
@@ -11,14 +11,10 @@ export async function GET(req: NextRequest) {
     if (!token) {
       return NextResponse.json({ message: "Non autorisé" }, { status: 401 });
     }
-
-    const decoded = await verifyAuth(req);
+    const decoded = authService.verifyToken(token);
 
     const projects = await Project.find({
-      $or: [
-        { developer: decoded.userId },
-        { client: decoded.userId },
-      ],
+      userId: decoded.userId, // Typé correctement
     });
 
     return NextResponse.json(projects, { status: 200 });

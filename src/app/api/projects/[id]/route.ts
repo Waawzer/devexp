@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Project from '@/models/Project';
-import { verifyAuth } from '@/lib/auth';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   await dbConnect();
@@ -21,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   await dbConnect();
 
   try {
-    const decoded = await verifyAuth(req);
+    
     const { title, description } = await req.json();
     const project = await Project.findByIdAndUpdate(
       params.id,
@@ -42,7 +41,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   await dbConnect();
 
   try {
-    const decoded = await verifyAuth(req);
+
     const project = await Project.findByIdAndDelete(params.id);
     
     if (!project) {

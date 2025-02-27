@@ -32,14 +32,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
+
     if (!response.ok) throw new Error("Erreur de connexion");
-    const { user: userData } = await response.json();
-    setUser(userData);
+
+    const { token, user: userData } = await response.json();
+    localStorage.setItem("token", token); // Stocke le token
+    setUser(userData); // Met à jour l’état
   };
 
   const logout = () => {
-    localStorage.removeItem("token"); // Supprime le token si utilisé
-    setUser(null); // Réinitialise l'état de l'utilisateur
+    localStorage.removeItem("token");
+    setUser(null);
   };
 
   useEffect(() => {
@@ -53,7 +56,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error("Token invalide");
         })
         .then((userData) => setUser(userData))
-        .catch(() => setUser(null));
+        .catch(() => {
+          localStorage.removeItem("token");
+          setUser(null);
+        });
     }
   }, []);
 

@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { email, password } = await req.json();
+    console.log("Requête login reçue :", { email });
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -21,17 +22,18 @@ export async function POST(req: NextRequest) {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET!, { expiresIn: "1h" });
+    console.log("Token généré :", token); // Log pour vérifier
 
-    // Retourner le token ET les données utilisateur
     return NextResponse.json(
       {
         message: "Connexion réussie",
         token,
-        user: { username: user.username, email: user.email }, // Ajustez selon votre modèle
+        user: { username: user.username, email: user.email },
       },
       { status: 200 }
     );
   } catch (error) {
+    console.error("Erreur dans POST /api/auth/login :", error);
     return NextResponse.json(
       { message: "Erreur serveur", error: (error as Error).message },
       { status: 500 }

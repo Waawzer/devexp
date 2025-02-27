@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -13,19 +12,19 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!user) {
+    // Récupérer le token depuis localStorage (stocké par authService)
+    const token = localStorage.getItem("token");
+    if (!token) {
       setError("Vous devez être connecté pour créer un projet.");
       return;
     }
 
     try {
-      const token = localStorage.getItem("token");
       const response = await fetch("/api/projects/create", {
         method: "POST",
         headers: {
@@ -40,10 +39,11 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
         throw new Error(data.message || "Erreur lors de la création du projet");
       }
 
+      // Réinitialiser le formulaire et déclencher les callbacks
       setTitle("");
       setDescription("");
-      onProjectCreated(); // Rafraîchir la liste
-      onClose(); // Ferme le modal
+      onProjectCreated(); // Rafraîchir la liste des projets
+      onClose(); // Fermer le modal
     } catch (err) {
       setError((err as Error).message);
     }
