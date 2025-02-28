@@ -8,9 +8,23 @@ interface CreateProjectModalProps {
   onProjectCreated: () => void;
 }
 
+const AVAILABLE_SKILLS = [
+  "JavaScript",
+  "Python",
+  "React",
+  "Node.js",
+  "TypeScript",
+  "HTML/CSS",
+  "Front-end",
+  "Back-end",
+  "Base de données",
+  "DevOps",
+];
+
 export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }: CreateProjectModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,13 +39,17 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
     }
 
     try {
-      const response = await fetch("/api/projects/create", {
+      const response = await fetch("/api/projects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ title, description }),
+        body: JSON.stringify({ 
+          title, 
+          description,
+          skills: selectedSkills.join(',')
+        }),
       });
 
       if (!response.ok) {
@@ -42,6 +60,7 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
       // Réinitialiser le formulaire et déclencher les callbacks
       setTitle("");
       setDescription("");
+      setSelectedSkills([]);
       onProjectCreated(); // Rafraîchir la liste des projets
       onClose(); // Fermer le modal
     } catch (err) {
@@ -49,11 +68,19 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
     }
   };
 
+  const toggleSkill = (skill: string) => {
+    setSelectedSkills(prev => 
+      prev.includes(skill)
+        ? prev.filter(s => s !== skill)
+        : [...prev, skill]
+    );
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded shadow-md w-96">
+      <div className="bg-white p-6 rounded shadow-md w-96 max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl mb-4">Créer un nouveau projet</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -75,6 +102,22 @@ export default function CreateProjectModal({ isOpen, onClose, onProjectCreated }
               rows={4}
               required
             />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Compétences</label>
+            <div className="grid grid-cols-2 gap-2">
+              {AVAILABLE_SKILLS.map((skill) => (
+                <label key={skill} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedSkills.includes(skill)}
+                    onChange={() => toggleSkill(skill)}
+                    className="rounded text-blue-500"
+                  />
+                  <span className="text-sm">{skill}</span>
+                </label>
+              ))}
+            </div>
           </div>
           {error && <p className="text-red-500 mb-4">{error}</p>}
           <div className="flex justify-end space-x-4">

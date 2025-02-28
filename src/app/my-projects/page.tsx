@@ -4,11 +4,15 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import CreateProjectModal from "@/components/CreateProjectModal";
+import ProjectPreview from "@/components/ProjectPreview";
 
 interface Project {
   _id: string;
   title: string;
   description: string;
+  userId: string;
+  img: string;
+  skills: string;
 }
 
 export default function MyProjectsPage() {
@@ -42,7 +46,7 @@ export default function MyProjectsPage() {
   };
 
   const handleProjectCreated = () => {
-    fetchProjects(); // Rafraîchir la liste après création
+    fetchProjects();
   };
 
   if (!user) {
@@ -73,14 +77,15 @@ export default function MyProjectsPage() {
       {projects.length === 0 ? (
         <p className="text-gray-500">Vous n'avez pas encore de projets.</p>
       ) : (
-        <ul className="space-y-4">
+        <div className="flex flex-wrap gap-4">
           {projects.map((project) => (
-            <li key={project._id} className="border p-4 rounded">
-              <h2 className="text-xl font-semibold">{project.title}</h2>
-              <p className="text-gray-700">{project.description}</p>
-            </li>
+            <ProjectPreview 
+              key={project._id} 
+              project={project}
+              isOwner={true}
+            />
           ))}
-        </ul>
+        </div>
       )}
       <CreateProjectModal
         isOpen={isModalOpen}

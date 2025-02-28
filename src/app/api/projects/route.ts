@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Project from "@/models/Project";
 import { authService } from "@/services/authService";
+import mongoose from "mongoose";
 
 export async function GET(req: NextRequest) {
   await dbConnect();
@@ -18,23 +19,46 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  await dbConnect();
-
   try {
+    await dbConnect();
+    console.log("Connexion à MongoDB réussie");
+
     const token = req.headers.get("authorization")?.split(" ")[1];
+    console.log("Token reçu :", token);
     if (!token) {
       return NextResponse.json({ message: "Non autorisé" }, { status: 401 });
     }
-    const decoded = authService.verifyToken(token);
-    const { title, description } = await req.json();
-    const project = new Project({ title, description, createdBy: decoded.userId }); // Typé correctement
-    await project.save();
 
-    return NextResponse.json({ message: "Projet créé", projectId: project._id }, { status: 201 });
+    const decoded = authService.verifyToken(token);
+    console.log("Token décodé :", decoded);
+
+    const { title, description, skills } = await req.json();
+    console.log("Données reçues :", { title, description, skills });
+
+    if (!title || !description) {
+      return NextResponse.json({ message: "Titre et description sont requis" }, { status: 400 });
+    }
+
+    const skillsString = Array.isArray(skills) ? skills.join(',') : skills || '';
+
+    const project = new Project({
+      title,
+      description,
+      userId: new mongoose.Types.ObjectId(decoded.userId),
+      skills: skillsString,
+      img: '/dev.bmp',
+      createdAt: new Date(),
+    });
+
+    await project.save();
+    console.log("Projet sauvegardé avec skills:", project.skills);
+
+    return NextResponse.json({ message: "Projet créé avec succès", projectId: project._id }, { status: 201 });
   } catch (error) {
+    console.error("Erreur dans POST /api/projects :", error);
     return NextResponse.json(
-      { message: "Non autorisé", error: (error as Error).message },
-      { status: 403 }
+      { message: "Erreur lors de la création du projet", error: (error as Error).message },
+      { status: 500 }
     );
   }
 }
