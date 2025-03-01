@@ -8,11 +8,19 @@ export async function GET(req: NextRequest) {
   await dbConnect();
 
   try {
-    const projects = await Project.find({});
-    return NextResponse.json(projects, { status: 200 });
+    const projects = await Project.find()
+      .populate('userId', 'username _id')
+      .sort({ createdAt: -1 });
+
+    const projectsWithCreator = projects.map(project => ({
+      ...project.toObject(),
+      creator: project.userId
+    }));
+
+    return NextResponse.json(projectsWithCreator, { status: 200 });
   } catch (error) {
     return NextResponse.json(
-      { message: "Erreur lors de la récupération des projets", error: (error as Error).message },
+      { message: "Erreur serveur", error: (error as Error).message },
       { status: 500 }
     );
   }
@@ -32,8 +40,8 @@ export async function POST(req: NextRequest) {
     const decoded = authService.verifyToken(token);
     console.log("Token décodé :", decoded);
 
-    const { title, description, skills } = await req.json();
-    console.log("Données reçues :", { title, description, skills });
+    const { title, description, skills, githubUrl } = await req.json();
+    console.log("Données reçues :", { title, description, skills, githubUrl });
 
     if (!title || !description) {
       return NextResponse.json({ message: "Titre et description sont requis" }, { status: 400 });
@@ -47,6 +55,7 @@ export async function POST(req: NextRequest) {
       userId: new mongoose.Types.ObjectId(decoded.userId),
       skills: skillsString,
       img: '/dev.bmp',
+      githubUrl,
       createdAt: new Date(),
     });
 

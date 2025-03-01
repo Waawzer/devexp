@@ -1,13 +1,14 @@
 import mongoose from 'mongoose';
 
-// Interface pour les données d'entrée d'un projet (utilisée côté client)
+// Interface for project input data
 export interface ProjectInput {
   title: string;
   description: string;
   skills: string;
+  githubUrl?: string; // Ensure this is included
 }
 
-// Schéma MongoDB pour les projets
+// Mongoose schema for projects
 const projectSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -19,16 +20,18 @@ const projectSchema = new mongoose.Schema({
   },
   img: {
     type: String,
-    required: true,
   },
   skills: {
     type: String,
-    required: true,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
+  },
+  githubUrl: {
+    type: String,
+    required: false
   },
   createdAt: {
     type: Date,

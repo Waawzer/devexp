@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { jwtDecode } from "jwt-decode";
 import { UserInput } from "@/models/User";
 
 const JWT_SECRET = process.env.JWT_SECRET || "default_secret";
@@ -45,7 +46,7 @@ export const authService = {
     }
 
     try {
-      return jwt.verify(token, JWT_SECRET) as DecodedToken;
+      return jwtDecode(token) as DecodedToken;
     } catch (error) {
       throw new Error("Invalid token");
     }
