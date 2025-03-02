@@ -13,6 +13,13 @@ interface Project {
   userId: string;
   img: string;
   skills: string;
+  createdAt: string;
+  status: string;
+  creator?: {
+    _id: string;
+    username: string;
+  };
+  githubUrl?: string;
 }
 
 export default function MyProjectsPage() {

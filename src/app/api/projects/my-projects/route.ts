@@ -14,10 +14,19 @@ export async function GET(req: NextRequest) {
     const decoded = authService.verifyToken(token);
 
     const projects = await Project.find({
-      userId: decoded.userId, // Typé correctement
-    });
+      userId: decoded.userId,
+    }).populate('userId', 'username _id');
 
-    return NextResponse.json(projects, { status: 200 });
+    // Transformer les projets pour avoir le même format que la route principale
+    const projectsWithCreator = projects.map(project => ({
+      ...project.toObject(),
+      creator: {
+        _id: project.userId._id,
+        username: project.userId.username
+      }
+    }));
+
+    return NextResponse.json(projectsWithCreator, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Erreur serveur", error: (error as Error).message },

@@ -1,11 +1,14 @@
 import mongoose from 'mongoose';
 
+export type ProjectStatus = 'En développement' | 'En production' | 'Abandonné' | 'En pause';
+
 // Interface for project input data
 export interface ProjectInput {
   title: string;
   description: string;
   skills: string;
-  githubUrl?: string; // Ensure this is included
+  githubUrl?: string;
+  status: ProjectStatus;
 }
 
 // Mongoose schema for projects
@@ -33,10 +36,15 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  status: {
+    type: String,
+    enum: ['En développement', 'En production', 'Abandonné', 'En pause'],
+    default: 'En développement'
+  },
   createdAt: {
     type: Date,
     default: Date.now,
-  },
+  }
 });
 
 export default mongoose.models.Project || mongoose.model('Project', projectSchema);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ProjectStatus } from '@/models/Project';
 
 interface EditProjectModalProps {
   project: {
@@ -10,6 +11,7 @@ interface EditProjectModalProps {
     skills: string;
     img: string;
     githubUrl?: string;
+    status: ProjectStatus;
   };
   isOpen: boolean;
   onClose: () => void;
@@ -29,6 +31,13 @@ const AVAILABLE_SKILLS = [
   "DevOps",
 ];
 
+const PROJECT_STATUSES: ProjectStatus[] = [
+  'En développement',
+  'En production',
+  'Abandonné',
+  'En pause'
+];
+
 export default function EditProjectModal({ project, isOpen, onClose, onProjectUpdated }: EditProjectModalProps) {
   const [formData, setFormData] = useState({
     title: project.title,
@@ -36,6 +45,7 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
     skills: project.skills,
     img: project.img,
     githubUrl: project.githubUrl || '',
+    status: project.status || 'En développement'
   });
   const [selectedSkills, setSelectedSkills] = useState<string[]>(project.skills.split(',').map(s => s.trim()));
   const [error, setError] = useState<string | null>(null);
@@ -52,11 +62,8 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
+          ...formData,
           skills: selectedSkills.join(','),
-          img: formData.img,
-          githubUrl: formData.githubUrl,
         }),
       });
 
@@ -141,6 +148,23 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
               placeholder="https://github.com/username/repository"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">
+              État du projet
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as ProjectStatus }))}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              {PROJECT_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
           </div>
           {error && <p className="text-red-500 mb-4">{error}</p>}
           <div className="flex justify-end space-x-4">

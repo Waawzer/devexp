@@ -14,7 +14,10 @@ export async function GET(req: NextRequest) {
 
     const projectsWithCreator = projects.map(project => ({
       ...project.toObject(),
-      creator: project.userId
+      creator: {
+        _id: project.userId._id,
+        username: project.userId.username
+      }
     }));
 
     return NextResponse.json(projectsWithCreator, { status: 200 });

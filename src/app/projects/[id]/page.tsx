@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import EditProjectModal from "@/components/EditProjectModal";
 import { authService } from "@/services/authService";
 import Link from "next/link";
@@ -15,6 +15,8 @@ interface Project {
   userId: string;
   img: string;
   skills: string;
+  createdAt: string;
+  status: string;
   creator?: {
     _id: string;
     username: string;
@@ -30,6 +32,7 @@ interface User {
 
 export default function ProjectPage() {
   const { id } = useParams();
+  const router = useRouter();
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,6 +88,31 @@ export default function ProjectPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        router.push('/my-projects');
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Erreur lors de la suppression du projet');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('Erreur lors de la suppression du projet');
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Chargement du projet...</div>;
   }
@@ -108,12 +136,20 @@ export default function ProjectPage() {
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-bold">{project.title}</h1>
               {currentUserId && currentUserId === project?.userId && (
-                <button
-                  onClick={() => setIsEditModalOpen(true)}
-                  className="bg-blue-500 text-white px-3 py-1 text-sm rounded hover:bg-blue-600"
-                >
-                  Éditer
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="bg-blue-500 text-white px-3 py-1 text-sm rounded hover:bg-blue-600"
+                  >
+                    Éditer
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="bg-red-500 text-white px-3 py-1 text-sm rounded hover:bg-red-600"
+                  >
+                    Supprimer
+                  </button>
+                </div>
               )}
               {project.githubUrl && (
                 <a
@@ -126,12 +162,22 @@ export default function ProjectPage() {
                 </a>
               )}
             </div>
-            <Link 
-              href={`/profile/${project.creator?._id}`}
-              className="text-blue-500 hover:text-blue-700"
-            >
-              Par {project.creator?.username || "Utilisateur inconnu"}
-            </Link>
+            <div className="text-right">
+              <Link 
+                href={`/profile/${project.creator?._id}`}
+                className="text-blue-500 hover:text-blue-700 block"
+              >
+                Par {project.creator?.username || "Utilisateur inconnu"}
+              </Link>
+              <span className="text-sm text-gray-500">
+                Créé le {new Date(project.createdAt).toLocaleDateString('fr-FR')}
+              </span>
+            </div>
+          </div>
+          <div className="mb-4">
+            <span className={`${getStatusColor(project.status)} text-sm px-3 py-1 rounded-full`}>
+              {project.status}
+            </span>
           </div>
           <p className="text-gray-700 mb-6">{project.description}</p>
           <div className="flex flex-wrap gap-2 mb-4">
@@ -157,4 +203,19 @@ export default function ProjectPage() {
       )}
     </div>
   );
-} 
+}
+
+const getStatusColor = (status: string) => {
+  switch(status) {
+    case 'En développement':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'En production':
+      return 'bg-green-100 text-green-800';
+    case 'Abandonné':
+      return 'bg-red-100 text-red-800';
+    case 'En pause':
+      return 'bg-gray-100 text-gray-800';
+    default:
+      return 'bg-blue-100 text-blue-800';
+  }
+}; 
