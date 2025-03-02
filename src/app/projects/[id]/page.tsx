@@ -6,9 +6,10 @@ import { useParams, useRouter } from "next/navigation";
 import EditProjectModal from "@/components/EditProjectModal";
 import { authService } from "@/services/authService";
 import Link from "next/link";
-import { FaGithub, FaProjectDiagram, FaBook } from 'react-icons/fa';
+import { FaGithub, FaProjectDiagram, FaBook, FaUsers } from 'react-icons/fa';
 import TreeModal from "@/components/TreeModal";
 import SpecificationsModal from "@/components/SpecificationsModal";
+import AddCollaboratorModal from "@/components/AddCollaboratorModal";
 
 interface Project {
   _id: string;
@@ -25,6 +26,13 @@ interface Project {
   };
   githubUrl?: string;
   specifications?: string;
+  collaborators: {
+    user: {
+      _id: string;
+      username: string;
+    };
+    role: string;
+  }[];
 }
 
 interface User {
@@ -43,6 +51,7 @@ export default function ProjectPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isTreeModalOpen, setIsTreeModalOpen] = useState(false);
   const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
+  const [isAddCollaboratorModalOpen, setIsAddCollaboratorModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -129,7 +138,7 @@ export default function ProjectPage() {
           />
         </div>
         <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-bold">{project.title}</h1>
               {currentUserId && currentUserId === project.userId && (
@@ -179,16 +188,50 @@ export default function ProjectPage() {
                 )}
               </div>
             </div>
-            <div className="text-right">
+
+            <div className="flex flex-col items-end">
               <Link 
                 href={`/profile/${project.creator?._id}`}
-                className="text-blue-500 hover:text-blue-700 block"
+                className="text-blue-500 hover:text-blue-700 block mb-1"
               >
                 Par {project.creator?.username || "Utilisateur inconnu"}
               </Link>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 mb-2">
                 Créé le {new Date(project.createdAt).toLocaleDateString('fr-FR')}
               </span>
+
+              {/* Section Collaborateurs */}
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex flex-col items-end">
+                  {project.collaborators && project.collaborators.length > 0 && (
+                    <div className="flex items-center gap-1 text-sm text-gray-600">
+                      <FaUsers className="text-gray-400" />
+                      <div className="flex flex-wrap justify-end gap-1">
+                        {project.collaborators.map((collab) => (
+                          collab.user && (
+                            <Link
+                              key={collab.user._id}
+                              href={`/profile/${collab.user._id}`}
+                              className="hover:text-blue-500"
+                            >
+                              {collab.user.username} ({collab.role})
+                            </Link>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {currentUserId && currentUserId === project.userId && (
+                  <button
+                    onClick={() => setIsAddCollaboratorModalOpen(true)}
+                    className="text-gray-500 hover:text-gray-700 text-sm px-2 py-1 rounded border border-gray-300 hover:bg-gray-50"
+                    title="Ajouter un collaborateur"
+                  >
+                    <FaUsers className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           <div className="mb-4">
@@ -230,6 +273,13 @@ export default function ProjectPage() {
               specifications={project.specifications}
             />
           )}
+          <AddCollaboratorModal
+            isOpen={isAddCollaboratorModalOpen}
+            onClose={() => setIsAddCollaboratorModalOpen(false)}
+            projectId={project._id}
+            onCollaboratorAdded={handleProjectUpdated}
+            currentCollaborators={project.collaborators || []}
+          />
         </>
       )}
     </div>

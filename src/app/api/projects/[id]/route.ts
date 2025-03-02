@@ -8,7 +8,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const project = await Project.findById(params.id)
-      .populate('userId', 'username _id');
+      .populate('userId', 'username _id')
+      .populate('collaborators.user', 'username _id');
     
     if (!project) {
       return NextResponse.json({ message: 'Projet non trouvé' }, { status: 404 });
@@ -20,7 +21,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       creator: {
         _id: project.userId._id,
         username: project.userId.username
-      }
+      },
+      collaborators: project.collaborators.map(collab => ({
+        user: {
+          _id: collab.user._id,
+          username: collab.user.username
+        },
+        role: collab.role
+      }))
     };
     
     return NextResponse.json(projectData, { status: 200 });

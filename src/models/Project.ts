@@ -32,6 +32,17 @@ const projectSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  collaborators: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    role: {
+      type: String,
+      enum: ['Développeur', 'Marketing', 'Designer', 'Chef de projet'],
+      default: 'Développeur'
+    }
+  }],
   githubUrl: {
     type: String,
     required: false

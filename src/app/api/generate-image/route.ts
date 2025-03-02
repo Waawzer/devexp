@@ -13,10 +13,10 @@ export async function POST(request: Request) {
     const prompt = `Create a modern, professional project thumbnail for a software project titled "${title}". ${description}. Style: Minimalist, tech-focused, professional.`;
 
     const response = await openai.images.generate({
-      model: "dall-e-3",
+      model: "dall-e-2",
       prompt: prompt,
       n: 1,
-      size: "1024x1024",
+      size: "256x256",
     });
 
     const imageUrl = response.data[0].url;

@@ -1,15 +1,25 @@
 "use client"; // Nécessaire pour utiliser des hooks client comme useAuth
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    username: user?.username || '',
-    description: user?.description || ''
+    username: '',
+    description: ''
   });
+
+  // Mettre à jour formData quand user change
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        username: user.username || '',
+        description: user.description || ''
+      });
+    }
+  }, [user]);
 
   if (!user) {
     return <div className="text-center py-8">Veuillez vous connecter pour voir votre profil.</div>;
@@ -85,13 +95,7 @@ export default function ProfilePage() {
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-2xl font-bold">Profil de {user.username}</h1>
               <button
-                onClick={() => {
-                  setFormData({
-                    username: user.username,
-                    description: user.description || ''
-                  });
-                  setIsEditing(true);
-                }}
+                onClick={() => setIsEditing(true)}
                 className="bg-blue-500 text-white px-3 py-1 text-sm rounded hover:bg-blue-600"
               >
                 Éditer

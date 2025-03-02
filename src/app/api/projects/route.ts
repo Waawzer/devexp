@@ -4,6 +4,7 @@ import Project from "@/models/Project";
 import { authService } from "@/services/authService";
 import mongoose from "mongoose";
 import OpenAI from 'openai';
+import cloudinary from '@/lib/cloudinary';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -20,7 +21,17 @@ async function generateProjectImage(title: string, description: string) {
       size: "1024x1024",
     });
 
-    return response.data[0].url;
+    const imageUrl = response.data[0]?.url;
+    if (!imageUrl) {
+      throw new Error("Image URL is undefined");
+    }
+
+    // Télécharger l'image dans Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(imageUrl, {
+      folder: 'project-thumbnails',
+    });
+
+    return uploadResponse.secure_url; // URL permanente de Cloudinary
   } catch (error) {
     console.error("Erreur lors de la génération de l'image:", error);
     return '/dev.bmp'; // Image par défaut en cas d'erreur
