@@ -3,6 +3,29 @@ import dbConnect from "@/lib/mongodb";
 import Project from "@/models/Project";
 import { authService } from "@/services/authService";
 import mongoose from "mongoose";
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+async function generateProjectImage(title: string, description: string) {
+  try {
+    const prompt = `Create a modern, professional project thumbnail for a software project titled "${title}". ${description}. Style: Minimalist, tech-focused, professional.`;
+
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: prompt,
+      n: 1,
+      size: "1024x1024",
+    });
+
+    return response.data[0].url;
+  } catch (error) {
+    console.error("Erreur lors de la génération de l'image:", error);
+    return '/dev.bmp'; // Image par défaut en cas d'erreur
+  }
+}
 
 export async function GET(req: NextRequest) {
   await dbConnect();
@@ -35,39 +58,60 @@ export async function POST(req: NextRequest) {
     console.log("Connexion à MongoDB réussie");
 
     const token = req.headers.get("authorization")?.split(" ")[1];
-    console.log("Token reçu :", token);
     if (!token) {
       return NextResponse.json({ message: "Non autorisé" }, { status: 401 });
     }
 
     const decoded = authService.verifyToken(token);
-    console.log("Token décodé :", decoded);
-
-    const { title, description, skills, githubUrl } = await req.json();
-    console.log("Données reçues :", { title, description, skills, githubUrl });
+    const { title, description, skills, githubUrl, specifications } = await req.json();
+    
+    // Ajout de logs pour déboguer
+    console.log("Données reçues:", {
+      title,
+      description,
+      skills,
+      githubUrl,
+      specifications: specifications ? "Présent" : "Absent"
+    });
 
     if (!title || !description) {
       return NextResponse.json({ message: "Titre et description sont requis" }, { status: 400 });
     }
 
-    const skillsString = Array.isArray(skills) ? skills.join(',') : skills || '';
+    // Générer l'image avec DALL-E
+    const imageUrl = await generateProjectImage(title, description);
 
     const project = new Project({
       title,
       description,
       userId: new mongoose.Types.ObjectId(decoded.userId),
-      skills: skillsString,
-      img: '/dev.bmp',
+      skills: Array.isArray(skills) ? skills.join(',') : skills,
+      img: imageUrl,
       githubUrl,
+      specifications, // S'assurer que specifications est bien inclus ici
       createdAt: new Date(),
     });
 
-    await project.save();
-    console.log("Projet sauvegardé avec skills:", project.skills);
+    // Log avant la sauvegarde
+    console.log("Projet à sauvegarder:", {
+      ...project.toObject(),
+      specifications: project.specifications ? "Présent" : "Absent"
+    });
 
-    return NextResponse.json({ message: "Projet créé avec succès", projectId: project._id }, { status: 201 });
+    await project.save();
+    
+    // Log après la sauvegarde
+    console.log("Projet sauvegardé avec succès, ID:", project._id);
+
+    return NextResponse.json({ 
+      message: "Projet créé avec succès", 
+      projectId: project._id,
+      imageUrl: project.img,
+      hasSpecifications: !!project.specifications
+    }, { status: 201 });
+
   } catch (error) {
-    console.error("Erreur dans POST /api/projects :", error);
+    console.error("Erreur complète dans POST /api/projects:", error);
     return NextResponse.json(
       { message: "Erreur lors de la création du projet", error: (error as Error).message },
       { status: 500 }

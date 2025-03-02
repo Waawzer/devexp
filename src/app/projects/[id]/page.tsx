@@ -6,8 +6,9 @@ import { useParams, useRouter } from "next/navigation";
 import EditProjectModal from "@/components/EditProjectModal";
 import { authService } from "@/services/authService";
 import Link from "next/link";
-import { FaGithub, FaProjectDiagram } from 'react-icons/fa';
+import { FaGithub, FaProjectDiagram, FaBook } from 'react-icons/fa';
 import TreeModal from "@/components/TreeModal";
+import SpecificationsModal from "@/components/SpecificationsModal";
 
 interface Project {
   _id: string;
@@ -23,6 +24,7 @@ interface Project {
     username: string;
   };
   githubUrl?: string;
+  specifications?: string;
 }
 
 interface User {
@@ -40,22 +42,15 @@ export default function ProjectPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isTreeModalOpen, setIsTreeModalOpen] = useState(false);
+  const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await fetch(`/api/projects/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(`/api/projects/${id}`);
         if (!response.ok) throw new Error("Erreur lors de la récupération du projet");
         const data = await response.json();
         setProject(data);
-        console.log("Projet chargé:", data);
-        console.log("URL GitHub:", data.githubUrl);
-        console.log("User connecté:", user);
-        console.log("Comparaison IDs:", user?._id, data.userId);
       } catch (error) {
         console.error("Erreur:", error);
       } finally {
@@ -64,7 +59,7 @@ export default function ProjectPage() {
     };
 
     fetchProject();
-  }, [id, user]);
+  }, [id]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -79,12 +74,7 @@ export default function ProjectPage() {
   }, []);
 
   const handleProjectUpdated = async () => {
-    // Recharger les données du projet
-    const response = await fetch(`/api/projects/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    const response = await fetch(`/api/projects/${id}`);
     if (response.ok) {
       const data = await response.json();
       setProject(data);
@@ -117,8 +107,6 @@ export default function ProjectPage() {
   };
 
   const handleTreeClick = () => {
-    console.log("Clic sur le bouton d'arborescence");
-    console.log("URL GitHub:", project?.githubUrl);
     setIsTreeModalOpen(true);
   };
 
@@ -144,7 +132,7 @@ export default function ProjectPage() {
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-bold">{project.title}</h1>
-              {currentUserId && currentUserId === project?.userId && (
+              {currentUserId && currentUserId === project.userId && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => setIsEditModalOpen(true)}
@@ -160,25 +148,36 @@ export default function ProjectPage() {
                   </button>
                 </div>
               )}
-              {project.githubUrl && (
-                <div className="flex items-center gap-2">
-                  <a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-700 hover:text-black"
-                  >
-                    <FaGithub size={24} />
-                  </a>
+              <div className="flex items-center gap-2">
+                {project.githubUrl && (
+                  <>
+                    <a
+                      href={project.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-700 hover:text-black"
+                    >
+                      <FaGithub size={24} />
+                    </a>
+                    <button
+                      onClick={handleTreeClick}
+                      title="Voir l'arborescence"
+                      className="text-gray-700 hover:text-black"
+                    >
+                      <FaProjectDiagram size={24} />
+                    </button>
+                  </>
+                )}
+                {project.specifications && (
                   <button
-                    onClick={handleTreeClick}
-                    title="Voir l'arborescence"
+                    onClick={() => setIsSpecsModalOpen(true)}
+                    title="Voir le cahier des charges"
                     className="text-gray-700 hover:text-black"
                   >
-                    <FaProjectDiagram size={24} />
+                    <FaBook size={24} />
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
             <div className="text-right">
               <Link 
@@ -224,6 +223,13 @@ export default function ProjectPage() {
             onClose={() => setIsTreeModalOpen(false)}
             githubUrl={project.githubUrl || ''}
           />
+          {project.specifications && (
+            <SpecificationsModal
+              isOpen={isSpecsModalOpen}
+              onClose={() => setIsSpecsModalOpen(false)}
+              specifications={project.specifications}
+            />
+          )}
         </>
       )}
     </div>
