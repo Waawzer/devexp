@@ -6,7 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import EditProjectModal from "@/components/EditProjectModal";
 import { authService } from "@/services/authService";
 import Link from "next/link";
-import { FaGithub } from 'react-icons/fa';
+import { FaGithub, FaProjectDiagram } from 'react-icons/fa';
+import TreeModal from "@/components/TreeModal";
 
 interface Project {
   _id: string;
@@ -38,6 +39,7 @@ export default function ProjectPage() {
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isTreeModalOpen, setIsTreeModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -51,6 +53,7 @@ export default function ProjectPage() {
         const data = await response.json();
         setProject(data);
         console.log("Projet chargé:", data);
+        console.log("URL GitHub:", data.githubUrl);
         console.log("User connecté:", user);
         console.log("Comparaison IDs:", user?._id, data.userId);
       } catch (error) {
@@ -113,6 +116,12 @@ export default function ProjectPage() {
     }
   };
 
+  const handleTreeClick = () => {
+    console.log("Clic sur le bouton d'arborescence");
+    console.log("URL GitHub:", project?.githubUrl);
+    setIsTreeModalOpen(true);
+  };
+
   if (loading) {
     return <div className="text-center py-8">Chargement du projet...</div>;
   }
@@ -152,14 +161,23 @@ export default function ProjectPage() {
                 </div>
               )}
               {project.githubUrl && (
-                <a
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-700 hover:text-black"
-                >
-                  <FaGithub size={24} />
-                </a>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-700 hover:text-black"
+                  >
+                    <FaGithub size={24} />
+                  </a>
+                  <button
+                    onClick={handleTreeClick}
+                    title="Voir l'arborescence"
+                    className="text-gray-700 hover:text-black"
+                  >
+                    <FaProjectDiagram size={24} />
+                  </button>
+                </div>
               )}
             </div>
             <div className="text-right">
@@ -194,12 +212,19 @@ export default function ProjectPage() {
       </div>
       
       {project && (
-        <EditProjectModal
-          project={project}
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onProjectUpdated={handleProjectUpdated}
-        />
+        <>
+          <EditProjectModal
+            project={project}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onProjectUpdated={handleProjectUpdated}
+          />
+          <TreeModal
+            isOpen={isTreeModalOpen}
+            onClose={() => setIsTreeModalOpen(false)}
+            githubUrl={project.githubUrl || ''}
+          />
+        </>
       )}
     </div>
   );
