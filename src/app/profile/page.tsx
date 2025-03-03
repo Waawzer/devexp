@@ -1,108 +1,108 @@
 "use client"; // Nécessaire pour utiliser des hooks client comme useAuth
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
-    description: ''
+    name: '',
+    email: '',
+    image: ''
   });
 
-  // Mettre à jour formData quand user change
   useEffect(() => {
-    if (user) {
+    if (session?.user) {
       setFormData({
-        username: user.username || '',
-        description: user.description || ''
+        name: session.user.name || '',
+        email: session.user.email || '',
+        image: session.user.image || ''
       });
     }
-  }, [user]);
+  }, [session]);
 
-  if (!user) {
-    return <div className="text-center py-8">Veuillez vous connecter pour voir votre profil.</div>;
+  if (status === "loading") {
+    return <div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/api/users/me', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        const updatedUser = await response.json();
-        updateUser(updatedUser);
-        setIsEditing(false);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error);
-    }
-  };
+  if (!session) {
+    router.push('/');
+    return null;
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-2xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Mon Profil</h1>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            {isEditing ? "Annuler" : "Modifier"}
+          </button>
+        </div>
+
+        <div className="flex items-center space-x-4 mb-6">
+          {session.user.image ? (
+            <Image
+              src={session.user.image}
+              alt="Photo de profil"
+              width={80}
+              height={80}
+              className="rounded-full"
+            />
+          ) : (
+            <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
+              <span className="text-gray-500 text-2xl">?</span>
+            </div>
+          )}
+          <div>
+            <h2 className="text-xl font-semibold">{session.user.name}</h2>
+            <p className="text-gray-600">{session.user.email}</p>
+          </div>
+        </div>
+
         {isEditing ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Nom d'utilisateur
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Nom</label>
               <input
                 type="text"
-                value={formData.username}
-                onChange={(e) => setFormData({...formData, username: e.target.value})}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                rows={4}
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                disabled
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50"
               />
+              <p className="mt-1 text-sm text-gray-500">L'email ne peut pas être modifié</p>
             </div>
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                Enregistrer
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Annuler
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Enregistrer
+            </button>
           </form>
         ) : (
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="text-2xl font-bold">Profil de {user.username}</h1>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="bg-blue-500 text-white px-3 py-1 text-sm rounded hover:bg-blue-600"
-              >
-                Éditer
-              </button>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium">Informations du compte</h3>
+              <p className="text-gray-600">Membre depuis: {new Date().toLocaleDateString()}</p>
             </div>
-            <p className="text-gray-600 mb-4">{user.description || 'Aucune description'}</p>
-            <p className="text-gray-600">Email : {user.email}</p>
           </div>
         )}
       </div>

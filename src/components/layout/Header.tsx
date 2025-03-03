@@ -12,11 +12,6 @@ export default function Header() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { data: session, status } = useSession();
 
-  // Ajout temporaire pour déboguer
-  console.log("Session:", session);
-  console.log("Status:", status);
-
-  // Si l'utilisateur est authentifié mais que le statut ne le reflète pas correctement
   const isAuthenticated = status === "authenticated" && session?.user;
 
   return (
@@ -58,6 +53,13 @@ export default function Header() {
 
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    Mon Profil
+                  </Link>
                   <Link
                     href="/projects/my-projects"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

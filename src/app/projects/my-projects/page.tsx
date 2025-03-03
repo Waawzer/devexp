@@ -50,6 +50,7 @@ export default function MyProjectsPage() {
 
   const handleProjectCreated = () => {
     fetchProjects();
+    setIsModalOpen(false);
   };
 
   if (status === "loading" || loading) {
@@ -57,7 +58,7 @@ export default function MyProjectsPage() {
   }
 
   if (status === "unauthenticated") {
-    return null; // La redirection sera gérée par useEffect
+    return null;
   }
 
   return (
@@ -75,12 +76,6 @@ export default function MyProjectsPage() {
       {projects.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500 mb-4">Vous n'avez pas encore de projets.</p>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600"
-          >
-            Créer mon premier projet
-          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
