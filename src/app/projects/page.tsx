@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import ProjectPreview from "@/components/ProjectPreview";
+import ProjectPreview from "@/components/layout/ProjectPreview";
 
 interface Project {
   _id: string;

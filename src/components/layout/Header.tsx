@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import LoginModal from "./LoginModal";
+import LoginModal from "../modals/LoginModal";
 
 export default function Header() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);

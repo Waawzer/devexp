@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import ProjectPreview from "@/components/ProjectPreview";
+import ProjectPreview from "@/components/layout/ProjectPreview";
 
 interface User {
   _id: string;

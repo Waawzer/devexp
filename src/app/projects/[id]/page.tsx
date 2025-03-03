@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from "next/navigation";
-import EditProjectModal from "@/components/EditProjectModal";
+import EditProjectModal from "@/components/modals/EditProjectModal";
 import { authService } from "@/services/authService";
 import Link from "next/link";
 import { FaGithub, FaProjectDiagram, FaBook, FaUsers } from 'react-icons/fa';
-import TreeModal from "@/components/TreeModal";
-import SpecificationsModal from "@/components/SpecificationsModal";
-import AddCollaboratorModal from "@/components/AddCollaboratorModal";
+import TreeModal from "@/components/modals/TreeModal";
+import SpecificationsModal from "@/components/modals/SpecificationsModal";
+import AddCollaboratorModal from "@/components/modals/AddCollaboratorModal";
 
 interface Project {
   _id: string;
