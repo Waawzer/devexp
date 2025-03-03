@@ -1,26 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from '@/lib/mongodb';
 import Project from '@/models/Project';
 import User from '@/models/User';
-import { authService } from '@/services/authService';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
+    const session = await getServerSession(authOptions);
 
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) {
+    if (!session?.user) {
       return NextResponse.json({ message: "Non autorisé" }, { status: 401 });
     }
 
-    const decoded = authService.verifyToken(token);
+    await dbConnect();
     const { username, role } = await req.json();
 
-    // Vérifier si l'utilisateur existe
-    const collaborator = await User.findOne({ username });
+    const collaborator = await User.findOne({ name: username });
     if (!collaborator) {
       return NextResponse.json(
         { message: "Utilisateur non trouvé" },
@@ -28,7 +27,6 @@ export async function POST(
       );
     }
 
-    // Vérifier si le projet existe et si l'utilisateur est le propriétaire
     const project = await Project.findById(params.id);
     if (!project) {
       return NextResponse.json(
@@ -37,14 +35,13 @@ export async function POST(
       );
     }
 
-    if (project.userId.toString() !== decoded.userId) {
+    if (project.userId.toString() !== session.user.id) {
       return NextResponse.json(
         { message: "Non autorisé à modifier ce projet" },
         { status: 403 }
       );
     }
 
-    // Vérifier si l'utilisateur n'est pas déjà collaborateur
     if (project.collaborators?.some(collab => collab.user.toString() === collaborator._id.toString())) {
       return NextResponse.json(
         { message: "Cet utilisateur est déjà collaborateur" },
@@ -52,16 +49,14 @@ export async function POST(
       );
     }
 
-    // Ajouter le collaborateur avec son rôle
     project.collaborators = [
       ...(project.collaborators || []),
       { user: collaborator._id, role }
     ];
     await project.save();
 
-    // Recharger le projet avec les données des collaborateurs
     const updatedProject = await Project.findById(params.id)
-      .populate('collaborators.user', 'username _id');
+      .populate('collaborators.user', 'name _id');
 
     return NextResponse.json({
       message: "Collaborateur ajouté avec succès",

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { AuthProvider } from '@/context/AuthContext'; 
+import Provider from '@/components/providers/SessionProvider';
 
 export const metadata: Metadata = {
   title: 'DevExp - Plateforme de collaboration',
@@ -15,13 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
-        <AuthProvider>
+        <Provider>
           <Header />
           <main className="flex-grow container mx-auto px-4 py-8">{children}</main>
           <Footer />
-        </AuthProvider>
+        </Provider>
       </body>
     </html>
   );

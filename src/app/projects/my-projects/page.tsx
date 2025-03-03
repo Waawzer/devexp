@@ -2,37 +2,38 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
-import CreateProjectModal from "@/components/modals/CreateProjectModal";
+import { useRouter } from "next/navigation";
 import ProjectPreview from "@/components/layout/ProjectPreview";
+import CreateProjectModal from "@/components/modals/CreateProjectModal";
 
 interface Project {
   _id: string;
   title: string;
   description: string;
-  userId: string;
-  img: string;
-  skills: string;
-  createdAt: string;
-  status: string;
-  creator?: {
+  userId: {
     _id: string;
-    username: string;
+    name: string;
   };
-  githubUrl?: string;
+  img: string;
+  skills: string[];
+  status: string;
+  createdAt: string;
 }
 
 export default function MyProjectsPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    if (session?.user) {
+    if (status === "unauthenticated") {
+      router.push("/");
+    } else if (session?.user) {
       fetchProjects();
     }
-  }, [session]);
+  }, [session, status, router]);
 
   const fetchProjects = async () => {
     try {
@@ -51,20 +52,12 @@ export default function MyProjectsPage() {
     fetchProjects();
   };
 
-  if (status === "loading") {
+  if (status === "loading" || loading) {
     return <div className="text-center py-8">Chargement...</div>;
   }
 
-  if (!session) {
-    return (
-      <div className="text-center py-8">
-        Veuillez vous{" "}
-        <Link href="/" className="text-blue-500 underline">
-          connecter
-        </Link>{" "}
-        pour voir vos projets.
-      </div>
-    );
+  if (status === "unauthenticated") {
+    return null; // La redirection sera gérée par useEffect
   }
 
   return (
@@ -73,16 +66,22 @@ export default function MyProjectsPage() {
         <h1 className="text-2xl font-bold">Mes projets</h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
-          Créer un nouveau projet
+          Créer un projet
         </button>
       </div>
 
-      {loading ? (
-        <div className="text-center py-8">Chargement des projets...</div>
-      ) : projects.length === 0 ? (
-        <p className="text-gray-500">Vous n'avez pas encore de projets.</p>
+      {projects.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500 mb-4">Vous n'avez pas encore de projets.</p>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600"
+          >
+            Créer mon premier projet
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
@@ -94,7 +93,7 @@ export default function MyProjectsPage() {
           ))}
         </div>
       )}
-      
+
       <CreateProjectModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

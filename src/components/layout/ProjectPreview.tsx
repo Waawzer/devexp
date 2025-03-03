@@ -1,93 +1,70 @@
 import Link from 'next/link';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
-interface ProjectPreviewProps {
-  project: {
-    _id: string;
-    title: string;
-    description: string;
-    img: string;
-    skills: string;
-    userId: string;
-    createdAt: string;
-    status: string;
-    creator?: {
-      _id: string;
-      username: string;
-    };
-  };
-  isOwner?: boolean;
+interface Project {
+  _id: string;
+  title: string;
+  description: string;
+  skills: string[];
+  createdAt: string;
+  status: string;
 }
 
-export default function ProjectPreview({ project, isOwner = false }: ProjectPreviewProps) {
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'En développement':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'En production':
-        return 'bg-green-100 text-green-800';
-      case 'Abandonné':
-        return 'bg-red-100 text-red-800';
-      case 'En pause':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-blue-100 text-blue-800';
-    }
+interface ProjectPreviewProps {
+  project: Project;
+  isOwner: boolean;
+}
+
+export default function ProjectPreview({ project, isOwner }: ProjectPreviewProps) {
+  const statusColors = {
+    open: 'bg-green-100 text-green-800',
+    in_progress: 'bg-blue-100 text-blue-800',
+    completed: 'bg-gray-100 text-gray-800',
+  };
+
+  const statusText = {
+    open: 'Ouvert',
+    in_progress: 'En cours',
+    completed: 'Terminé',
   };
 
   return (
-    <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.33%-1rem)] h-[400px]">
-      <Link href={`/projects/${project._id}`} className="block h-full">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-          {/* Image et titre */}
-          <div className="relative h-48 flex-shrink-0">
-            <img 
-              src={project.img || '/dev.bmp'} 
-              alt={project.title}
-              className="w-full h-full object-cover brightness-50"
-            />
-            <div className="absolute inset-0 p-4 text-white">
-              <h3 className="text-xl font-semibold mb-2 line-clamp-2">{project.title}</h3>
-              <p className="text-sm line-clamp-3">{project.description}</p>
-            </div>
-          </div>
-
-          {/* Contenu */}
-          <div className="p-4 flex-grow flex flex-col justify-between">
-            {/* Status */}
-            <div className="mb-2">
-              <span className={`${getStatusColor(project.status)} text-xs px-2 py-1 rounded-full`}>
-                {project.status}
-              </span>
-            </div>
-
-            {/* Skills */}
-            <div className="flex flex-wrap gap-2 mb-auto">
-              {project.skills?.split(',').map((skill, index) => (
-                <span 
-                  key={index}
-                  className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
-                >
-                  {skill.trim()}
-                </span>
-              )) || null}
-            </div>
-
-            {/* Footer */}
-            <div className="mt-4">
-              <Link 
-                href={`/profile/${project.creator?._id}`}
-                className="text-sm text-gray-600 hover:text-blue-500 block mb-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Par {project.creator?.username || "Utilisateur inconnu"}
-              </Link>
-              <span className="text-xs text-gray-500">
-                Créé le {new Date(project.createdAt).toLocaleDateString('fr-FR')}
-              </span>
-            </div>
-          </div>
+    <Link href={`/projects/${project._id}`}>
+      <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div className="flex justify-between items-start mb-4">
+          <h2 className="text-xl font-semibold">{project.title}</h2>
+          <span
+            className={`px-2 py-1 rounded-full text-sm ${
+              statusColors[project.status as keyof typeof statusColors]
+            }`}
+          >
+            {statusText[project.status as keyof typeof statusText]}
+          </span>
         </div>
-      </Link>
-    </div>
+        <p className="text-gray-600 mb-4 line-clamp-2">{project.description}</p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {project.skills.map((skill, index) => (
+            <span
+              key={index}
+              className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+        <div className="flex justify-between items-center text-sm text-gray-500">
+          <span>
+            {formatDistanceToNow(new Date(project.createdAt), {
+              addSuffix: true,
+              locale: fr,
+            })}
+          </span>
+          {isOwner && (
+            <span className="text-blue-600 font-medium">Votre projet</span>
+          )}
+        </div>
+      </div>
+    </Link>
   );
 }

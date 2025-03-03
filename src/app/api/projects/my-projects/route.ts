@@ -1,32 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/mongodb";
 import Project from "@/models/Project";
-import { authService } from "@/services/authService";
 
 export async function GET(req: NextRequest) {
-  await dbConnect();
-
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
-    if (!token) {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
       return NextResponse.json({ message: "Non autorisé" }, { status: 401 });
     }
-    const decoded = authService.verifyToken(token);
+
+    await dbConnect();
 
     const projects = await Project.find({
-      userId: decoded.userId,
-    }).populate('userId', 'username _id');
+      userId: session.user.id,
+    }).populate('userId', 'name _id');
 
-    // Transformer les projets pour avoir le même format que la route principale
-    const projectsWithCreator = projects.map(project => ({
-      ...project.toObject(),
-      creator: {
-        _id: project.userId._id,
-        username: project.userId.username
-      }
-    }));
-
-    return NextResponse.json(projectsWithCreator, { status: 200 });
+    return NextResponse.json(projects);
   } catch (error) {
     return NextResponse.json(
       { message: "Erreur serveur", error: (error as Error).message },

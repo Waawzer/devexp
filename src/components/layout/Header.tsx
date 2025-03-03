@@ -1,29 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import LoginModal from "../modals/LoginModal";
+import { useSession, signOut } from "next-auth/react";
+import { FaUser, FaCaretDown } from 'react-icons/fa';
+import Image from 'next/image';
+import AuthModal from "@/components/modals/AuthModal";
 
 export default function Header() {
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (isDropdownOpen && !(event.target as HTMLElement).closest(".dropdown")) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [isDropdownOpen]);
+  // Ajout temporaire pour déboguer
+  console.log("Session:", session);
+  console.log("Status:", status);
 
-  const handleLogout = () => {
-    logout();
-    setIsDropdownOpen(false);
-  };
+  // Si l'utilisateur est authentifié mais que le statut ne le reflète pas correctement
+  const isAuthenticated = status === "authenticated" && session?.user;
 
   return (
     <header className="bg-gray-800 text-white py-4">
@@ -35,33 +29,45 @@ export default function Header() {
           <Link href="/projects" className="hover:text-gray-300">
             Projets
           </Link>
-          {user ? (
+          
+          {status === "loading" ? (
+            <div className="animate-pulse bg-gray-600 h-8 w-20 rounded" />
+          ) : session?.user ? (
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="dropdown bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                className="flex items-center space-x-2 hover:text-gray-300"
               >
-                {user.username}
+                {session.user.image ? (
+                  <div className="w-8 h-8 rounded-full overflow-hidden relative">
+                    <Image
+                      src={session.user.image}
+                      alt="Profile"
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                      priority
+                    />
+                  </div>
+                ) : (
+                  <FaUser className="w-8 h-8" />
+                )}
+                <span>{session.user.name}</span>
+                <FaCaretDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
+
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                   <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    href="/projects/my-projects"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => setIsDropdownOpen(false)}
                   >
-                    Profil
-                  </Link>
-                  <Link
-                    href="/my-projects"
-                    className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    Mes projets
+                    Mes Projets
                   </Link>
                   <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    onClick={() => signOut()}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Déconnexion
                   </button>
@@ -69,21 +75,27 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <>
-              <Link href="/register" className="hover:text-gray-300">
-                Inscription
-              </Link>
-              <button
-                onClick={() => setIsLoginOpen(true)}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                Connexion
-              </button>
-            </>
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Connexion
+            </button>
           )}
         </nav>
-        <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       </div>
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
+
+      {isDropdownOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setIsDropdownOpen(false)}
+        />
+      )}
     </header>
   );
 }
