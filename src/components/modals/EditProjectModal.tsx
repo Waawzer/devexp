@@ -8,7 +8,7 @@ interface EditProjectModalProps {
     _id: string;
     title: string;
     description: string;
-    skills: string;
+    skills: string[];
     img: string;
     githubUrl?: string;
     status: ProjectStatus;
@@ -32,10 +32,10 @@ const AVAILABLE_SKILLS = [
 ];
 
 const PROJECT_STATUSES: ProjectStatus[] = [
-  'En développement',
-  'En production',
-  'Abandonné',
-  'En pause'
+  'en développement',
+  'en production',
+  'en pause',
+  'abandonné'
 ];
 
 export default function EditProjectModal({ project, isOpen, onClose, onProjectUpdated }: EditProjectModalProps) {
@@ -45,9 +45,9 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
     skills: project.skills,
     img: project.img,
     githubUrl: project.githubUrl || '',
-    status: project.status || 'En développement'
+    status: project.status || 'en développement'
   });
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(project.skills.split(',').map(s => s.trim()));
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(project.skills || []);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +63,7 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
         },
         body: JSON.stringify({
           ...formData,
-          skills: selectedSkills.join(','),
+          skills: selectedSkills,
         }),
       });
 

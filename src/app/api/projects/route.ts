@@ -1,46 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import dbConnect from "@/lib/mongodb";
+import dbConnect from "@/lib/dbConnect";
 import Project from "@/models/Project";
-import OpenAI from 'openai';
-import cloudinary from '@/lib/cloudinary';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-async function generateProjectImage(title: string, description: string) {
-  try {
-    const prompt = `Create a modern, professional project thumbnail for a software project titled "${title}". ${description}. Style: Minimalist, tech-focused, professional.`;
-
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: prompt,
-      n: 1,
-      size: "1024x1024",
-    });
-
-    const imageUrl = response.data[0]?.url;
-    if (!imageUrl) {
-      throw new Error("Image URL is undefined");
-    }
-
-    // Télécharger l'image dans Cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(imageUrl, {
-      folder: 'project-thumbnails',
-    });
-
-    return uploadResponse.secure_url; // URL permanente de Cloudinary
-  } catch (error) {
-    console.error("Erreur lors de la génération de l'image:", error);
-    return '/dev.bmp'; // Image par défaut en cas d'erreur
-  }
-}
+import User from "@/models/User";
 
 export async function GET() {
   try {
     await dbConnect();
+    // S'assurer que les modèles sont chargés
+    require('@/models/User');
+    require('@/models/Project');
+    
     const projects = await Project.find()
       .populate('userId', 'name _id')
       .sort({ createdAt: -1 });
@@ -63,16 +34,25 @@ export async function POST(req: NextRequest) {
     }
 
     await dbConnect();
+    // S'assurer que les modèles sont chargés
+    require('@/models/User');
+    require('@/models/Project');
+    
     const data = await req.json();
 
     const project = await Project.create({
       ...data,
       userId: session.user.id,
       createdAt: new Date(),
+      status: 'en développement',
     });
 
-    return NextResponse.json(project);
+    const populatedProject = await Project.findById(project._id)
+      .populate('userId', 'name _id');
+
+    return NextResponse.json(populatedProject, { status: 201 });
   } catch (error) {
+    console.error("Erreur:", error);
     return NextResponse.json(
       { message: "Erreur serveur", error: (error as Error).message },
       { status: 500 }

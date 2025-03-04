@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import ProjectPreview from "@/components/layout/ProjectPreview";
-import CreateProjectModal from "@/components/modals/CreateProjectModal";
 
 interface Project {
   _id: string;
@@ -23,7 +22,6 @@ export default function ProjectsPage() {
   const { data: session } = useSession();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -42,10 +40,6 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleProjectCreated = () => {
-    fetchProjects();
-  };
-
   if (loading) {
     return <div className="text-center py-8">Chargement des projets...</div>;
   }
@@ -54,14 +48,6 @@ export default function ProjectsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Projets disponibles</h1>
-        {session && (
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Créer un projet
-          </button>
-        )}
       </div>
 
       {projects.length === 0 ? (
@@ -76,14 +62,6 @@ export default function ProjectsPage() {
             />
           ))}
         </div>
-      )}
-
-      {session && (
-        <CreateProjectModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onProjectCreated={handleProjectCreated}
-        />
       )}
     </div>
   );

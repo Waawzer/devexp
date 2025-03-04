@@ -39,9 +39,10 @@ export default function CreateProjectModal({
   const [specifications, setSpecifications] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const generateSpecifications = async () => {
+  const generateProjectContent = async () => {
+    setIsGenerating(true);
     try {
-      const response = await fetch("/api/generate-specs", {
+      const response = await fetch("/api/projects/project-services", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,14 +55,20 @@ export default function CreateProjectModal({
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la génération du cahier des charges");
+        throw new Error("Erreur lors de la génération du contenu");
       }
 
       const data = await response.json();
-      return data.specifications;
+      setSpecifications(data.specifications);
+      setFormData(prev => ({
+        ...prev,
+        img: data.imageUrl
+      }));
     } catch (error) {
       console.error("Erreur:", error);
-      throw error;
+      setError("Erreur lors de la génération du contenu");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -83,6 +90,9 @@ export default function CreateProjectModal({
           title,
           description,
           skills: selectedSkills.join(','),
+          specifications,
+          img: formData.img,
+          githubUrl: formData.githubUrl
         }),
       });
 
@@ -161,6 +171,26 @@ export default function CreateProjectModal({
               required
             />
           </div>
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={generateProjectContent}
+              disabled={isGenerating || !title || !description || selectedSkills.length === 0}
+              className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+            >
+              {isGenerating ? "Génération en cours..." : "Générer le contenu"}
+            </button>
+          </div>
+          {specifications && (
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">
+                Cahier des charges généré
+              </h3>
+              <div className="max-h-40 overflow-y-auto bg-gray-50 p-2 rounded text-sm">
+                {specifications}
+              </div>
+            </div>
+          )}
           {error && <p className="text-red-500 mb-4">{error}</p>}
           <div className="flex justify-end space-x-2">
             <button
