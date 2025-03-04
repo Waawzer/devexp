@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
+import mongoose from 'mongoose';
 import User from '@/models/User';
 import Project from '@/models/Project';
+
+// Fonction pour connecter à MongoDB
+async function dbConnect() {
+  if (!process.env.MONGODB_URI) {
+    throw new Error('Please add your Mongo URI to .env.local');
+  }
+  
+  if (mongoose.connections[0].readyState) return;
+  
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+  } catch (error) {
+    console.error('Erreur de connexion à MongoDB:', error);
+    throw error;
+  }
+}
 
 // Récupérer un utilisateur spécifique avec ses projets
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -22,6 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       projects
     }, { status: 200 });
   } catch (error) {
+    console.error('Erreur détaillée:', error);
     return NextResponse.json(
       { message: 'Erreur lors de la récupération de l\'utilisateur', error: (error as Error).message },
       { status: 500 }

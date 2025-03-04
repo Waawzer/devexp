@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
+import User from "@/models/User";
 
 export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -93,12 +94,29 @@ export const authOptions = {
       return true;
     },
     async session({ session, token }) {
-      if (session?.user) {
-        session.user.id = token.id as string;
+      if (session?.user?.email) {
+        try {
+          const client = await clientPromise;
+          const db = client.db();
+          
+          // Utiliser directement le client MongoDB
+          const dbUser = await db.collection('users').findOne({ 
+            email: session.user.email 
+          });
+          
+          if (dbUser) {
+            session.user.id = dbUser._id.toString();
+            session.user.description = dbUser.description || "";
+            session.user.skills = dbUser.skills || [];
+            session.user.username = dbUser.username || dbUser.name;
+          }
+        } catch (error) {
+          console.error("Erreur lors de la récupération des données utilisateur:", error);
+        }
       }
       return session;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, profile }) {
       if (user) {
         token.id = user.id;
       }
