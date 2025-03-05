@@ -5,8 +5,17 @@ const nextConfig = {
   images: {
     domains: [
       'lh3.googleusercontent.com',
-      'avatars.githubusercontent.com'
-    ]
+      'avatars.githubusercontent.com',
+      'oaidalleapiprodscus.blob.core.windows.net'
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'oaidalleapiprodscus.blob.core.windows.net',
+        port: '',
+        pathname: '/private/**',
+      },
+    ],
   }
 }
 
