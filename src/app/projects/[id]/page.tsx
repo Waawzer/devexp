@@ -9,6 +9,7 @@ import EditProjectModal from "@/components/modals/EditProjectModal";
 import TreeModal from "@/components/modals/TreeModal";
 import SpecificationsModal from "@/components/modals/SpecificationsModal";
 import AddCollaboratorModal from "@/components/modals/AddCollaboratorModal";
+import ImageGallery from "@/components/layout/ImageGallery";
 
 interface Project {
   _id: string;
@@ -31,6 +32,10 @@ interface Project {
     role: string;
   }>;
   createdAt: string;
+  images?: Array<{
+    url: string;
+    caption?: string;
+  }>;
 }
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
@@ -42,6 +47,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [isTreeModalOpen, setIsTreeModalOpen] = useState(false);
   const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
   const [isAddCollaboratorModalOpen, setIsAddCollaboratorModalOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     fetchProject();
@@ -93,111 +99,193 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const isOwner = session?.user?.id === project.userId._id;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="relative h-64">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      {/* En-tête du projet */}
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+        <div className="relative h-80">
           <img
             src={project.img || '/dev.bmp'}
             alt={project.title}
             className="w-full h-full object-cover"
           />
+          {/* Overlay pour le statut */}
+          <div className="absolute top-4 right-4">
+            <span className="bg-white/90 px-4 py-2 rounded-full text-sm font-medium">
+              {project.status}
+            </span>
+          </div>
         </div>
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{project.title}</h1>
-              <div className="flex items-center gap-4">
-                {isOwner && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setIsEditModalOpen(true)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                    >
-                      Éditer
-                    </button>
-                    <button
-                      onClick={handleDelete}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                    >
-                      Supprimer
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
 
-            <div className="flex items-center gap-4">
-              {project.githubUrl && (
-                <>
+        {/* Section titre et actions */}
+        <div className="p-8">
+          <div className="flex justify-between items-start gap-4">
+            <h1 className="text-3xl font-bold">{project.title}</h1>
+            
+            <div className="flex items-center gap-3">
+              {/* Actions principales */}
+              <div className="flex gap-2">
+                {project.githubUrl && (
                   <a
                     href={project.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-700 hover:text-black"
+                    className="text-gray-600 hover:text-gray-900 transition-colors p-2"
+                    title="Voir sur GitHub"
                   >
-                    <FaGithub size={24} />
+                    <FaGithub size={20} />
                   </a>
+                )}
+                {project.specifications && (
+                  <button
+                    onClick={() => setIsSpecsModalOpen(true)}
+                    className="text-gray-600 hover:text-gray-900 transition-colors p-2"
+                    title="Voir les spécifications"
+                  >
+                    <FaBook size={20} />
+                  </button>
+                )}
+                {project.githubUrl && (
                   <button
                     onClick={() => setIsTreeModalOpen(true)}
-                    className="text-gray-700 hover:text-black"
+                    className="text-gray-600 hover:text-gray-900 transition-colors p-2"
+                    title="Voir l'arborescence"
                   >
-                    <FaProjectDiagram size={24} />
+                    <FaProjectDiagram size={20} />
                   </button>
-                </>
-              )}
-              {project.specifications && (
-                <button
-                  onClick={() => setIsSpecsModalOpen(true)}
-                  className="text-gray-700 hover:text-black"
-                >
-                  <FaBook size={24} />
-                </button>
-              )}
+                )}
+                {isOwner && (
+                  <button
+                    onClick={() => setIsAddCollaboratorModalOpen(true)}
+                    className="text-gray-600 hover:text-gray-900 transition-colors p-2"
+                    title="Gérer les collaborateurs"
+                  >
+                    <FaUsers size={20} />
+                  </button>
+                )}
+              </div>
+
+              {/* Menu d'actions pour le propriétaire */}
               {isOwner && (
-                <button
-                  onClick={() => setIsAddCollaboratorModalOpen(true)}
-                  className="text-gray-700 hover:text-black"
-                >
-                  <FaUsers size={24} />
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    aria-label="Menu du projet"
+                  >
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                    </svg>
+                  </button>
+                  
+                  {isMenuOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-40" 
+                        onClick={() => setIsMenuOpen(false)}
+                      />
+                      
+                      <div 
+                        className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg z-50 border border-gray-200"
+                      >
+                        <div className="py-0.5 flex flex-col">
+                          <button
+                            onClick={() => {
+                              setIsEditModalOpen(true);
+                              setIsMenuOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleDelete();
+                              setIsMenuOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           </div>
 
-          <p className="text-gray-700 mb-6">{project.description}</p>
+          {/* Description */}
+          <p className="text-gray-600 mt-6 leading-relaxed">{project.description}</p>
+        </div>
+      </div>
 
-          <div className="flex flex-wrap gap-2 mb-6">
-            {project.skills.map((skill, index) => (
-              <span
-                key={index}
-                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
-              >
-                {skill}
-              </span>
-            ))}
+      {/* Grille de contenu */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Colonne principale */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Section captures d'écran */}
+          {project.images && project.images.length > 0 && (
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Captures d'écran</h2>
+              <ImageGallery images={project.images} />
+            </div>
+          )}
+
+          {/* Autres sections potentielles */}
+        </div>
+
+        {/* Barre latérale */}
+        <div className="space-y-8">
+          {/* Section compétences */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">Compétences requises</h2>
+            <div className="flex flex-wrap gap-2">
+              {project.skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
           </div>
 
+          {/* Section collaborateurs */}
           {project.collaborators && project.collaborators.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Collaborateurs</h2>
-              <div className="space-y-2">
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Équipe</h2>
+              <div className="space-y-3">
                 {project.collaborators.map((collab, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                  <div key={index} className="flex items-center justify-between">
                     <Link
                       href={`/profile/${collab.user._id}`}
-                      className="text-blue-500 hover:text-blue-700"
+                      className="text-blue-600 hover:text-blue-800 font-medium"
                     >
                       {collab.user.name}
                     </Link>
-                    <span className="text-gray-500">({collab.role})</span>
+                    <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      {collab.role}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Section informations */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">Informations</h2>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p>Créé le : {new Date(project.createdAt).toLocaleDateString()}</p>
+              <p>Par : <Link href={`/profile/${project.userId._id}`} className="text-blue-600 hover:text-blue-800">{project.userId.name}</Link></p>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Modals */}
       {project && isOwner && (
         <>
           <EditProjectModal

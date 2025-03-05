@@ -1,12 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import cloudinary from '@/lib/cloudinary';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+async function uploadImageToCloudinary(imageUrl: string, folder = 'project-images') {
+  try {
+    const uploadResponse = await cloudinary.uploader.upload(imageUrl, {
+      folder: folder,
+      resource_type: 'image',
+    });
+    return uploadResponse.secure_url;
+  } catch (error) {
+    console.error('Erreur lors de l\'upload sur Cloudinary:', error);
+    throw error;
+  }
+}
+
+// Nouvelle fonction pour gérer l'upload d'images de projet
+async function handleProjectImageUpload(formData: FormData) {
+  try {
+    const file = formData.get('file') as File;
+    if (!file) {
+      throw new Error('Aucun fichier fourni');
+    }
+
+    // Convertir le fichier en base64
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
+
+    // Upload vers Cloudinary dans un dossier spécifique pour les captures d'écran
+    const cloudinaryUrl = await uploadImageToCloudinary(base64Image, 'project-screenshots');
+    
+    return cloudinaryUrl;
+  } catch (error) {
+    console.error('Erreur lors de l\'upload de l\'image:', error);
+    throw error;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
+    // Vérifier si la requête est un upload d'image
+    const contentType = req.headers.get('content-type') || '';
+    
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData();
+      const imageUrl = await handleProjectImageUpload(formData);
+      return NextResponse.json({ url: imageUrl });
+    }
+
+    // Sinon, traiter comme une requête de génération de contenu
     const { title, description, skills } = await req.json();
 
     // Génération du cahier des charges
@@ -43,16 +90,23 @@ export async function POST(req: NextRequest) {
       style: "natural"
     });
 
-    const imageUrl = imageResponse.data[0]?.url || '/default-project.jpg';
+    const dalleImageUrl = imageResponse.data[0]?.url;
+    
+    if (!dalleImageUrl) {
+      throw new Error("Aucune image n'a été générée");
+    }
+
+    // Upload l'image vers Cloudinary
+    const cloudinaryUrl = await uploadImageToCloudinary(dalleImageUrl);
 
     return NextResponse.json({
       specifications,
-      imageUrl,
+      imageUrl: cloudinaryUrl,
     });
   } catch (error) {
     console.error('Erreur:', error);
     return NextResponse.json(
-      { error: "Erreur lors de la génération du contenu" },
+      { error: "Erreur lors du traitement de la requête" },
       { status: 500 }
     );
   }

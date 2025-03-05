@@ -10,6 +10,7 @@ declare module "next-auth" {
       description?: string;
       skills?: string[];
       username?: string;
+      favoriteTechnologies?: string[];
     }
   }
 
@@ -21,5 +22,6 @@ declare module "next-auth" {
     description?: string;
     skills?: string[];
     username?: string;
+    favoriteTechnologies?: string[];
   }
 } 

@@ -6,7 +6,8 @@ const nextConfig = {
     domains: [
       'lh3.googleusercontent.com',
       'avatars.githubusercontent.com',
-      'oaidalleapiprodscus.blob.core.windows.net'
+      'oaidalleapiprodscus.blob.core.windows.net',
+      'res.cloudinary.com'
     ],
     remotePatterns: [
       {
@@ -14,6 +15,12 @@ const nextConfig = {
         hostname: 'oaidalleapiprodscus.blob.core.windows.net',
         port: '',
         pathname: '/private/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/dpoi45ksk/**',
       },
     ],
   }

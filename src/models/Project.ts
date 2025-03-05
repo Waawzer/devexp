@@ -61,6 +61,16 @@ const ProjectSchema = new Schema({
     type: String,
     required: false
   },
+  images: [{
+    url: { 
+      type: String,
+      required: true 
+    },
+    caption: { 
+      type: String,
+      required: false 
+    }
+  }],
   createdAt: { 
     type: Date, 
     default: Date.now 

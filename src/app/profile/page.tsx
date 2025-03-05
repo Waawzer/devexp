@@ -15,19 +15,34 @@ export default function ProfilePage() {
     image: '',
     description: '',
     skills: [] as string[],
+    favoriteTechnologies: [] as string[],
   });
   const [newSkill, setNewSkill] = useState('');
+  const [newFavTech, setNewFavTech] = useState('');
 
   useEffect(() => {
-    if (session?.user) {
-      setFormData({
-        name: session.user.name || '',
-        email: session.user.email || '',
-        image: session.user.image || '',
-        description: session.user.description || '',
-        skills: session.user.skills || [],
-      });
-    }
+    const fetchUserData = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch('/api/users/me');
+          if (response.ok) {
+            const userData = await response.json();
+            setFormData({
+              name: userData.name || '',
+              email: userData.email || '',
+              image: userData.image || '',
+              description: userData.description || '',
+              skills: userData.skills || [],
+              favoriteTechnologies: userData.favoriteTechnologies || [],
+            });
+          }
+        } catch (error) {
+          console.error('Erreur lors du chargement des données:', error);
+        }
+      }
+    };
+
+    fetchUserData();
   }, [session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,8 +63,14 @@ export default function ProfilePage() {
       const updatedUser = await response.json();
       setIsEditing(false);
       
-      // Mettre à jour la session avec les nouvelles données
-      await update();
+      // Forcer la mise à jour de la session avec les nouvelles données
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          ...updatedUser,
+        },
+      });
     } catch (error) {
       console.error('Erreur:', error);
     }
@@ -203,6 +224,64 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Technologies préférées (max 3)
+              </label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={newFavTech}
+                  onChange={(e) => setNewFavTech(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Ajouter une technologie préférée"
+                  disabled={formData.favoriteTechnologies.length >= 3}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newFavTech && !formData.favoriteTechnologies.includes(newFavTech) && formData.favoriteTechnologies.length < 3) {
+                      setFormData({
+                        ...formData,
+                        favoriteTechnologies: [...formData.favoriteTechnologies, newFavTech],
+                      });
+                      setNewFavTech('');
+                    }
+                  }}
+                  className={`${
+                    formData.favoriteTechnologies.length >= 3
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-blue-500 hover:bg-blue-600'
+                  } text-white px-4 py-2 rounded`}
+                  disabled={formData.favoriteTechnologies.length >= 3}
+                >
+                  +
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.favoriteTechnologies.map((tech, index) => (
+                  <span
+                    key={index}
+                    className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                  >
+                    {tech}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          favoriteTechnologies: formData.favoriteTechnologies.filter(t => t !== tech),
+                        });
+                      }}
+                      className="text-green-600 hover:text-green-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -240,6 +319,24 @@ export default function ProfilePage() {
                   ))
                 ) : (
                   <p className="text-gray-500">Aucune compétence ajoutée</p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium">Technologies préférées</h3>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.favoriteTechnologies.length > 0 ? (
+                  formData.favoriteTechnologies.map((tech, index) => (
+                    <span
+                      key={index}
+                      className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+                    >
+                      {tech}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-gray-500">Aucune technologie préférée ajoutée</p>
                 )}
               </div>
             </div>

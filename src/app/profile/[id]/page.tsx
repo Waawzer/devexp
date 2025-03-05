@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import ProjectPreview from "@/components/layout/ProjectPreview";
+import Image from "next/image";
 
 interface User {
   _id: string;
@@ -10,6 +11,8 @@ interface User {
   email: string;
   description?: string;
   skills?: string[];
+  favoriteTechnologies?: string[];
+  image?: string;
 }
 
 interface Project {
@@ -23,6 +26,33 @@ interface Project {
     _id: string;
     username: string;
   };
+}
+
+// Composant pour l'image de profil avec gestion des erreurs
+function ProfileImage({ user }: { user: User }) {
+  const [imageError, setImageError] = useState(false);
+
+  if (!user.image || imageError) {
+    return (
+      <div className="w-[120px] h-[120px] bg-gray-200 rounded-full flex items-center justify-center">
+        <span className="text-4xl text-gray-500">
+          {user.username.charAt(0).toUpperCase()}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={user.image}
+      alt={`Photo de profil de ${user.username}`}
+      width={120}
+      height={120}
+      className="rounded-full object-cover"
+      priority
+      onError={() => setImageError(true)}
+    />
+  );
 }
 
 export default function UserProfilePage() {
@@ -70,9 +100,33 @@ export default function UserProfilePage() {
     <div className="container mx-auto px-4 py-8">
       {/* En-tête du profil */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h1 className="text-3xl font-bold mb-4">{user.username}</h1>
-        {user.description && (
-          <p className="text-gray-600 mb-4">{user.description}</p>
+        <div className="flex items-start gap-6 mb-6">
+          <div className="flex-shrink-0">
+            <ProfileImage user={user} />
+          </div>
+          <div className="flex-grow">
+            <h1 className="text-3xl font-bold mb-4">{user.username}</h1>
+            {user.description && (
+              <p className="text-gray-600 mb-4">{user.description}</p>
+            )}
+          </div>
+        </div>
+        
+        {/* Technologies préférées */}
+        {user.favoriteTechnologies && user.favoriteTechnologies.length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-2">Technologies préférées</h2>
+            <div className="flex flex-wrap gap-2">
+              {user.favoriteTechnologies.map((tech, index) => (
+                <span
+                  key={index}
+                  className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+                >
+                  {tech}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
         
         {/* Compétences */}

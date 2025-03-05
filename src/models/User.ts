@@ -8,6 +8,7 @@ export interface User {
   skills?: string[];
   bio?: string;
   projects?: string[];
+  favoriteTechnologies?: string[];
   createdAt: Date;
 }
 
@@ -17,6 +18,7 @@ export interface UserInput {
   password: string;
   skills?: string[];
   bio?: string;
+  favoriteTechnologies?: string[];
 }
 
 // Définir le schéma
@@ -28,6 +30,10 @@ const UserSchema = new Schema({
   username: String,
   description: String,
   skills: [String],
+  favoriteTechnologies: {
+    type: [String],
+    validate: [arrayLimit, 'Le nombre maximum de technologies préférées est de 3']
+  },
   experiences: [{
     company: String,
     years: Number,
@@ -48,4 +54,10 @@ const UserSchema = new Schema({
 
 // Vérifier si le modèle existe déjà pour éviter la recompilation
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
+
+// Ajouter la fonction de validation avant la création du modèle
+function arrayLimit(val: string[]) {
+  return val.length <= 3;
+}
+
 export default User;
