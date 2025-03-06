@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import User from '@/models/User';
 import dbConnect from '@/lib/dbConnect';
+import Project from '@/models/Project';
 
 // Mettre à jour le profil utilisateur
 export async function PUT(req: NextRequest) {
@@ -43,30 +44,39 @@ export async function PUT(req: NextRequest) {
 }
 
 // Ajouter une route GET pour récupérer les données du profil
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user?.email) {
-      return NextResponse.json({ message: 'Non autorisé' }, { status: 401 });
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
     await dbConnect();
 
-    const user = await User.findOne(
-      { email: session.user.email },
-      'name email image description skills favoriteTechnologies'
-    );
+    // Récupérer l'utilisateur
+    const user = await User.findOne({ email: session.user.email })
+      .select('name email image description skills favoriteTechnologies');
 
     if (!user) {
-      return NextResponse.json({ message: 'Utilisateur non trouvé' }, { status: 404 });
+      return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
-    return NextResponse.json(user, { status: 200 });
+    // Récupérer les projets créés par l'utilisateur
+    const projects = await Project.find({ userId: user._id });
+
+    // Récupérer les projets où l'utilisateur est collaborateur
+    const collaborations = await Project.find({
+      'collaborators.user': user._id
+    });
+
+    // Retourner toutes les données
+    return NextResponse.json({
+      ...user.toObject(),
+      projects,
+      collaborations,
+    });
   } catch (error) {
     console.error('Erreur:', error);
-    return NextResponse.json(
-      { message: 'Erreur lors de la récupération du profil' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 } 
