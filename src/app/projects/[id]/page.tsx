@@ -31,11 +31,98 @@ interface Project {
     };
     role: string;
   }>;
+  applications?: Array<{
+    user: {
+      _id: string;
+      name: string;
+      image?: string;
+    };
+    message: string;
+    status: 'en_attente' | 'accepté' | 'refusé';
+    createdAt: string;
+  }>;
+  projectType: 'personnel' | 'collaboratif';
   createdAt: string;
   images?: Array<{
     url: string;
     caption?: string;
   }>;
+}
+
+function ApplyModal({ isOpen, onClose, projectId }: {
+  isOpen: boolean;
+  onClose: () => void;
+  projectId: string;
+}) {
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/applications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'envoi de la candidature');
+      }
+
+      onClose();
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg w-[500px]">
+        <h2 className="text-xl font-bold mb-4">Postuler pour ce projet</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Message de candidature
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="w-full p-2 border rounded-md"
+              rows={4}
+              placeholder="Présentez-vous et expliquez pourquoi vous souhaitez rejoindre ce projet..."
+              required
+            />
+          </div>
+          {error && <p className="text-red-500 mb-4">{error}</p>}
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            >
+              {loading ? "Envoi..." : "Envoyer ma candidature"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
@@ -48,6 +135,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
   const [isAddCollaboratorModalOpen, setIsAddCollaboratorModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
   useEffect(() => {
     fetchProject();
@@ -88,6 +176,32 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleRemoveCollaborator = async (userId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir retirer ce collaborateur ?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${params.id}/collaborators`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }) // Envoyer l'ID dans le body
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression du collaborateur');
+      }
+
+      // Rafraîchir les données du projet
+      fetchProject();
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('Erreur lors de la suppression du collaborateur');
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Chargement du projet...</div>;
   }
@@ -109,9 +223,16 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             className="w-full h-full object-cover"
           />
           {/* Overlay pour le statut */}
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 flex flex-col gap-2">
             <span className="bg-white/90 px-4 py-2 rounded-full text-sm font-medium">
               {project.status}
+            </span>
+            <span className={`px-4 py-2 rounded-full text-sm font-medium ${
+              project.projectType === 'collaboratif' 
+                ? 'bg-purple-500 text-white' 
+                : 'bg-gray-500 text-white'
+            }`}>
+              {project.projectType === 'collaboratif' ? 'Projet collaboratif' : 'Projet personnel'}
             </span>
           </div>
         </div>
@@ -275,16 +396,38 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <h2 className="text-xl font-semibold mb-4">Équipe</h2>
               <div className="space-y-3">
                 {project.collaborators.map((collab, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <Link
-                      href={`/profile/${collab.user._id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      {collab.user.name}
-                    </Link>
-                    <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      {collab.role}
-                    </span>
+                  <div key={index} className="flex items-center justify-between group">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/profile/${collab.user._id}`}
+                        className="text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        {collab.user.name}
+                      </Link>
+                      <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        {collab.role}
+                      </span>
+                    </div>
+                    {isOwner && (
+                      <button
+                        onClick={() => handleRemoveCollaborator(collab.user._id)}
+                        className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Retirer le collaborateur"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -301,6 +444,35 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
+
+      {/* Ajouter un bouton "Postuler" si c'est un projet collaboratif et que l'utilisateur n'est pas le propriétaire */}
+      {project.projectType === 'collaboratif' && !isOwner && (
+        <>
+          <div className="mt-4 p-4 bg-purple-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-purple-800">
+                  Ce projet recrute !
+                </h3>
+                <p className="text-sm text-purple-600">
+                  Vous pouvez postuler pour rejoindre l'équipe de développement.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsApplyModalOpen(true)}
+                className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Postuler
+              </button>
+            </div>
+          </div>
+          <ApplyModal
+            isOpen={isApplyModalOpen}
+            onClose={() => setIsApplyModalOpen(false)}
+            projectId={project._id}
+          />
+        </>
+      )}
 
       {/* Modals */}
       {project && isOwner && (
@@ -329,6 +501,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             projectId={project._id}
             onCollaboratorAdded={fetchProject}
             currentCollaborators={project.collaborators || []}
+            applications={project.applications || []}
           />
         </>
       )}

@@ -9,7 +9,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     await dbConnect();
     const project = await Project.findById(params.id)
       .populate('userId', 'name _id')
-      .populate('collaborators.user', 'name _id');
+      .populate('collaborators.user', 'name _id')
+      .populate('applications.user', 'name image');
 
     if (!project) {
       return NextResponse.json({ message: 'Projet non trouvé' }, { status: 404 });

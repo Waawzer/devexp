@@ -16,6 +16,8 @@ export default function ProfilePage() {
     description: '',
     skills: [] as string[],
     favoriteTechnologies: [] as string[],
+    projects: [] as any[],
+    collaborations: [] as any[],
   });
   const [newSkill, setNewSkill] = useState('');
   const [newFavTech, setNewFavTech] = useState('');
@@ -34,6 +36,8 @@ export default function ProfilePage() {
               description: userData.description || '',
               skills: userData.skills || [],
               favoriteTechnologies: userData.favoriteTechnologies || [],
+              projects: userData.projects || [],
+              collaborations: userData.collaborations || [],
             });
           }
         } catch (error) {
@@ -256,6 +260,14 @@ export default function ProfilePage() {
           <div>
             <h2 className="text-xl font-semibold">{session.user.name}</h2>
             <p className="text-gray-600">{session.user.email}</p>
+            <div className="flex gap-4 mt-2">
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold text-gray-900">{formData.projects?.length || 0}</span> projets créés
+              </div>
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold text-gray-900">{formData.collaborations?.length || 0}</span> collaborations
+              </div>
+            </div>
           </div>
         </div>
 

@@ -19,13 +19,19 @@ interface Project {
   _id: string;
   title: string;
   description: string;
-  userId: string;
-  img: string;
-  skills: string;
-  creator?: {
+  userId: {
     _id: string;
-    username: string;
+    name: string;
   };
+  img: string;
+  skills: string[];
+  collaborators?: Array<{
+    user: {
+      _id: string;
+      name: string;
+    };
+    role: string;
+  }>;
 }
 
 // Simplifions la fonction getDisplayName
@@ -70,7 +76,11 @@ function ProfileImage({ user }: { user: User }) {
 
 export default function UserProfilePage() {
   const { id } = useParams();
-  const [userData, setUserData] = useState<{ user: User, projects: Project[] } | null>(null);
+  const [userData, setUserData] = useState<{
+    user: User;
+    projects: Project[];
+    collaborations: Project[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -87,7 +97,7 @@ export default function UserProfilePage() {
         }
         
         const data = await response.json();
-        console.log("Données reçues:", data); // Pour debug
+        console.log("Données reçues:", data);
         setUserData(data);
       } catch (error) {
         console.error("Erreur:", error);
@@ -107,7 +117,7 @@ export default function UserProfilePage() {
     return <div className="text-center py-8">Utilisateur non trouvé</div>;
   }
 
-  const { user, projects } = userData;
+  const { user, projects, collaborations } = userData;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -118,7 +128,15 @@ export default function UserProfilePage() {
             <ProfileImage user={user} />
           </div>
           <div className="flex-grow">
-            <h1 className="text-3xl font-bold mb-4">{getDisplayName(user)}</h1>
+            <h1 className="text-3xl font-bold mb-2">{getDisplayName(user)}</h1>
+            <div className="flex gap-4 mb-4">
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold text-gray-900">{projects.length}</span> projets créés
+              </div>
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold text-gray-900">{collaborations.length}</span> collaborations
+              </div>
+            </div>
             {user.description && (
               <p className="text-gray-600 mb-4">{user.description}</p>
             )}
@@ -160,25 +178,45 @@ export default function UserProfilePage() {
         )}
       </div>
 
-      {/* Projets */}
-      <section className="mb-8">
+      {/* Projets créés */}
+      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">
           Projets de {getDisplayName(user)}
         </h2>
         {projects.length === 0 ? (
-          <p className="text-gray-500">Aucun projet</p>
+          <p className="text-gray-500">Aucun projet créé</p>
         ) : (
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
               <ProjectPreview 
                 key={project._id} 
-                project={{
-                  ...project,
-                  creator: {
-                    _id: user._id,
-                    username: user.name || 'Utilisateur'
-                  }
-                }}
+                project={project}
+                isOwner={false}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Collaborations */}
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">
+          Collaborations
+        </h2>
+        {collaborations.length === 0 ? (
+          <p className="text-gray-500">Aucune collaboration</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {collaborations.map((project) => (
+              <ProjectPreview 
+                key={project._id} 
+                project={project}
+                isOwner={false}
+                collaborationRole={
+                  project.collaborators?.find(
+                    c => c.user._id === user._id
+                  )?.role
+                }
               />
             ))}
           </div>

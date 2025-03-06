@@ -19,6 +19,7 @@ interface EditProjectModalProps {
     images?: ProjectImage[];
     githubUrl?: string;
     status: ProjectStatus;
+    projectType: 'personnel' | 'collaboratif';
   };
   isOpen: boolean;
   onClose: () => void;
@@ -53,7 +54,8 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
     img: project.img,
     images: project.images || [],
     githubUrl: project.githubUrl || '',
-    status: project.status || 'en développement'
+    status: project.status || 'en développement',
+    projectType: project.projectType || 'personnel',
   });
   const [selectedSkills, setSelectedSkills] = useState<string[]>(project.skills || []);
   const [newImage, setNewImage] = useState<{ url: string; caption: string }>({
@@ -195,6 +197,45 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
                 className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                 required
               />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Type de projet
+              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="projectType"
+                    value="personnel"
+                    checked={formData.projectType === 'personnel'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, projectType: e.target.value as 'personnel' | 'collaboratif' }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm">
+                    Personnel
+                    <span className="block text-xs text-gray-500">
+                      Projet individuel sans recrutement
+                    </span>
+                  </span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="projectType"
+                    value="collaboratif"
+                    checked={formData.projectType === 'collaboratif'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, projectType: e.target.value as 'personnel' | 'collaboratif' }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm">
+                    Collaboratif
+                    <span className="block text-xs text-gray-500">
+                      Ouvert aux collaborations
+                    </span>
+                  </span>
+                </label>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>

@@ -1,6 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
 export type ProjectStatus = 'en développement' | 'en production' | 'en pause' | 'abandonné';
+export type ProjectType = 'personnel' | 'collaboratif';
 
 // Interface for project input data
 export interface ProjectInput {
@@ -9,6 +10,7 @@ export interface ProjectInput {
   skills: string;
   githubUrl?: string;
   status: ProjectStatus;
+  projectType: ProjectType;
 }
 
 // Mongoose schema for projects
@@ -41,12 +43,33 @@ const ProjectSchema = new Schema({
   collaborators: [{
     user: { 
       type: Schema.Types.ObjectId, 
-      ref: 'User' 
+      ref: 'User',
+      required: true
     },
     role: { 
       type: String,
       enum: ['développeur', 'designer', 'chef_de_projet'],
       required: true
+    }
+  }],
+  applications: [{
+    user: { 
+      type: Schema.Types.ObjectId,
+      ref: 'User',  // Important : référence au modèle User
+      required: true
+    },
+    message: {
+      type: String,
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ['en_attente', 'accepté', 'refusé'],
+      default: 'en_attente'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
     }
   }],
   githubUrl: {
@@ -78,6 +101,12 @@ const ProjectSchema = new Schema({
   updatedAt: { 
     type: Date, 
     default: Date.now 
+  },
+  projectType: {
+    type: String,
+    enum: ['personnel', 'collaboratif'],
+    required: true,
+    default: 'personnel'
   }
 });
 

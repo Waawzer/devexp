@@ -38,6 +38,7 @@ export default function CreateProjectModal({
   const [isGenerating, setIsGenerating] = useState(false);
   const [specifications, setSpecifications] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [projectType, setProjectType] = useState<'personnel' | 'collaboratif'>('personnel');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +79,8 @@ export default function CreateProjectModal({
           skills: selectedSkills,
           specifications: genData.specifications,
           img: genData.imageUrl,
-          githubUrl: formData.githubUrl
+          githubUrl: formData.githubUrl,
+          projectType
         }),
       });
 
@@ -91,6 +93,7 @@ export default function CreateProjectModal({
       setSelectedSkills([]);
       setFormData({ githubUrl: '' });
       setSpecifications(null);
+      setProjectType('personnel');
       onProjectCreated();
       onClose();
     } catch (err) {
@@ -163,7 +166,43 @@ export default function CreateProjectModal({
               ))}
             </div>
           </div>
-
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Type de projet
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="personnel"
+                  checked={projectType === 'personnel'}
+                  onChange={(e) => setProjectType(e.target.value as 'personnel' | 'collaboratif')}
+                  className="mr-2"
+                />
+                <span className="text-sm">
+                  Personnel
+                  <span className="block text-xs text-gray-500">
+                    Projet individuel sans recrutement
+                  </span>
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="collaboratif"
+                  checked={projectType === 'collaboratif'}
+                  onChange={(e) => setProjectType(e.target.value as 'personnel' | 'collaboratif')}
+                  className="mr-2"
+                />
+                <span className="text-sm">
+                  Collaboratif
+                  <span className="block text-xs text-gray-500">
+                    Ouvert aux collaborations
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
           {(loading || isGenerating) && (
             <div className="mb-4 text-sm text-gray-600">
               {isGenerating ? "Génération du contenu en cours..." : "Création du projet..."}

@@ -8,18 +8,31 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   try {
     await dbConnect();
     
-    // Récupérer l'utilisateur avec plus d'informations
-    const user = await User.findById(params.id, 'name email description skills favoriteTechnologies image');
+    // Récupérer l'utilisateur
+    const user = await User.findById(params.id)
+      .select('name email image description skills favoriteTechnologies');
+
     if (!user) {
       return NextResponse.json({ message: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
-    // Récupérer les projets de l'utilisateur
-    const projects = await Project.find({ userId: params.id });
+    // Récupérer les projets créés par l'utilisateur
+    const projects = await Project.find({ userId: params.id })
+      .populate('userId', 'name _id')
+      .sort({ createdAt: -1 });
+
+    // Récupérer les projets où l'utilisateur est collaborateur
+    const collaborations = await Project.find({
+      'collaborators.user': params.id
+    })
+      .populate('userId', 'name _id')
+      .populate('collaborators.user', 'name _id')
+      .sort({ createdAt: -1 });
 
     return NextResponse.json({
       user,
-      projects
+      projects,
+      collaborations
     }, { status: 200 });
   } catch (error) {
     console.error('Erreur détaillée:', error);

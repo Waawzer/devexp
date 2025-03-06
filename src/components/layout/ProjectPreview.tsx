@@ -16,14 +16,16 @@ interface Project {
     _id: string;
     name: string;
   };
+  projectType: 'personnel' | 'collaboratif';
 }
 
 interface ProjectPreviewProps {
   project: Project;
   isOwner: boolean;
+  collaborationRole?: string;
 }
 
-export default function ProjectPreview({ project, isOwner }: ProjectPreviewProps) {
+export default function ProjectPreview({ project, isOwner, collaborationRole }: ProjectPreviewProps) {
   const router = useRouter();
   
   const statusColors = {
@@ -57,18 +59,37 @@ export default function ProjectPreview({ project, isOwner }: ProjectPreviewProps
                 <h2 className="text-base font-semibold truncate flex-grow">
                   {project.title}
                 </h2>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs whitespace-nowrap ${
-                    statusColors[project.status]
-                  }`}
-                >
-                  {project.status}
-                </span>
+                <div className="flex flex-col gap-1 items-end">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs whitespace-nowrap ${
+                      statusColors[project.status]
+                    }`}
+                  >
+                    {project.status}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs whitespace-nowrap ${
+                      project.projectType === 'collaboratif' 
+                        ? 'bg-purple-100 text-purple-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {project.projectType === 'collaboratif' ? 'Collaboratif' : 'Personnel'}
+                  </span>
+                </div>
               </div>
               <p className="text-xs line-clamp-2 text-gray-100">
                 {project.description}
               </p>
             </div>
+
+            {collaborationRole && (
+              <div className="absolute top-2 left-2">
+                <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
+                  {collaborationRole}
+                </span>
+              </div>
+            )}
           </div>
           <div className="p-3 flex flex-col flex-grow">
             <div className="flex-grow overflow-y-auto">
