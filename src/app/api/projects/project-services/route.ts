@@ -42,15 +42,45 @@ async function handleProjectImageUpload(formData: FormData) {
   }
 }
 
+async function generateDetailedDescription(description: string) {
+  try {
+    const prompt = `En tant qu'expert en communication technique, améliore et structure la description suivante d'un projet informatique pour la rendre plus détaillée et professionnelle. Utilise des puces (•) pour lister les fonctionnalités principales. La description doit être claire, concise et bien organisée.
+
+Description actuelle: ${description}
+
+Format souhaité:
+- Un paragraphe d'introduction expliquant le concept général
+- Liste des fonctionnalités principales avec des puces
+- Un paragraphe de conclusion sur les cas d'usage`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error('Erreur lors de la génération de la description:', error);
+    throw error;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
-    // Vérifier si la requête est un upload d'image
     const contentType = req.headers.get('content-type') || '';
     
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       const imageUrl = await handleProjectImageUpload(formData);
       return NextResponse.json({ url: imageUrl });
+    }
+
+    const body = await req.json();
+    
+    // Nouvelle route pour la génération de description
+    if (body.type === 'generate-description') {
+      const detailedDescription = await generateDetailedDescription(body.description);
+      return NextResponse.json({ description: detailedDescription });
     }
 
     // Sinon, traiter comme une requête de génération de contenu

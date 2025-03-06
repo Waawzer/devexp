@@ -216,7 +216,24 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           </div>
 
           {/* Description */}
-          <p className="text-gray-600 mt-6 leading-relaxed">{project.description}</p>
+          <div className="mt-6 prose prose-gray max-w-none">
+            {project.description.split('\n').map((paragraph, index) => {
+              // Si le paragraphe commence par "•", c'est une puce
+              if (paragraph.trim().startsWith('•')) {
+                return (
+                  <div key={index} className="pl-4">
+                    <p className="mb-1">{paragraph}</p>
+                  </div>
+                );
+              }
+              // Sinon c'est un paragraphe normal
+              return (
+                <p key={index} className="mb-4 leading-relaxed">
+                  {paragraph}
+                </p>
+              );
+            })}
+          </div>
         </div>
       </div>
 
