@@ -21,7 +21,7 @@ export async function PUT(req: NextRequest) {
       { $set: data },
       { 
         new: true,
-        select: 'name email image description skills favoriteTechnologies username' 
+        select: 'name email image description skills favoriteTechnologies' 
       }
     );
 
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
 
     const user = await User.findOne(
       { email: session.user.email },
-      'name email image description skills favoriteTechnologies username'
+      'name email image description skills favoriteTechnologies'
     );
 
     if (!user) {

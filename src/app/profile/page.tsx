@@ -93,6 +93,39 @@ export default function ProfilePage() {
     });
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/users/me/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors du téléchargement de l\'image');
+      }
+
+      const data = await response.json();
+      
+      // Mise à jour du formulaire et de la session avec la nouvelle URL d'image
+      setFormData(prev => ({ ...prev, image: data.image }));
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          image: data.image,
+        },
+      });
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
   if (status === "loading") {
     return <div className="flex justify-center items-center min-h-screen">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -146,19 +179,80 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex items-center space-x-4 mb-6">
-          {session.user.image ? (
-            <Image
-              src={session.user.image}
-              alt="Photo de profil"
-              width={80}
-              height={80}
-              className="rounded-full"
-            />
-          ) : (
-            <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
-              <span className="text-gray-500 text-2xl">?</span>
-            </div>
-          )}
+          <div className="relative group">
+            {formData.image ? (
+              <>
+                <Image
+                  src={formData.image}
+                  alt="Photo de profil"
+                  width={80}
+                  height={80}
+                  className="rounded-full"
+                />
+                {isEditing && (
+                  <label htmlFor="imageUpload" className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="white"
+                      className="w-8 h-8"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
+                      />
+                    </svg>
+                  </label>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span className="text-gray-500 text-2xl">?</span>
+                </div>
+                {isEditing && (
+                  <label htmlFor="imageUpload" className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="white"
+                      className="w-8 h-8"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
+                      />
+                    </svg>
+                  </label>
+                )}
+              </>
+            )}
+            {isEditing && (
+              <input
+                type="file"
+                id="imageUpload"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+            )}
+          </div>
           <div>
             <h2 className="text-xl font-semibold">{session.user.name}</h2>
             <p className="text-gray-600">{session.user.email}</p>

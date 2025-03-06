@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { FaUser, FaCaretDown } from 'react-icons/fa';
@@ -11,6 +11,25 @@ export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { data: session, status } = useSession();
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch('/api/users/me');
+          if (response.ok) {
+            const userData = await response.json();
+            setProfileImage(userData.image || null);
+          }
+        } catch (error) {
+          console.error('Erreur lors du chargement des données:', error);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [session]);
 
   const isAuthenticated = status === "authenticated" && session?.user;
 
@@ -33,10 +52,10 @@ export default function Header() {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center space-x-2 hover:text-gray-300"
               >
-                {session.user.image ? (
+                {profileImage ? (
                   <div className="w-8 h-8 rounded-full overflow-hidden relative">
                     <Image
-                      src={session.user.image}
+                      src={profileImage}
                       alt="Profile"
                       width={32}
                       height={32}

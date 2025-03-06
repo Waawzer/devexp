@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     await dbConnect();
     
     // Récupérer l'utilisateur avec plus d'informations
-    const user = await User.findById(params.id, 'username email description skills favoriteTechnologies image');
+    const user = await User.findById(params.id, 'name email description skills favoriteTechnologies image');
     if (!user) {
       return NextResponse.json({ message: 'Utilisateur non trouvé' }, { status: 404 });
     }

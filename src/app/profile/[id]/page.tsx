@@ -7,7 +7,7 @@ import Image from "next/image";
 
 interface User {
   _id: string;
-  username: string;
+  name: string;          // Le seul champ dont nous avons besoin pour le nom
   email: string;
   description?: string;
   skills?: string[];
@@ -28,30 +28,43 @@ interface Project {
   };
 }
 
-// Composant pour l'image de profil avec gestion des erreurs
-function ProfileImage({ user }: { user: User }) {
-  const [imageError, setImageError] = useState(false);
+// Simplifions la fonction getDisplayName
+const getDisplayName = (user: User) => {
+  return user.name || 'Utilisateur';
+};
 
-  if (!user.image || imageError) {
+// Simplifions le rendu de l'avatar
+function ProfileImage({ user }: { user: User }) {
+  const renderAvatar = () => {
+    if (!user) return null;
+
+    if (user.image) {
+      return (
+        <Image
+          src={user.image}
+          alt={user.name || 'Avatar'}
+          width={120}
+          height={120}
+          className="rounded-full"
+        />
+      );
+    }
+
+    const initial = user.name ? user.name.charAt(0).toUpperCase() : '?';
+
     return (
       <div className="w-[120px] h-[120px] bg-gray-200 rounded-full flex items-center justify-center">
         <span className="text-4xl text-gray-500">
-          {user.username.charAt(0).toUpperCase()}
+          {initial}
         </span>
       </div>
     );
-  }
+  };
 
   return (
-    <Image
-      src={user.image}
-      alt={`Photo de profil de ${user.username}`}
-      width={120}
-      height={120}
-      className="rounded-full object-cover"
-      priority
-      onError={() => setImageError(true)}
-    />
+    <div className="flex-shrink-0">
+      {renderAvatar()}
+    </div>
   );
 }
 
@@ -105,7 +118,7 @@ export default function UserProfilePage() {
             <ProfileImage user={user} />
           </div>
           <div className="flex-grow">
-            <h1 className="text-3xl font-bold mb-4">{user.username}</h1>
+            <h1 className="text-3xl font-bold mb-4">{getDisplayName(user)}</h1>
             {user.description && (
               <p className="text-gray-600 mb-4">{user.description}</p>
             )}
@@ -149,7 +162,9 @@ export default function UserProfilePage() {
 
       {/* Projets */}
       <section className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">Projets de {user.username}</h2>
+        <h2 className="text-2xl font-bold mb-4">
+          Projets de {getDisplayName(user)}
+        </h2>
         {projects.length === 0 ? (
           <p className="text-gray-500">Aucun projet</p>
         ) : (
@@ -161,7 +176,7 @@ export default function UserProfilePage() {
                   ...project,
                   creator: {
                     _id: user._id,
-                    username: user.username
+                    username: user.name || 'Utilisateur'
                   }
                 }}
               />

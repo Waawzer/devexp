@@ -75,16 +75,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ url: imageUrl });
     }
 
+    // Lire le corps de la requête une seule fois
     const body = await req.json();
     
-    // Nouvelle route pour la génération de description
     if (body.type === 'generate-description') {
       const detailedDescription = await generateDetailedDescription(body.description);
       return NextResponse.json({ description: detailedDescription });
     }
 
-    // Sinon, traiter comme une requête de génération de contenu
-    const { title, description, skills } = await req.json();
+    // Utiliser le body déjà lu pour la génération de contenu
+    const { title, description, skills } = body;
 
     // Génération du cahier des charges
     const specificationPrompt = `En tant qu'expert en gestion de projet informatique, génère un cahier des charges détaillé pour le projet suivant:
