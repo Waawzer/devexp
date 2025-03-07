@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, model, models } from 'mongoose';
 
 // Définir l'interface avant le schéma
 export interface User {
@@ -10,6 +10,7 @@ export interface User {
   projects?: string[];
   favoriteTechnologies?: string[];
   createdAt: Date;
+  availability: string;
 }
 
 export interface UserInput {
@@ -47,13 +48,26 @@ const UserSchema = new Schema({
   sessions: [{
     type: Schema.Types.ObjectId,
     ref: 'Session'
-  }]
+  }],
+  availability: {
+    type: String,
+    enum: ['disponible', 'occupé', 'en_recherche'],
+    default: 'en_recherche'
+  },
+  hourlyRate: {
+    type: Number,
+    default: null
+  },
+  yearsOfExperience: {
+    type: Number,
+    default: 0
+  }
 }, {
   timestamps: true
 });
 
 // Vérifier si le modèle existe déjà pour éviter la recompilation
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
+const User = models.User || model('User', UserSchema);
 
 // Ajouter la fonction de validation avant la création du modèle
 function arrayLimit(val: string[]) {

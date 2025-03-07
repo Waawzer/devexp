@@ -77,7 +77,7 @@ export default function MyProjectsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Mes Projets */}
       <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
@@ -95,7 +95,7 @@ export default function MyProjectsPage() {
             <p className="text-gray-500 mb-4">Vous n'avez pas encore créé de projets.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myProjects.map((project) => (
               <ProjectPreview 
                 key={project._id} 
@@ -120,7 +120,7 @@ export default function MyProjectsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {collaborations.map((project) => (
               <ProjectPreview 
                 key={project._id} 

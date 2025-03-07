@@ -13,6 +13,9 @@ interface User {
   skills?: string[];
   favoriteTechnologies?: string[];
   image?: string;
+  availability?: 'disponible' | 'occupé' | 'en_recherche';
+  hourlyRate?: number;
+  yearsOfExperience?: number;
 }
 
 interface Project {
@@ -74,6 +77,56 @@ function ProfileImage({ user }: { user: User }) {
   );
 }
 
+function AvailabilityBadge({ availability }: { availability?: string }) {
+  if (!availability) return null;
+
+  const styles = {
+    disponible: 'bg-green-100 text-green-800 border-green-200',
+    occupé: 'bg-red-100 text-red-800 border-red-200',
+    en_recherche: 'bg-blue-100 text-blue-800 border-blue-200'
+  };
+
+  return (
+    <div className={`
+      flex items-center gap-2 px-4 py-2 rounded-full
+      ${styles[availability as keyof typeof styles]}
+      border-2 animate-pulse
+    `}>
+      <span className={`
+        w-2 h-2 rounded-full
+        ${availability === 'disponible' ? 'bg-green-500' :
+          availability === 'occupé' ? 'bg-red-500' : 'bg-blue-500'}
+      `}></span>
+      <span className="font-medium">
+        {availability.replace('_', ' ')}
+      </span>
+    </div>
+  );
+}
+
+function ProfessionalInfo({ user }: { user: User }) {
+  if (!user.hourlyRate && !user.yearsOfExperience) return null;
+
+  return (
+    <div className="flex flex-wrap gap-4 items-center mt-4">
+      {user.hourlyRate && (
+        <div className="bg-gray-100 px-4 py-2 rounded-full">
+          <span className="font-medium">{user.hourlyRate}€</span>
+          <span className="text-gray-600">/heure</span>
+        </div>
+      )}
+      {user.yearsOfExperience && (
+        <div className="bg-gray-100 px-4 py-2 rounded-full">
+          <span className="font-medium">{user.yearsOfExperience}</span>
+          <span className="text-gray-600">
+            {user.yearsOfExperience > 1 ? ' ans' : ' an'} d'expérience
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function UserProfilePage() {
   const { id } = useParams();
   const [userData, setUserData] = useState<{
@@ -120,7 +173,7 @@ export default function UserProfilePage() {
   const { user, projects, collaborations } = userData;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       {/* En-tête du profil */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex items-start gap-6 mb-6">
@@ -128,7 +181,11 @@ export default function UserProfilePage() {
             <ProfileImage user={user} />
           </div>
           <div className="flex-grow">
-            <h1 className="text-3xl font-bold mb-2">{getDisplayName(user)}</h1>
+            <div className="flex items-center justify-between">
+              <h1 className="text-3xl font-bold mb-2">{getDisplayName(user)}</h1>
+              <AvailabilityBadge availability={user.availability} />
+            </div>
+            
             <div className="flex gap-4 mb-4">
               <div className="text-sm text-gray-600">
                 <span className="font-semibold text-gray-900">{projects.length}</span> projets créés
@@ -137,8 +194,11 @@ export default function UserProfilePage() {
                 <span className="font-semibold text-gray-900">{collaborations.length}</span> collaborations
               </div>
             </div>
+
+            <ProfessionalInfo user={user} />
+
             {user.description && (
-              <p className="text-gray-600 mb-4">{user.description}</p>
+              <p className="text-gray-600 mt-4">{user.description}</p>
             )}
           </div>
         </div>
@@ -186,7 +246,7 @@ export default function UserProfilePage() {
         {projects.length === 0 ? (
           <p className="text-gray-500">Aucun projet créé</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => (
               <ProjectPreview 
                 key={project._id} 
@@ -206,7 +266,7 @@ export default function UserProfilePage() {
         {collaborations.length === 0 ? (
           <p className="text-gray-500">Aucune collaboration</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {collaborations.map((project) => (
               <ProjectPreview 
                 key={project._id} 

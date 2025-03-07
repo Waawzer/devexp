@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     
     // Récupérer l'utilisateur
     const user = await User.findById(params.id)
-      .select('name email image description skills favoriteTechnologies');
+      .select('name email image description skills favoriteTechnologies availability hourlyRate yearsOfExperience');
 
     if (!user) {
       return NextResponse.json({ message: 'Utilisateur non trouvé' }, { status: 404 });

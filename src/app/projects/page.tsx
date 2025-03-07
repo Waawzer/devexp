@@ -99,7 +99,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Barre de filtres */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex flex-col gap-6">
@@ -199,7 +199,7 @@ export default function ProjectsPage() {
           <p className="text-gray-500">Aucun projet ne correspond à vos critères.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredProjects.map((project) => (
             <ProjectPreview 
               key={project._id} 

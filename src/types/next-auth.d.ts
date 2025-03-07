@@ -11,11 +11,12 @@ declare module "next-auth" {
       skills?: string[];
       username?: string;
       favoriteTechnologies?: string[];
+      availability?: 'disponible' | 'occupé' | 'en_recherche';
     }
   }
 
   interface User {
-    id: string;
+    id?: string;
     name?: string | null;
     email?: string | null;
     image?: string | null;
@@ -23,5 +24,6 @@ declare module "next-auth" {
     skills?: string[];
     username?: string;
     favoriteTechnologies?: string[];
+    availability?: 'disponible' | 'occupé' | 'en_recherche';
   }
 } 

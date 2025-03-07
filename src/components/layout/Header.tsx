@@ -43,6 +43,9 @@ export default function Header() {
           <Link href="/projects" className="hover:text-gray-300">
             Projets
           </Link>
+          <Link href="/profile" className="hover:text-gray-300">
+            Profiles
+          </Link>
           
           {status === "loading" ? (
             <div className="animate-pulse bg-gray-600 h-8 w-20 rounded" />
@@ -73,7 +76,7 @@ export default function Header() {
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                   <Link
-                    href="/profile"
+                    href="/profile/my-profile"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => setIsDropdownOpen(false)}
                   >

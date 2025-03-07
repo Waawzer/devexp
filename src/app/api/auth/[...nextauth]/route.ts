@@ -99,7 +99,6 @@ export const authOptions = {
           const client = await clientPromise;
           const db = client.db();
           
-          // Utiliser directement le client MongoDB
           const dbUser = await db.collection('users').findOne({ 
             email: session.user.email 
           });
@@ -109,6 +108,8 @@ export const authOptions = {
             session.user.description = dbUser.description || "";
             session.user.skills = dbUser.skills || [];
             session.user.username = dbUser.username || dbUser.name;
+            session.user.favoriteTechnologies = dbUser.favoriteTechnologies || [];
+            session.user.availability = dbUser.availability || "en_recherche";
           }
         } catch (error) {
           console.error("Erreur lors de la récupération des données utilisateur:", error);

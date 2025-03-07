@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import User from '@/models/User';
 import dbConnect from '@/lib/dbConnect';
 import Project from '@/models/Project';
@@ -10,34 +10,42 @@ export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ message: 'Non autorisé' }, { status: 401 });
+      return NextResponse.json(
+        { message: 'Non autorisé' },
+        { status: 401 }
+      );
     }
 
     await dbConnect();
     const data = await req.json();
 
-    // Mise à jour des données utilisateur avec sélection explicite des champs
+    // Mise à jour de l'utilisateur avec les nouvelles données
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
-      { $set: data },
-      { 
-        new: true,
-        select: 'name email image description skills favoriteTechnologies' 
-      }
+      {
+        $set: {
+          name: data.name,
+          description: data.description,
+          skills: data.skills,
+          favoriteTechnologies: data.favoriteTechnologies,
+          availability: data.availability
+        }
+      },
+      { new: true }
     );
 
     if (!updatedUser) {
-      return NextResponse.json({ message: 'Utilisateur non trouvé' }, { status: 404 });
+      return NextResponse.json(
+        { message: 'Utilisateur non trouvé' },
+        { status: 404 }
+      );
     }
 
-    // Log pour déboguer
-    console.log('Updated user data:', updatedUser);
-
-    return NextResponse.json(updatedUser, { status: 200 });
+    return NextResponse.json(updatedUser);
   } catch (error) {
     console.error('Erreur:', error);
     return NextResponse.json(
-      { message: 'Erreur lors de la mise à jour du profil' },
+      { message: 'Erreur serveur' },
       { status: 500 }
     );
   }
@@ -46,19 +54,23 @@ export async function PUT(req: NextRequest) {
 // Ajouter une route GET pour récupérer les données du profil
 export async function GET() {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+      return NextResponse.json(
+        { message: 'Non autorisé' },
+        { status: 401 }
+      );
     }
 
     await dbConnect();
-
-    // Récupérer l'utilisateur
     const user = await User.findOne({ email: session.user.email })
-      .select('name email image description skills favoriteTechnologies');
+      .select('name email image description skills favoriteTechnologies availability');
 
     if (!user) {
-      return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
+      return NextResponse.json(
+        { message: 'Utilisateur non trouvé' },
+        { status: 404 }
+      );
     }
 
     // Récupérer les projets créés par l'utilisateur
@@ -77,6 +89,9 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Erreur:', error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    return NextResponse.json(
+      { message: 'Erreur serveur' },
+      { status: 500 }
+    );
   }
 } 
