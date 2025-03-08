@@ -35,67 +35,90 @@ export default function FreelancePreview({ freelance }: UserPreviewProps) {
 
   return (
     <Link href={`/profile/${freelance._id}`}>
-      <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-        <div className="flex items-center gap-4 mb-4">
-          {freelance.image ? (
-            <Image
-              src={freelance.image}
-              alt={freelance.name}
-              width={60}
-              height={60}
-              className="rounded-full"
-            />
-          ) : (
-            <div className="w-[60px] h-[60px] bg-gray-200 rounded-full flex items-center justify-center">
-              <span className="text-2xl text-gray-500">
-                {freelance.name.charAt(0).toUpperCase()}
-              </span>
+      <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+        <div className="relative p-6">
+          {/* Effet de fond décoratif */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-bl-full opacity-50"></div>
+
+          <div className="relative">
+            {/* En-tête avec avatar et nom */}
+            <div className="flex items-center gap-4 mb-6">
+              {freelance.image ? (
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full blur-sm opacity-50"></div>
+                  <Image
+                    src={freelance.image}
+                    alt={freelance.name}
+                    width={60}
+                    height={60}
+                    className="rounded-full relative ring-2 ring-white"
+                  />
+                </div>
+              ) : (
+                <div className="w-[60px] h-[60px] bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center text-white ring-2 ring-white">
+                  <span className="text-2xl font-semibold">
+                    {freelance.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                  {freelance.name}
+                </h3>
+                <div className={`
+                  inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                  transform transition-transform hover:scale-105
+                  ${getAvailabilityColor(freelance.availability)}
+                `}>
+                  {formatAvailability(freelance.availability)}
+                </div>
+              </div>
             </div>
-          )}
-          <div>
-            <h3 className="text-xl font-semibold">{freelance.name}</h3>
-            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${getAvailabilityColor(freelance.availability)}`}>
-              {formatAvailability(freelance.availability)}
-            </div>
+
+            {/* Compétences */}
+            {freelance.skills.length > 0 && (
+              <div className="mb-4 space-y-2">
+                <h4 className="text-sm font-semibold text-gray-700">Compétences</h4>
+                <div className="flex flex-wrap gap-2">
+                  {freelance.skills.slice(0, 3).map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 
+                               rounded-full text-sm font-medium border border-gray-200 
+                               shadow-sm transform transition-transform hover:scale-105"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                  {freelance.skills.length > 3 && (
+                    <span className="text-sm text-blue-500 font-medium">
+                      +{freelance.skills.length - 3}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Technologies préférées */}
+            {freelance.favoriteTechnologies.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-gray-700">Technologies préférées</h4>
+                <div className="flex flex-wrap gap-2">
+                  {freelance.favoriteTechnologies.map((tech, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 
+                               text-blue-700 rounded-full text-sm font-medium 
+                               shadow-sm transform transition-transform hover:scale-105"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {freelance.skills.length > 0 && (
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Compétences</h4>
-            <div className="flex flex-wrap gap-2">
-              {freelance.skills.slice(0, 3).map((skill, index) => (
-                <span
-                  key={index}
-                  className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm"
-                >
-                  {skill}
-                </span>
-              ))}
-              {freelance.skills.length > 3 && (
-                <span className="text-sm text-gray-500">
-                  +{freelance.skills.length - 3}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {freelance.favoriteTechnologies.length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Technologies préférées</h4>
-            <div className="flex flex-wrap gap-2">
-              {freelance.favoriteTechnologies.map((tech, index) => (
-                <span
-                  key={index}
-                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </Link>
   );

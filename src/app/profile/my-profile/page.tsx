@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { FaCamera, FaEdit, FaEye, FaPlus, FaTimes } from "react-icons/fa";
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
@@ -144,343 +145,331 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Mon Profil</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={() => router.push(`/profile/${session.user.id}`)}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200 flex items-center gap-2"
-              title="Voir mon profil public"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              <span>Voir profil public</span>
-            </button>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              {isEditing ? "Annuler" : "Modifier"}
-            </button>
-          </div>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Carte de profil principale */}
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        {/* En-tête avec fond dégradé */}
+        <div className="relative h-48 bg-gradient-to-r from-indigo-600 to-blue-500">
+          <div className="absolute inset-0 bg-grid-white/10"></div>
         </div>
 
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="relative group">
-            {formData.image ? (
-              <>
-                <Image
-                  src={formData.image}
-                  alt="Photo de profil"
-                  width={80}
-                  height={80}
-                  className="rounded-full"
-                />
-                {isEditing && (
-                  <label htmlFor="imageUpload" className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="white"
-                      className="w-8 h-8"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
-                      />
-                    </svg>
-                  </label>
-                )}
-              </>
-            ) : (
-              <>
-                <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
-                  <span className="text-gray-500 text-2xl">?</span>
+        <div className="relative px-8 pb-8">
+          {/* Avatar avec overlay d'édition */}
+          <div className="relative -mt-24 mb-4 flex justify-between items-start">
+            <div className="relative group">
+              {formData.image ? (
+                <div className="w-40 h-40 rounded-2xl border-4 border-white shadow-lg overflow-hidden">
+                  <Image
+                    src={formData.image}
+                    alt="Photo de profil"
+                    width={160}
+                    height={160}
+                    className="object-cover w-full h-full"
+                  />
                 </div>
-                {isEditing && (
-                  <label htmlFor="imageUpload" className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="white"
-                      className="w-8 h-8"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
-                      />
-                    </svg>
-                  </label>
-                )}
-              </>
-            )}
-            {isEditing && (
-              <input
-                type="file"
-                id="imageUpload"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
-            )}
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">{session.user.name}</h2>
-            <p className="text-gray-600">{session.user.email}</p>
-            <div className="flex gap-4 mt-2">
-              <div className="text-sm text-gray-600">
-                <span className="font-semibold text-gray-900">{formData.projects?.length || 0}</span> projets créés
-              </div>
-              <div className="text-sm text-gray-600">
-                <span className="font-semibold text-gray-900">{formData.collaborations?.length || 0}</span> collaborations
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {isEditing ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Nom</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Compétences</label>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Ajouter une compétence"
-                />
-                <button
-                  type="button"
-                  onClick={addSkill}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              ) : (
+                <div className="w-40 h-40 rounded-2xl border-4 border-white shadow-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                  <span className="text-4xl text-gray-400">
+                    {formData.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              {isEditing && (
+                <label
+                  htmlFor="imageUpload"
+                  className="absolute inset-0 flex items-center justify-center bg-black/50 
+                           opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-2xl"
                 >
-                  +
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                  >
-                    {skill}
+                  <FaCamera className="text-white text-2xl" />
+                  <input
+                    type="file"
+                    id="imageUpload"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Boutons d'action */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push(`/profile/${session?.user?.id}`)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-gray-700 
+                         shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <FaEye className="text-gray-500" />
+                <span>Voir profil public</span>
+              </button>
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-md hover:shadow-lg 
+                         transition-all duration-300 ${
+                  isEditing
+                    ? 'bg-gray-100 text-gray-700'
+                    : 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white'
+                }`}
+              >
+                {isEditing ? (
+                  <>
+                    <FaTimes />
+                    <span>Annuler</span>
+                  </>
+                ) : (
+                  <>
+                    <FaEdit />
+                    <span>Modifier</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {isEditing ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Champs de formulaire */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 
+                             focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 
+                             focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                    rows={4}
+                  />
+                </div>
+
+                {/* Compétences avec animation */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Compétences</label>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      placeholder="Ajouter une compétence"
+                      className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-500 
+                               focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                    />
                     <button
                       type="button"
-                      onClick={() => removeSkill(skill)}
-                      className="text-blue-600 hover:text-blue-800"
+                      onClick={addSkill}
+                      className="p-2 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 
+                               transition-colors duration-300"
                     >
-                      ×
+                      <FaPlus />
                     </button>
-                  </span>
-                ))}
-              </div>
-            </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-sm 
+                                 bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-700 
+                                 border border-indigo-100 group"
+                      >
+                        {skill}
+                        <button
+                          type="button"
+                          onClick={() => removeSkill(skill)}
+                          className="text-indigo-400 hover:text-indigo-600 transition-colors"
+                        >
+                          <FaTimes size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Technologies préférées (max 3)
-              </label>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={newFavTech}
-                  onChange={(e) => setNewFavTech(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Ajouter une technologie préférée"
-                  disabled={formData.favoriteTechnologies.length >= 3}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (newFavTech && !formData.favoriteTechnologies.includes(newFavTech) && formData.favoriteTechnologies.length < 3) {
-                      setFormData({
-                        ...formData,
-                        favoriteTechnologies: [...formData.favoriteTechnologies, newFavTech],
-                      });
-                      setNewFavTech('');
-                    }
-                  }}
-                  className={`${
-                    formData.favoriteTechnologies.length >= 3
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-blue-500 hover:bg-blue-600'
-                  } text-white px-4 py-2 rounded`}
-                  disabled={formData.favoriteTechnologies.length >= 3}
-                >
-                  +
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.favoriteTechnologies.map((tech, index) => (
-                  <span
-                    key={index}
-                    className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                  >
-                    {tech}
+                {/* Technologies préférées */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Technologies préférées (max 3)
+                  </label>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={newFavTech}
+                      onChange={(e) => setNewFavTech(e.target.value)}
+                      placeholder="Ajouter une technologie"
+                      disabled={formData.favoriteTechnologies.length >= 3}
+                      className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-500 
+                               focus:ring-2 focus:ring-indigo-200 transition-all duration-300 
+                               disabled:bg-gray-50 disabled:cursor-not-allowed"
+                    />
                     <button
                       type="button"
                       onClick={() => {
-                        setFormData({
-                          ...formData,
-                          favoriteTechnologies: formData.favoriteTechnologies.filter(t => t !== tech),
-                        });
+                        if (newFavTech && formData.favoriteTechnologies.length < 3) {
+                          setFormData({
+                            ...formData,
+                            favoriteTechnologies: [...formData.favoriteTechnologies, newFavTech],
+                          });
+                          setNewFavTech('');
+                        }
                       }}
-                      className="text-green-600 hover:text-green-800"
+                      disabled={formData.favoriteTechnologies.length >= 3}
+                      className={`p-2 rounded-xl transition-colors duration-300 ${
+                        formData.favoriteTechnologies.length >= 3
+                          ? 'bg-gray-300 cursor-not-allowed'
+                          : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                      }`}
                     >
-                      ×
+                      <FaPlus />
                     </button>
-                  </span>
-                ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.favoriteTechnologies.map((tech, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-sm 
+                                 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 
+                                 border border-green-100"
+                      >
+                        {tech}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              favoriteTechnologies: formData.favoriteTechnologies.filter(t => t !== tech),
+                            });
+                          }}
+                          className="text-green-400 hover:text-green-600 transition-colors"
+                        >
+                          <FaTimes size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Disponibilité */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Disponibilité
+                  </label>
+                  <select
+                    value={formData.availability}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      availability: e.target.value as 'disponible' | 'occupé' | 'en_recherche'
+                    })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 
+                             focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                  >
+                    <option value="disponible">Disponible</option>
+                    <option value="occupé">Occupé</option>
+                    <option value="en_recherche">En recherche</option>
+                  </select>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Disponibilité
-              </label>
-              <select
-                value={formData.availability}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  availability: e.target.value as 'disponible' | 'occupé' | 'en_recherche'
-                })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              >
-                <option value="disponible">Disponible</option>
-                <option value="occupé">Occupé</option>
-                <option value="en_recherche">En recherche</option>
-              </select>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                Enregistrer
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Annuler
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-medium">Description</h3>
-              <p className="text-gray-600">{formData.description || "Aucune description"}</p>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-medium">Compétences</h3>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.skills.length > 0 ? (
-                  formData.skills.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
-                    >
-                      {skill}
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-gray-500">Aucune compétence ajoutée</p>
-                )}
+              {/* Boutons de formulaire */}
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 
+                           text-white font-medium hover:shadow-lg transform hover:-translate-y-0.5 
+                           transition-all duration-300"
+                >
+                  Enregistrer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="px-6 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium 
+                           hover:bg-gray-200 transition-colors duration-300"
+                >
+                  Annuler
+                </button>
               </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium">Technologies préférées</h3>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.favoriteTechnologies.length > 0 ? (
-                  formData.favoriteTechnologies.map((tech, index) => (
-                    <span
-                      key={index}
-                      className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
-                    >
-                      {tech}
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-gray-500">Aucune technologie préférée ajoutée</p>
-                )}
+            </form>
+          ) : (
+            /* Mode affichage */
+            <div className="space-y-8">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{formData.name}</h1>
+                <p className="text-gray-500">{formData.email}</p>
+                <div className="flex gap-4 mt-2">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold text-indigo-600">{formData.projects?.length || 0}</span> projets créés
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold text-indigo-600">{formData.collaborations?.length || 0}</span> collaborations
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <h3 className="text-lg font-medium">Disponibilité</h3>
-              <div className="mt-2">
-                <span className={`px-2 py-1 rounded-full text-sm ${
-                  formData.availability === 'disponible' ? 'bg-green-100 text-green-800' :
-                  formData.availability === 'occupé' ? 'bg-red-100 text-red-800' :
-                  'bg-blue-100 text-blue-800'
+              {formData.description && (
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">À propos</h2>
+                  <p className="text-gray-600 leading-relaxed">{formData.description}</p>
+                </div>
+              )}
+
+              {formData.skills.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-3">Compétences</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 
+                                 text-indigo-700 border border-indigo-100"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {formData.favoriteTechnologies.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-3">Technologies préférées</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.favoriteTechnologies.map((tech, index) => (
+                      <span
+                        key={index}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 
+                                 text-green-700 border border-green-100"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-3">Disponibilité</h2>
+                <span className={`inline-flex px-4 py-2 rounded-xl text-sm font-medium ${
+                  formData.availability === 'disponible'
+                    ? 'bg-green-50 text-green-700 border border-green-100'
+                    : formData.availability === 'occupé'
+                    ? 'bg-red-50 text-red-700 border border-red-100'
+                    : 'bg-blue-50 text-blue-700 border border-blue-100'
                 }`}>
-                  {formData.availability?.replace('_', ' ')}
+                  {formData.availability.replace('_', ' ')}
                 </span>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

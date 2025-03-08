@@ -12,6 +12,7 @@ interface Collaborator {
 }
 
 interface Application {
+  _id: string;
   user: {
     _id: string;
     name: string;
@@ -20,6 +21,7 @@ interface Application {
   message: string;
   status: 'en_attente' | 'accepté' | 'refusé';
   createdAt: string;
+  type?: 'application' | 'mission_proposal';
 }
 
 interface AddCollaboratorModalProps {
@@ -39,16 +41,21 @@ export default function AddCollaboratorModal({
   currentCollaborators,
   applications = []
 }: AddCollaboratorModalProps) {
-  const [localApplications, setLocalApplications] = useState(applications);
+  const [localApplications, setLocalApplications] = useState<Application[]>([]);
   const [activeTab, setActiveTab] = useState<'manual' | 'applications'>('applications');
   const [username, setUsername] = useState('');
   const [role, setRole] = useState('developer');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Mettre à jour localApplications quand applications change
   useEffect(() => {
-    setLocalApplications(applications);
+    // Filtrer pour n'avoir que les candidatures en attente et non liées à des propositions de mission
+    const filteredApplications = applications.filter(
+      (app: Application) => 
+        app.type !== 'mission_proposal' && 
+        app.status === 'en_attente'
+    );
+    setLocalApplications(filteredApplications);
   }, [applications]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,27 +86,27 @@ export default function AddCollaboratorModal({
     }
   };
 
-  const handleAcceptApplication = async (userId: string) => {
+  const handleApplicationAction = async (userId: string, action: 'accept' | 'reject') => {
     try {
       setError('');
       setLoading(true);
 
-      const response = await fetch(`/api/projects/${projectId}/collaborators`, {
-        method: 'POST',
+      const response = await fetch(`/api/projects/${projectId}/applications`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
-          role: 'développeur',
-          applicationId: userId
+          action,
+          type: 'application'
         }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'Erreur lors de l\'ajout du collaborateur');
+        throw new Error(data.message || `Erreur lors du traitement de la candidature`);
       }
 
-      // Mettre à jour l'état local en supprimant la candidature acceptée
+      // Mettre à jour l'état local immédiatement
       setLocalApplications(prev => prev.filter(app => app.user._id !== userId));
       
       // Rafraîchir les données du projet
@@ -107,6 +114,7 @@ export default function AddCollaboratorModal({
 
     } catch (error) {
       setError((error as Error).message);
+      console.error('Erreur:', error);
     } finally {
       setLoading(false);
     }
@@ -115,121 +123,184 @@ export default function AddCollaboratorModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-[600px] max-h-[80vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Gérer les collaborateurs</h2>
+    <div className="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-[600px] max-h-[80vh] overflow-hidden shadow-2xl">
+        {/* En-tête */}
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6">
+          <h2 className="text-xl font-bold text-white">Gérer les collaborateurs</h2>
+        </div>
         
         {/* Onglets */}
-        <div className="flex border-b mb-4">
+        <div className="flex border-b">
           <button
-            className={`px-4 py-2 ${activeTab === 'applications' ? 'border-b-2 border-blue-500' : ''}`}
+            className={`flex-1 px-6 py-4 text-sm font-medium transition-colors relative
+              ${activeTab === 'applications' 
+                ? 'text-blue-600' 
+                : 'text-gray-500 hover:text-gray-700'}`}
             onClick={() => setActiveTab('applications')}
           >
             Candidatures ({localApplications.length})
+            {activeTab === 'applications' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+            )}
           </button>
           <button
-            className={`px-4 py-2 ${activeTab === 'manual' ? 'border-b-2 border-blue-500' : ''}`}
+            className={`flex-1 px-6 py-4 text-sm font-medium transition-colors relative
+              ${activeTab === 'manual' 
+                ? 'text-blue-600' 
+                : 'text-gray-500 hover:text-gray-700'}`}
             onClick={() => setActiveTab('manual')}
           >
             Ajouter manuellement
+            {activeTab === 'manual' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+            )}
           </button>
         </div>
 
-        {activeTab === 'applications' ? (
-          <div className="space-y-4">
-            {localApplications.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Aucune candidature en attente</p>
-            ) : (
-              localApplications.map((application) => (
-                <div key={application.user._id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      {application.user.image && (
-                        <img
-                          src={application.user.image}
-                          alt={application.user.name}
-                          className="w-10 h-10 rounded-full"
-                        />
-                      )}
-                      <div>
-                        <h3 className="font-medium">{application.user.name}</h3>
-                        <p className="text-sm text-gray-500">
-                          Candidature envoyée {new Date(application.createdAt).toLocaleDateString()}
-                        </p>
+        <div className="p-6">
+          {activeTab === 'applications' ? (
+            <div className="space-y-4">
+              {localApplications.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500">Aucune candidature en attente</p>
+                </div>
+              ) : (
+                localApplications.map((application) => (
+                  <div key={`${application._id || ''}-${application.user._id}`} 
+                       className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        {application.user.image ? (
+                          <img
+                            src={application.user.image}
+                            alt={application.user.name}
+                            className="w-12 h-12 rounded-full ring-2 ring-white shadow-md"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 
+                                      flex items-center justify-center text-white font-bold text-xl shadow-md">
+                            {application.user.name[0]}
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{application.user.name}</h3>
+                          <p className="text-sm text-gray-500">
+                            Candidature du {new Date(application.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleApplicationAction(application.user._id, 'accept')}
+                          disabled={loading}
+                          className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white 
+                                   rounded-lg font-medium hover:from-green-600 hover:to-emerald-600 
+                                   transition-all duration-200 disabled:opacity-50 transform hover:-translate-y-0.5"
+                        >
+                          Accepter
+                        </button>
+                        <button
+                          onClick={() => handleApplicationAction(application.user._id, 'reject')}
+                          disabled={loading}
+                          className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white 
+                                   rounded-lg font-medium hover:from-red-600 hover:to-pink-600 
+                                   transition-all duration-200 disabled:opacity-50 transform hover:-translate-y-0.5"
+                        >
+                          Refuser
+                        </button>
+                        <Link
+                          href={`/profile/${application.user._id}`}
+                          target="_blank"
+                          className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium 
+                                   hover:underline transition-colors"
+                        >
+                          Voir le profil
+                        </Link>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleAcceptApplication(application.user._id)}
-                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                      >
-                        Accepter
-                      </button>
-                      <Link
-                        href={`/profile/${application.user._id}`}
-                        target="_blank"
-                        className="text-blue-500 hover:text-blue-600"
-                      >
-                        Voir le profil
-                      </Link>
-                    </div>
+                    {application.message && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
+                        <p className="text-sm text-gray-700">{application.message}</p>
+                      </div>
+                    )}
                   </div>
-                  {application.message && (
-                    <p className="mt-2 text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                      {application.message}
-                    </p>
-                  )}
+                ))
+              )}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nom d'utilisateur
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 
+                           focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rôle
+                </label>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 
+                           focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                >
+                  <option value="developer">Développeur</option>
+                  <option value="designer">Designer</option>
+                  <option value="project_manager">Chef de projet</option>
+                </select>
+              </div>
+              {error && (
+                <div className="p-4 bg-red-50 text-red-600 rounded-lg text-sm">
+                  {error}
                 </div>
-              ))
-            )}
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nom d'utilisateur
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rôle
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full p-2 border rounded"
-              >
-                <option value="developer">Développeur</option>
-                <option value="designer">Designer</option>
-                <option value="project_manager">Chef de projet</option>
-              </select>
-            </div>
-            {error && <p className="text-red-500 mb-4">{error}</p>}
-            <div className="flex justify-end space-x-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-              >
-                {loading ? "Ajout..." : "Ajouter"}
-              </button>
-            </div>
-          </form>
-        )}
+              )}
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-2.5 text-gray-700 font-medium hover:text-gray-900 
+                           transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 
+                           text-white rounded-lg font-medium hover:from-blue-600 
+                           hover:to-indigo-600 transition-all duration-200 
+                           disabled:opacity-50 transform hover:-translate-y-0.5"
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" 
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Ajout en cours...
+                    </span>
+                  ) : "Ajouter"}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -120,122 +120,192 @@ export default function CreateProjectModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Créer un nouveau projet</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Titre
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-2 border rounded"
-              required
-            />
+    <div className="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-[600px] max-h-[85vh] overflow-y-auto shadow-2xl">
+        {/* En-tête */}
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 sticky top-0 z-10">
+          <h2 className="text-xl font-bold text-white flex items-center gap-3">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Créer un nouveau projet
+          </h2>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Informations de base */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Titre du projet
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 
+                         focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                         transition-all duration-200"
+                placeholder="Ex: Application de gestion de tâches"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 
+                         focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                         transition-all duration-200"
+                rows={4}
+                placeholder="Décrivez votre projet en quelques phrases..."
+                required
+              />
+            </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
+
+          {/* Type de projet */}
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Type de projet
             </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2 border rounded"
-              rows={4}
-              required
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <label className={`
+                relative flex flex-col items-center p-4 rounded-xl cursor-pointer
+                border-2 transition-all duration-200
+                ${projectType === 'personnel' 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-200'}
+              `}>
+                <input
+                  type="radio"
+                  value="personnel"
+                  checked={projectType === 'personnel'}
+                  onChange={(e) => setProjectType(e.target.value as 'personnel' | 'collaboratif')}
+                  className="sr-only"
+                />
+                <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="font-medium text-gray-900">Personnel</span>
+                <span className="text-xs text-gray-500 text-center mt-1">
+                  Projet individuel sans recrutement
+                </span>
+              </label>
+
+              <label className={`
+                relative flex flex-col items-center p-4 rounded-xl cursor-pointer
+                border-2 transition-all duration-200
+                ${projectType === 'collaboratif' 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-200'}
+              `}>
+                <input
+                  type="radio"
+                  value="collaboratif"
+                  checked={projectType === 'collaboratif'}
+                  onChange={(e) => setProjectType(e.target.value as 'personnel' | 'collaboratif')}
+                  className="sr-only"
+                />
+                <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className="font-medium text-gray-900">Collaboratif</span>
+                <span className="text-xs text-gray-500 text-center mt-1">
+                  Ouvert aux collaborations
+                </span>
+              </label>
+            </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+
+          {/* Compétences requises */}
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
               Compétences requises
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {AVAILABLE_SKILLS.map((skill) => (
-                <label key={skill} className="flex items-center space-x-2">
+                <label key={skill} className={`
+                  flex items-center gap-2 p-3 rounded-xl cursor-pointer
+                  border transition-all duration-200
+                  ${selectedSkills.includes(skill)
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-200'}
+                `}>
                   <input
                     type="checkbox"
                     checked={selectedSkills.includes(skill)}
                     onChange={() => toggleSkill(skill)}
-                    className="rounded text-blue-500"
+                    className="rounded text-blue-500 focus:ring-blue-500"
                   />
                   <span className="text-sm">{skill}</span>
                 </label>
               ))}
             </div>
           </div>
-          <div className="mb-4">
+
+          {/* URL GitHub */}
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Type de projet
+              URL GitHub (optionnel)
             </label>
-            <div className="flex gap-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="personnel"
-                  checked={projectType === 'personnel'}
-                  onChange={(e) => setProjectType(e.target.value as 'personnel' | 'collaboratif')}
-                  className="mr-2"
-                />
-                <span className="text-sm">
-                  Personnel
-                  <span className="block text-xs text-gray-500">
-                    Projet individuel sans recrutement
-                  </span>
-                </span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="collaboratif"
-                  checked={projectType === 'collaboratif'}
-                  onChange={(e) => setProjectType(e.target.value as 'personnel' | 'collaboratif')}
-                  className="mr-2"
-                />
-                <span className="text-sm">
-                  Collaboratif
-                  <span className="block text-xs text-gray-500">
-                    Ouvert aux collaborations
-                  </span>
-                </span>
-              </label>
-            </div>
+            <input
+              type="url"
+              name="githubUrl"
+              value={formData.githubUrl}
+              onChange={handleChange}
+              placeholder="https://github.com/username/repository"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 
+                       focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                       transition-all duration-200"
+            />
           </div>
+
+          {/* États de chargement et erreurs */}
           {(loading || isGenerating) && (
-            <div className="mb-4 text-sm text-gray-600">
-              {isGenerating ? "Génération du contenu en cours..." : "Création du projet..."}
+            <div className="flex items-center gap-3 p-4 bg-blue-50 text-blue-700 rounded-xl">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" 
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span>{isGenerating ? "Génération du contenu..." : "Création du projet..."}</span>
             </div>
           )}
 
-          {specifications && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">
-                Cahier des charges généré
-              </h3>
-              <div className="max-h-40 overflow-y-auto bg-gray-50 p-2 rounded text-sm">
-                {specifications}
-              </div>
+          {error && (
+            <div className="p-4 bg-red-50 text-red-600 rounded-xl">
+              {error}
             </div>
           )}
-          
-          {error && <p className="text-red-500 mb-4">{error}</p>}
-          
-          <div className="flex justify-end space-x-2">
+
+          {/* Boutons d'action */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              className="px-6 py-2.5 text-gray-700 font-medium hover:text-gray-900 
+                       transition-colors"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={loading || isGenerating}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 
+                       text-white rounded-xl font-medium hover:from-blue-600 
+                       hover:to-indigo-600 transition-all duration-200 
+                       disabled:opacity-50 transform hover:-translate-y-0.5 
+                       disabled:hover:transform-none"
             >
-              {loading || isGenerating ? "Création en cours..." : "Créer"}
+              {loading || isGenerating ? "Création en cours..." : "Créer le projet"}
             </button>
           </div>
         </form>

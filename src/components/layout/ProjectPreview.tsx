@@ -29,10 +29,10 @@ export default function ProjectPreview({ project, isOwner, collaborationRole }: 
   const router = useRouter();
   
   const statusColors = {
-    'en développement': 'bg-yellow-100 text-yellow-800',
-    'en production': 'bg-green-100 text-green-800',
-    'en pause': 'bg-blue-100 text-blue-800',
-    'abandonné': 'bg-red-100 text-red-800',
+    'en développement': 'from-yellow-400 to-orange-400 text-white',
+    'en production': 'from-green-400 to-emerald-400 text-white',
+    'en pause': 'from-blue-400 to-indigo-400 text-white',
+    'abandonné': 'from-red-400 to-pink-400 text-white',
   };
 
   const handleAuthorClick = (e: React.MouseEvent) => {
@@ -42,74 +42,80 @@ export default function ProjectPreview({ project, isOwner, collaborationRole }: 
   };
 
   return (
-    <div className="w-[280px] h-[300px]">
-      <Link href={`/projects/${project._id}`} className="h-full block">
-        <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
-          <div className="relative h-[160px] w-full flex-shrink-0">
+    <div className="w-[280px] group">
+      <Link href={`/projects/${project._id}`} className="block">
+        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 
+                    transform hover:-translate-y-1 overflow-hidden">
+          <div className="relative h-[160px] w-full">
             <Image
               src={project.img || '/default-project.jpg'}
               alt={project.title}
               fill
-              className="object-cover rounded-t-lg"
+              className="object-cover transition-transform duration-300 group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-60 rounded-t-lg" />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent" />
             
-            <div className="absolute inset-0 p-3 flex flex-col text-white">
-              <div className="flex justify-between items-start gap-2 mb-1">
-                <h2 className="text-base font-semibold truncate flex-grow">
+            <div className="absolute inset-0 p-4 flex flex-col justify-between">
+              <div className="flex justify-between items-start gap-2">
+                <h2 className="text-lg font-bold text-white drop-shadow-md line-clamp-2">
                   {project.title}
                 </h2>
-                <div className="flex flex-col gap-1 items-end">
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs whitespace-nowrap ${
-                      statusColors[project.status]
-                    }`}
-                  >
+                <div className="flex flex-col gap-2 items-end">
+                  <span className={`
+                    px-3 py-1 rounded-full text-xs font-medium shadow-lg
+                    bg-gradient-to-r ${statusColors[project.status]}
+                  `}>
                     {project.status}
                   </span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs whitespace-nowrap ${
-                      project.projectType === 'collaboratif' 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
+                  
+                  <span className={`
+                    px-3 py-1 rounded-full text-xs font-medium shadow-lg
+                    ${project.projectType === 'collaboratif' 
+                      ? 'bg-gradient-to-r from-purple-400 to-pink-400 text-white' 
+                      : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700'}
+                  `}>
                     {project.projectType === 'collaboratif' ? 'Collaboratif' : 'Personnel'}
                   </span>
                 </div>
               </div>
-              <p className="text-xs line-clamp-2 text-gray-100">
+
+              <p className="text-sm text-gray-200 line-clamp-2">
                 {project.description}
               </p>
             </div>
 
             {collaborationRole && (
-              <div className="absolute top-2 left-2">
-                <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
+              <div className="absolute top-4 left-4">
+                <span className="bg-gradient-to-r from-purple-500 to-pink-500 
+                             text-white px-3 py-1 rounded-full text-xs font-medium 
+                             shadow-lg">
                   {collaborationRole}
                 </span>
               </div>
             )}
           </div>
-          <div className="p-3 flex flex-col flex-grow">
-            <div className="flex-grow overflow-y-auto">
-              <div className="flex flex-wrap gap-1">
-                {project.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full text-xs inline-block"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
+
+          <div className="p-4 space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {project.skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 
+                           text-blue-700 rounded-full text-xs font-medium 
+                           transition-transform hover:scale-105"
+                >
+                  {skill}
+                </span>
+              ))}
             </div>
-            <div className="flex justify-between items-center text-xs pt-2 border-t mt-2">
-              <div className="flex items-center space-x-1">
+
+            <div className="flex justify-between items-center text-sm pt-2 border-t">
+              <div className="flex items-center gap-2">
                 <span className="text-gray-500">Par</span>
                 <button 
                   onClick={handleAuthorClick}
-                  className="font-medium hover:text-blue-600 transition-colors"
+                  className="font-medium text-blue-600 hover:text-blue-700 
+                           transition-colors hover:underline"
                 >
                   {project.userId.name}
                 </button>

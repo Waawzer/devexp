@@ -3,6 +3,7 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Provider from '@/components/providers/SessionProvider';
+import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: 'DevExp - Plateforme de collaboration',
@@ -22,6 +23,7 @@ export default function RootLayout({
           <main className="flex-grow container mx-auto px-4 py-8">{children}</main>
           <Footer />
         </Provider>
+        <Toaster position="top-right" />
       </body>
     </html>
   );

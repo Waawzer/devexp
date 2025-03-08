@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FaGithub, FaProjectDiagram, FaBook, FaUsers } from 'react-icons/fa';
 import EditProjectModal from "@/components/modals/EditProjectModal";
@@ -10,6 +10,8 @@ import TreeModal from "@/components/modals/TreeModal";
 import SpecificationsModal from "@/components/modals/SpecificationsModal";
 import AddCollaboratorModal from "@/components/modals/AddCollaboratorModal";
 import ImageGallery from "@/components/layout/ImageGallery";
+import { toast } from "react-hot-toast";
+import MissionProposalActions from '@/components/notifications/MissionProposalActions';
 
 interface Project {
   _id: string;
@@ -74,8 +76,10 @@ function ApplyModal({ isOpen, onClose, projectId }: {
         throw new Error('Erreur lors de l\'envoi de la candidature');
       }
 
+      toast.success('Candidature envoyée avec succès');
       onClose();
     } catch (error) {
+      toast.error('Erreur lors de l\'envoi de la candidature');
       setError((error as Error).message);
     } finally {
       setLoading(false);
@@ -128,6 +132,8 @@ function ApplyModal({ isOpen, onClose, projectId }: {
 export default function ProjectPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const notificationId = searchParams.get('notification');
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -136,10 +142,49 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [isAddCollaboratorModalOpen, setIsAddCollaboratorModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [pendingProposal, setPendingProposal] = useState<any>(null);
+  const [notification, setNotification] = useState<any>(null);
 
   useEffect(() => {
     fetchProject();
-  }, [params.id]);
+    const fetchProposal = async () => {
+      if (!notificationId) return;
+
+      try {
+        const response = await fetch(`/api/projects/${params.id}/applications?notificationId=${notificationId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPendingProposal(data);
+        } else {
+          console.error('Erreur lors de la récupération de la proposition');
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+      }
+    };
+
+    fetchProposal();
+  }, [notificationId, params.id]);
+
+  useEffect(() => {
+    const fetchNotification = async () => {
+      if (!notificationId || !session?.user?.id) return;
+
+      try {
+        const response = await fetch(`/api/notifications/${notificationId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.to === session.user.id) {
+            setNotification(data);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+      }
+    };
+
+    fetchNotification();
+  }, [notificationId, session?.user?.id]);
 
   const fetchProject = async () => {
     try {
@@ -202,6 +247,43 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleProposalAction = async (action: 'accept' | 'reject') => {
+    try {
+      const response = await fetch(`/api/projects/${params.id}/applications`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          notificationId,
+          action,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success(
+          action === 'accept' 
+            ? 'Proposition acceptée avec succès' 
+            : 'Proposition refusée'
+        );
+        
+        // Mettre à jour l'état local pour masquer les boutons
+        setNotification(null);
+        
+        // Rafraîchir les données du projet
+        await fetchProject();
+        
+        // Rediriger vers la page du projet sans le paramètre de notification
+        router.replace(`/projects/${params.id}`);
+      } else {
+        toast.error("Une erreur s'est produite");
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error("Une erreur s'est produite");
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Chargement du projet...</div>;
   }
@@ -214,142 +296,168 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* En-tête du projet */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
-        <div className="relative h-80">
-          <img
-            src={project.img || '/dev.bmp'}
-            alt={project.title}
-            className="w-full h-full object-cover"
-          />
-          {/* Overlay pour le statut */}
+      {/* En-tête du projet avec effet de parallaxe */}
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 transform hover:scale-[1.01] transition-transform duration-300">
+        <div className="relative h-96">
+          <div className="absolute inset-0">
+            <img
+              src={project.img || '/dev.bmp'}
+              alt={project.title}
+              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+          </div>
+
+          {/* Badges de statut avec animation */}
           <div className="absolute top-4 right-4 flex flex-col gap-2">
-            <span className="bg-white/90 px-4 py-2 rounded-full text-sm font-medium">
+            <span className="bg-white/90 px-4 py-2 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm animate-fade-in">
               {project.status}
             </span>
-            <span className={`px-4 py-2 rounded-full text-sm font-medium ${
+            <span className={`px-4 py-2 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm animate-fade-in-delay ${
               project.projectType === 'collaboratif' 
-                ? 'bg-purple-500 text-white' 
-                : 'bg-gray-500 text-white'
+                ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white' 
+                : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
             }`}>
               {project.projectType === 'collaboratif' ? 'Projet collaboratif' : 'Projet personnel'}
             </span>
           </div>
-        </div>
 
-        {/* Section titre et actions */}
-        <div className="p-8">
-          <div className="flex justify-between items-start gap-4">
-            <h1 className="text-3xl font-bold">{project.title}</h1>
-            
+          {/* Titre sur l'image avec effet de glassmorphism */}
+          <div className="absolute bottom-0 left-0 right-0 p-8 bg-white/10 backdrop-blur-md">
+            <h1 className="text-4xl font-bold text-white mb-2">{project.title}</h1>
             <div className="flex items-center gap-3">
-              {/* Actions principales */}
-              <div className="flex gap-2">
-                {project.githubUrl && (
-                  <a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-600 hover:text-gray-900 transition-colors p-2"
-                    title="Voir sur GitHub"
-                  >
-                    <FaGithub size={20} />
-                  </a>
-                )}
-                {project.specifications && (
-                  <button
-                    onClick={() => setIsSpecsModalOpen(true)}
-                    className="text-gray-600 hover:text-gray-900 transition-colors p-2"
-                    title="Voir les spécifications"
-                  >
-                    <FaBook size={20} />
-                  </button>
-                )}
-                {project.githubUrl && (
-                  <button
-                    onClick={() => setIsTreeModalOpen(true)}
-                    className="text-gray-600 hover:text-gray-900 transition-colors p-2"
-                    title="Voir l'arborescence"
-                  >
-                    <FaProjectDiagram size={20} />
-                  </button>
-                )}
-                {isOwner && (
-                  <button
-                    onClick={() => setIsAddCollaboratorModalOpen(true)}
-                    className="text-gray-600 hover:text-gray-900 transition-colors p-2"
-                    title="Gérer les collaborateurs"
-                  >
-                    <FaUsers size={20} />
-                  </button>
-                )}
-              </div>
-
-              {/* Menu d'actions pour le propriétaire */}
-              {isOwner && (
-                <div className="relative">
-                  <button 
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                    aria-label="Menu du projet"
-                  >
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                    </svg>
-                  </button>
-                  
-                  {isMenuOpen && (
-                    <>
-                      <div 
-                        className="fixed inset-0 z-40" 
-                        onClick={() => setIsMenuOpen(false)}
-                      />
-                      
-                      <div 
-                        className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg z-50 border border-gray-200"
-                      >
-                        <div className="py-0.5 flex flex-col">
-                          <button
-                            onClick={() => {
-                              setIsEditModalOpen(true);
-                              setIsMenuOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            Modifier
-                          </button>
-                          <button
-                            onClick={() => {
-                              handleDelete();
-                              setIsMenuOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100"
-                          >
-                            Supprimer
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
+              <Link 
+                href={`/profile/${project.userId._id}`}
+                className="text-white/90 hover:text-white transition-colors flex items-center gap-2"
+              >
+                <span className="text-sm">Par {project.userId.name}</span>
+              </Link>
             </div>
           </div>
+        </div>
 
-          {/* Description */}
-          <div className="mt-6 prose prose-gray max-w-none">
+        {/* Actions et description */}
+        <div className="p-8">
+          <div className="flex justify-between items-start gap-4 mb-8">
+            {/* Actions principales avec animations au survol */}
+            <div className="flex gap-4">
+              {project.githubUrl && (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 
+                           transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  <FaGithub size={20} />
+                  <span>GitHub</span>
+                </a>
+              )}
+              {project.specifications && (
+                <button
+                  onClick={() => setIsSpecsModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 
+                           text-blue-600 transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  <FaBook size={20} />
+                  <span>Spécifications</span>
+                </button>
+              )}
+              {project.githubUrl && (
+                <button
+                  onClick={() => setIsTreeModalOpen(true)}
+                  className="text-gray-600 hover:text-gray-900 transition-colors p-2"
+                  title="Voir l'arborescence"
+                >
+                  <FaProjectDiagram size={20} />
+                </button>
+              )}
+              {isOwner && (
+                <button
+                  onClick={() => setIsAddCollaboratorModalOpen(true)}
+                  className="text-gray-600 hover:text-gray-900 transition-colors p-2"
+                  title="Gérer les collaborateurs"
+                >
+                  <FaUsers size={20} />
+                </button>
+              )}
+            </div>
+
+            {/* Menu d'actions propriétaire avec effet de glassmorphism */}
+            {isOwner && (
+              <div className="relative">
+                <button 
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="p-3 hover:bg-gray-100 rounded-full transition-all duration-300
+                           transform hover:scale-110"
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                  </svg>
+                </button>
+                
+                {isMenuOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setIsMenuOpen(false)}
+                    />
+                    
+                    <div className="absolute right-0 mt-2 w-48 bg-white/80 backdrop-blur-lg rounded-xl
+                                  shadow-xl z-50 border border-gray-200/50 overflow-hidden">
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            setIsEditModalOpen(true);
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80
+                                   transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          <span>Modifier</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleDelete();
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50/80
+                                   transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <span>Supprimer</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Description avec style markdown */}
+          <div className="prose prose-lg prose-gray max-w-none">
             {project.description.split('\n').map((paragraph, index) => {
-              // Si le paragraphe commence par "•", c'est une puce
               if (paragraph.trim().startsWith('•')) {
                 return (
-                  <div key={index} className="pl-4">
-                    <p className="mb-1">{paragraph}</p>
+                  <div key={index} className="pl-6 my-2">
+                    <p className="flex items-center gap-2 text-gray-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                      {paragraph.trim().substring(1)}
+                    </p>
                   </div>
                 );
               }
-              // Sinon c'est un paragraphe normal
               return (
-                <p key={index} className="mb-4 leading-relaxed">
+                <p key={index} className="mb-4 leading-relaxed text-gray-700">
                   {paragraph}
                 </p>
               );
@@ -358,31 +466,39 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      {/* Grille de contenu */}
+      {/* Grille de contenu avec animation au scroll */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Colonne principale */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Section captures d'écran */}
+          {/* Section captures d'écran avec effet de carte */}
           {project.images && project.images.length > 0 && (
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Captures d'écran</h2>
+            <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:scale-[1.01] 
+                          transition-all duration-300">
+              <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 
+                           bg-clip-text text-transparent">
+                Captures d'écran
+              </h2>
               <ImageGallery images={project.images} />
             </div>
           )}
-
-          {/* Autres sections potentielles */}
         </div>
 
         {/* Barre latérale */}
         <div className="space-y-8">
           {/* Section compétences */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Compétences requises</h2>
+          <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:scale-[1.01] 
+                        transition-all duration-300">
+            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 
+                         bg-clip-text text-transparent">
+              Compétences requises
+            </h2>
             <div className="flex flex-wrap gap-2">
               {project.skills.map((skill, index) => (
                 <span
                   key={index}
-                  className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r 
+                           from-blue-50 to-indigo-50 text-blue-700 border border-blue-100
+                           hover:shadow-md transition-all duration-300"
                 >
                   {skill}
                 </span>
@@ -392,27 +508,33 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
           {/* Section collaborateurs */}
           {project.collaborators && project.collaborators.length > 0 && (
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Équipe</h2>
-              <div className="space-y-3">
+            <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:scale-[1.01] 
+                          transition-all duration-300">
+              <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 
+                           bg-clip-text text-transparent">
+                Équipe
+              </h2>
+              <div className="space-y-4">
                 {project.collaborators.map((collab, index) => (
-                  <div key={index} className="flex items-center justify-between group">
-                    <div className="flex items-center gap-2">
+                  <div key={index} className="flex items-center justify-between group p-3 rounded-lg
+                                            hover:bg-gray-50 transition-all duration-300">
+                    <div className="flex items-center gap-3">
                       <Link
                         href={`/profile/${collab.user._id}`}
-                        className="text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
                       >
                         {collab.user.name}
                       </Link>
-                      <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      <span className="text-sm px-3 py-1 rounded-full bg-gradient-to-r 
+                                     from-gray-50 to-gray-100 text-gray-700 border border-gray-200">
                         {collab.role}
                       </span>
                     </div>
                     {isOwner && (
                       <button
                         onClick={() => handleRemoveCollaborator(collab.user._id)}
-                        className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Retirer le collaborateur"
+                        className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 
+                                 transition-all duration-300 transform hover:scale-110"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -435,43 +557,62 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           )}
 
           {/* Section informations */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Informations</h2>
-            <div className="space-y-2 text-sm text-gray-600">
-              <p>Créé le : {new Date(project.createdAt).toLocaleDateString()}</p>
-              <p>Par : <Link href={`/profile/${project.userId._id}`} className="text-blue-600 hover:text-blue-800">{project.userId.name}</Link></p>
+          <div className="bg-white rounded-2xl shadow-xl p-8 transform hover:scale-[1.01] 
+                        transition-all duration-300">
+            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 
+                         bg-clip-text text-transparent">
+              Informations
+            </h2>
+            <div className="space-y-3">
+              <p className="flex items-center gap-2 text-gray-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Créé le : {new Date(project.createdAt).toLocaleDateString()}</span>
+              </p>
+              <p className="flex items-center gap-2 text-gray-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Par : </span>
+                <Link 
+                  href={`/profile/${project.userId._id}`} 
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  {project.userId.name}
+                </Link>
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Ajouter un bouton "Postuler" si c'est un projet collaboratif et que l'utilisateur n'est pas le propriétaire */}
+      {/* Section postuler avec effet de glassmorphism */}
       {project.projectType === 'collaboratif' && !isOwner && (
-        <>
-          <div className="mt-4 p-4 bg-purple-50 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-purple-800">
-                  Ce projet recrute !
-                </h3>
-                <p className="text-sm text-purple-600">
-                  Vous pouvez postuler pour rejoindre l'équipe de développement.
-                </p>
-              </div>
-              <button
-                onClick={() => setIsApplyModalOpen(true)}
-                className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                Postuler
-              </button>
+        <div className="mt-8 p-8 rounded-2xl bg-gradient-to-r from-purple-500/10 to-indigo-500/10 
+                       backdrop-blur-sm border border-purple-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 
+                           bg-clip-text text-transparent">
+                Ce projet recrute !
+              </h3>
+              <p className="text-gray-600 mt-2">
+                Vous pouvez postuler pour rejoindre l'équipe de développement.
+              </p>
             </div>
+            <button
+              onClick={() => setIsApplyModalOpen(true)}
+              className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 
+                       text-white font-medium hover:shadow-lg transform hover:-translate-y-0.5 
+                       transition-all duration-300"
+            >
+              Postuler
+            </button>
           </div>
-          <ApplyModal
-            isOpen={isApplyModalOpen}
-            onClose={() => setIsApplyModalOpen(false)}
-            projectId={project._id}
-          />
-        </>
+        </div>
       )}
 
       {/* Modals */}

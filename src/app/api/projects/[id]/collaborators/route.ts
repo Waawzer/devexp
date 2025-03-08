@@ -61,10 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 }
 
 // Ajout de la route DELETE dans le même fichier
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -72,32 +69,33 @@ export async function DELETE(
     }
 
     await dbConnect();
-    const { userId } = await req.json(); // Récupérer l'ID du collaborateur à supprimer du body
+    const { userId } = await req.json();
 
     const project = await Project.findById(params.id);
     if (!project) {
       return NextResponse.json({ message: 'Projet non trouvé' }, { status: 404 });
     }
 
-    // Vérifier que l'utilisateur actuel est le propriétaire du projet
+    // Vérifier que l'utilisateur est le propriétaire du projet
     if (project.userId.toString() !== session.user.id) {
-      return NextResponse.json(
-        { message: 'Non autorisé à modifier les collaborateurs' },
-        { status: 403 }
-      );
+      return NextResponse.json({ message: 'Non autorisé' }, { status: 403 });
     }
 
-    // Supprimer le collaborateur
+    // Supprimer le collaborateur ET sa candidature
     const updatedProject = await Project.findByIdAndUpdate(
       params.id,
       {
-        $pull: {
-          collaborators: { user: userId }
+        $pull: { 
+          collaborators: { user: userId },
+          applications: { user: userId }  // Supprimer complètement la candidature
         }
       },
       { new: true }
-    ).populate('collaborators.user', 'name _id')
-      .populate('applications.user', 'name image');
+    );
+
+    if (!updatedProject) {
+      return NextResponse.json({ message: 'Projet non trouvé' }, { status: 404 });
+    }
 
     return NextResponse.json(updatedProject);
   } catch (error) {

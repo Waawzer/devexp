@@ -11,21 +11,32 @@ export default function SpecificationsModal({ isOpen, onClose, specifications }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Cahier des charges</h2>
+    <div className="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] shadow-2xl overflow-hidden">
+        {/* En-tête */}
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 sticky top-0 z-10 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-white flex items-center gap-3">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Cahier des charges
+          </h2>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-xl"
+            className="text-white/80 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
           >
-            ✕
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
         
-        <article className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-gray-800 prose-p:text-gray-600 prose-strong:text-gray-800 prose-li:text-gray-600">
-          <ReactMarkdown>{specifications}</ReactMarkdown>
-        </article>
+        <div className="p-8 overflow-y-auto max-h-[70vh]">
+          <article className="prose prose-lg max-w-none dark:prose-invert">
+            <ReactMarkdown>{specifications}</ReactMarkdown>
+          </article>
+        </div>
       </div>
     </div>
   );

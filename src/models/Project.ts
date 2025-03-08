@@ -53,13 +53,14 @@ const ProjectSchema = new Schema({
     }
   }],
   applications: [{
-    user: { 
+    user: {
       type: Schema.Types.ObjectId,
-      ref: 'User',  // Important : référence au modèle User
-      required: true
+      ref: 'User'
     },
-    message: {
+    message: String,
+    type: {
       type: String,
+      enum: ['application', 'mission_proposal'],
       required: true
     },
     status: {
@@ -67,10 +68,7 @@ const ProjectSchema = new Schema({
       enum: ['en_attente', 'accepté', 'refusé'],
       default: 'en_attente'
     },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
+    createdAt: Date
   }],
   githubUrl: {
     type: String,
