@@ -142,13 +142,6 @@ export default function Header() {
           DevExp
         </Link>
         <nav className="space-x-4 flex items-center">
-          <Link href="/projects" className="hover:text-gray-300 transition-colors">
-            Projets
-          </Link>
-          <Link href="/profile" className="hover:text-gray-300 transition-colors">
-            Profils
-          </Link>
-          
           {status === "loading" ? (
             <div className="animate-pulse bg-gray-600 h-8 w-20 rounded" />
           ) : session?.user ? (

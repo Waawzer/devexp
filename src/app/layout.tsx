@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import Layout from '@/components/layout/Layout';
 import Provider from '@/components/providers/SessionProvider';
 import { Toaster } from 'react-hot-toast';
 
@@ -19,9 +18,9 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
         <Provider>
-          <Header />
-          <main className="flex-grow container mx-auto px-4 py-8">{children}</main>
-          <Footer />
+          <Layout>
+            {children}
+          </Layout>
         </Provider>
         <Toaster position="top-right" />
       </body>

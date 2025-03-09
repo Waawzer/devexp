@@ -314,7 +314,7 @@ export default function UserProfilePage() {
       {/* Carte de profil principale */}
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
         {/* En-tête avec fond dégradé */}
-        <div className="relative h-48 bg-gradient-to-r from-indigo-600 to-blue-500">
+        <div className="relative h-48 bg-gradient-to-r from-indigo-600 to-blue-500 mb-4">
           <div className="absolute inset-0 bg-grid-white/10"></div>
         </div>
 
@@ -366,15 +366,13 @@ export default function UserProfilePage() {
                     <button
                       onClick={() => setIsMissionModalOpen(true)}
                       disabled={userData?.user.availability === 'occupé'}
-                      className={`
-                        px-6 py-3 rounded-xl font-medium shadow-md
-                        transition-all duration-300 transform hover:-translate-y-0.5
-                        flex items-center gap-2
-                        ${userData?.user.availability !== 'occupé'
-                          ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:shadow-lg'
-                          : 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                        }
-                      `}
+                      className={`px-6 py-3 rounded-xl font-medium shadow-md
+                                  transition-all duration-300 transform hover:-translate-y-0.5
+                                  flex items-center gap-2
+                                  ${userData?.user.availability !== 'occupé'
+                                    ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:shadow-lg'
+                                    : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                  }`}
                     >
                       <FaEnvelope />
                       {userData?.user.availability !== 'occupé' ? 'Proposer une mission' : 'Non disponible'}
@@ -441,11 +439,9 @@ export default function UserProfilePage() {
                         <ProjectPreview 
                           project={project}
                           isOwner={false}
-                          collaborationRole={
-                            project.collaborators?.find(
-                              c => c.user._id === userData.user._id
-                            )?.role
-                          }
+                          collaborationRole={project.collaborators?.find(
+                            c => c.user._id === userData.user._id
+                          )?.role}
                         />
                       </div>
                     ))}
@@ -462,8 +458,7 @@ export default function UserProfilePage() {
                   <FaClock className="text-indigo-500" />
                   Disponibilité
                 </h3>
-                <span className={`
-                  inline-flex px-4 py-2 rounded-xl text-sm font-medium
+                <span className={`inline-flex px-4 py-2 rounded-xl text-sm font-medium
                   ${userData?.user.availability === 'disponible'
                     ? 'bg-green-50 text-green-700 border border-green-100'
                     : userData?.user.availability === 'occupé'
