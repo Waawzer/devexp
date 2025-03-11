@@ -6,6 +6,7 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import User from "@/models/User";
+import { authOptions } from "@/lib/auth"; // Déplacer la config dans un fichier séparé
 
 export const authOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -126,5 +127,8 @@ export const authOptions = {
   }
 };
 
+// Créer les gestionnaires de route
 const handler = NextAuth(authOptions);
+
+// Exporter les gestionnaires GET et POST
 export { handler as GET, handler as POST }; 
