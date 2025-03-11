@@ -5,6 +5,8 @@ import User from '@/models/User';
 import dbConnect from '@/lib/dbConnect';
 import Project from '@/models/Project';
 
+export const dynamic = 'force-dynamic';
+
 // Mettre à jour le profil utilisateur
 export async function PUT(req: NextRequest) {
   try {

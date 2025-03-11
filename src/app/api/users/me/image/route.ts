@@ -6,6 +6,8 @@ import User from '@/models/User';
 import dbConnect from '@/lib/dbConnect';
 import { UploadApiResponse } from 'cloudinary';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
