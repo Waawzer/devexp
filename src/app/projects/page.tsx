@@ -43,7 +43,7 @@ export default function ProjectsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4 text-center">
           <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-600">Chargement...</p>
+          <p className="text-gray-400">Chargement...</p>
         </div>
       </div>
     }>
@@ -162,7 +162,7 @@ function ProjectsContent() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4 text-center">
           <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-600">Chargement des projets...</p>
+          <p className="text-gray-400">Chargement des projets...</p>
         </div>
       </div>
     );
@@ -194,11 +194,11 @@ function ProjectsContent() {
 
       {/* Barre d'actions pour mes projets */}
       {viewType === 'my-projects' && (
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+        <div className="bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 border border-gray-700">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Gérer vos projets</h2>
-              <p className="text-gray-500">Créez et gérez vos projets personnels ou collaboratifs</p>
+              <h2 className="text-lg font-semibold text-gray-100">Gérer vos projets</h2>
+              <p className="text-gray-400">Créez et gérez vos projets personnels ou collaboratifs</p>
             </div>
             <button
               onClick={() => setIsCreateModalOpen(true)}
@@ -244,10 +244,10 @@ function ProjectsContent() {
 
       {/* Liste des projets */}
       {filteredProjects.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl shadow-xl">
+        <div className="text-center py-16 bg-gray-800 rounded-2xl shadow-xl border border-gray-700">
           <div className="max-w-md mx-auto">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-12 w-12 text-gray-500"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -260,10 +260,10 @@ function ProjectsContent() {
                 d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Aucun projet trouvé</h3>
-            <p className="mt-2 text-gray-500">
+            <h3 className="mt-4 text-lg font-medium text-gray-100">Aucun projet trouvé</h3>
+            <p className="mt-2 text-gray-400">
               {viewType === 'my-projects' ? 
-                "Vous n&apos;avez pas encore créé de projets." : 
+                "Vous n'avez pas encore créé de projets." : 
                 viewType === 'my-collaborations' ? 
                 "Vous ne collaborez sur aucun projet pour le moment." :
                 "Essayez de modifier vos critères de recherche pour trouver ce que vous cherchez."}

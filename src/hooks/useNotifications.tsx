@@ -1,5 +1,5 @@
 import toast from 'react-hot-toast';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface Notification {
@@ -12,8 +12,58 @@ interface Notification {
 }
 
 export const useNotifications = () => {
-  const showNotification = (notification: Notification) => {
+  // Méthode pour marquer comme lue une notification
+  const markNotificationAsRead = useCallback(async (notificationId: string, status: string = 'read') => {
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          notificationId,
+          status,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour de la notification');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erreur lors du marquage de la notification:', error);
+      return null;
+    }
+  }, []);
+
+  // Méthode pour marquer un message comme lu
+  const markMessageAsRead = useCallback(async (messageId: string) => {
+    try {
+      const response = await fetch(`/api/messages/${messageId}/read`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors du marquage du message comme lu');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Erreur lors du marquage du message comme lu:', error);
+      return false;
+    }
+  }, []);
+
+  // Fonction principale pour afficher les notifications
+  const showNotification = useCallback((notification: Notification) => {
     const { type, message, from, projectId, messageId, _id } = notification;
+
+    // Si pas d'ID, ne pas afficher la notification
+    if (!_id) return;
 
     const commonToastOptions = {
       duration: 10000, // 10 secondes
@@ -21,11 +71,19 @@ export const useNotifications = () => {
       id: _id, // Utiliser l'ID de la notification comme ID du toast
     };
 
+    // Eviter d'afficher des doublons
+    // Vérifier si un toast avec cet ID est déjà actif
+    const existingToasts = document.querySelectorAll(`[data-toast-id="${_id}"]`);
+    if (existingToasts.length > 0) {
+      return;
+    }
+
     switch (type) {
       case 'mission_proposal':
         toast.custom(
           (t) => (
             <div
+              data-toast-id={_id}
               className={`${
                 t.visible ? 'animate-enter' : 'animate-leave'
               } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
@@ -40,10 +98,13 @@ export const useNotifications = () => {
                       {message}
                     </p>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         if (projectId && _id) {
+                          // Marquer comme lue avant de rediriger
+                          await markNotificationAsRead(_id);
                           window.location.href = `/projects/${projectId}?notification=${_id}`;
                         }
+                        toast.dismiss(t.id);
                       }}
                       className="mt-2 text-sm text-blue-600 hover:text-blue-500"
                     >
@@ -54,7 +115,10 @@ export const useNotifications = () => {
               </div>
               <div className="flex border-l border-gray-200">
                 <button
-                  onClick={() => toast.dismiss(t.id)}
+                  onClick={() => {
+                    markNotificationAsRead(_id as string);
+                    toast.dismiss(t.id);
+                  }}
                   className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-gray-400 hover:text-gray-500 focus:outline-none"
                 >
                   <XMarkIcon className="h-5 w-5" aria-hidden="true" />
@@ -70,11 +134,14 @@ export const useNotifications = () => {
         toast.custom(
           (t) => (
             <div
+              data-toast-id={_id}
               className={`${
                 t.visible ? 'animate-enter' : 'animate-leave'
               } max-w-md w-full bg-purple-50 border-l-4 border-purple-500 p-4 shadow-lg rounded-lg pointer-events-auto`}
-              onClick={() => {
-                if (projectId) {
+              onClick={async () => {
+                if (projectId && _id) {
+                  // Marquer comme lue avant de rediriger
+                  await markNotificationAsRead(_id);
                   window.location.href = `/projects/${projectId}?tab=applications`;
                 }
                 toast.dismiss(t.id);
@@ -104,6 +171,7 @@ export const useNotifications = () => {
         toast.custom(
           (t) => (
             <div
+              data-toast-id={_id}
               className={`${
                 t.visible ? 'animate-enter' : 'animate-leave'
               } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
@@ -119,23 +187,26 @@ export const useNotifications = () => {
                     </p>
                     <div className="mt-2 flex space-x-3">
                       <button
-                        onClick={() => {
-                          if (messageId) {
-                            // Marquer comme lu et rediriger
-                            fetch(`/api/messages/${messageId}/read`, {
-                              method: 'PUT',
-                            }).then(() => {
-                              window.location.href = `/messages?user=${notification.from}`;
-                              toast.dismiss(t.id);
-                            });
+                        onClick={async () => {
+                          if (messageId && _id) {
+                            // Marquer la notification et le message comme lus avant de rediriger
+                            await Promise.all([
+                              markNotificationAsRead(_id),
+                              markMessageAsRead(messageId)
+                            ]);
+                            window.location.href = `/messages?user=${notification.from}`;
                           }
+                          toast.dismiss(t.id);
                         }}
                         className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
                       >
                         Répondre
                       </button>
                       <button
-                        onClick={() => toast.dismiss(t.id)}
+                        onClick={() => {
+                          markNotificationAsRead(_id as string);
+                          toast.dismiss(t.id);
+                        }}
                         className="text-sm text-gray-500 hover:text-gray-700"
                       >
                         Ignorer
@@ -146,7 +217,10 @@ export const useNotifications = () => {
               </div>
               <div className="flex border-l border-gray-200">
                 <button
-                  onClick={() => toast.dismiss(t.id)}
+                  onClick={() => {
+                    markNotificationAsRead(_id as string);
+                    toast.dismiss(t.id);
+                  }}
                   className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-gray-400 hover:text-gray-500 focus:outline-none"
                 >
                   <XMarkIcon className="h-5 w-5" aria-hidden="true" />
@@ -161,7 +235,11 @@ export const useNotifications = () => {
       default:
         toast(message, commonToastOptions);
     }
-  };
+  }, [markNotificationAsRead, markMessageAsRead]);
 
-  return { showNotification };
+  return {
+    showNotification,
+    markNotificationAsRead,
+    markMessageAsRead
+  };
 }; 

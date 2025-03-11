@@ -34,6 +34,34 @@ export async function POST(req: NextRequest) {
     const { action, data } = body;
 
     switch (action) {
+      case 'generate-project-content':
+        if (!data.title || !data.description) {
+          return NextResponse.json(
+            { message: 'Titre et description requis' },
+            { status: 400 }
+          );
+        }
+        
+        // Générer les spécifications et l'image en parallèle
+        const [projectSpecs, generatedImageUrl] = await Promise.all([
+          generateSpecifications(data.title, data.description, data.skills || []),
+          generateProjectImage(data.title, data.description)
+        ]);
+
+        if (!generatedImageUrl) {
+          return NextResponse.json(
+            { message: 'Impossible de générer l\'image' },
+            { status: 500 }
+          );
+        }
+
+        const uploadedImageUrl = await uploadImageToCloudinary(generatedImageUrl);
+        
+        return NextResponse.json({
+          specifications: projectSpecs,
+          imageUrl: uploadedImageUrl
+        });
+
       case 'generate-project-description':
         if (!data.description) {
           return NextResponse.json(

@@ -246,54 +246,65 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-[500px] max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gray-800 p-8 rounded-xl w-[600px] max-h-[90vh] overflow-y-auto border border-gray-700 shadow-xl transform transition-all duration-300">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 
+                     bg-clip-text text-transparent mb-6">
           Proposer une mission à {targetUserName}
         </h2>
         
-        <form onSubmit={handleSubmit}>
-          {/* Type de proposition */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Type de proposition avec design amélioré */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-300">
               Type de proposition
             </label>
-            <div className="flex gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => setProposalType('project')}
-                className={`flex-1 py-2 px-4 rounded-md ${
-                  proposalType === 'project' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-gray-100 text-gray-700'
-                }`}
+                className={`p-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-2
+                          ${proposalType === 'project'
+                            ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400'
+                            : 'border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300'
+                          }`}
               >
-                Nouveau projet
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                        d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z" />
+                </svg>
+                <span>Nouveau projet</span>
               </button>
               <button
                 type="button"
                 onClick={() => setProposalType('mission')}
-                className={`flex-1 py-2 px-4 rounded-md ${
-                  proposalType === 'mission' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-gray-100 text-gray-700'
-                }`}
+                className={`p-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-2
+                          ${proposalType === 'mission'
+                            ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400'
+                            : 'border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300'
+                          }`}
               >
-                Mission existante
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Mission existante</span>
               </button>
             </div>
           </div>
 
-          {/* Sélection du projet ou de la mission */}
+          {/* Sélection du projet ou de la mission avec style amélioré */}
           {proposalType === 'project' ? (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-300">
                 Sélectionner un projet
               </label>
               <select
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
-                className="w-full p-2 border rounded-md"
+                className="w-full p-3 rounded-xl border border-gray-700 bg-gray-900/50 text-gray-100
+                         placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                         transition-all duration-200"
                 required
               >
                 <option value="">Choisir un projet</option>
@@ -305,14 +316,16 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
               </select>
             </div>
           ) : (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-300">
                 Sélectionner une mission
               </label>
               <select
                 value={selectedMission}
                 onChange={(e) => setSelectedMission(e.target.value)}
-                className="w-full p-2 border rounded-md"
+                className="w-full p-3 rounded-xl border border-gray-700 bg-gray-900/50 text-gray-100
+                         placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                         transition-all duration-200"
                 required
               >
                 <option value="">Choisir une mission</option>
@@ -323,22 +336,24 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
                 ))}
               </select>
               {missions.length === 0 && (
-                <p className="text-sm text-amber-600 mt-1">
+                <p className="mt-2 text-sm text-amber-400">
                   Vous n'avez pas de missions disponibles à proposer.
                 </p>
               )}
             </div>
           )}
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          {/* Message avec style amélioré */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-300">
               Message
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full p-2 border rounded-md"
-              rows={4}
+              className="w-full p-4 rounded-xl border border-gray-700 bg-gray-900/50 text-gray-100
+                       placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                       transition-all duration-200 min-h-[120px] resize-y"
               placeholder={proposalType === 'project' 
                 ? "Décrivez brièvement la mission et vos attentes..." 
                 : "Expliquez pourquoi vous proposez cette mission à cet utilisateur..."}
@@ -346,24 +361,35 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
             />
           </div>
 
-          <div className="flex justify-end gap-2">
+          {/* Boutons avec style amélioré */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              className="px-4 py-2 rounded-lg text-gray-400 hover:text-gray-200 
+                       transition-colors duration-200"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={loading || !isAvailable || (proposalType === 'project' && !selectedProject) || (proposalType === 'mission' && !selectedMission)}
-              className={`px-4 py-2 rounded-md ${
-                isAvailable && ((proposalType === 'project' && selectedProject) || (proposalType === 'mission' && selectedMission))
-                  ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
+              className="px-6 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 
+                       text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed
+                       hover:from-indigo-600 hover:to-blue-600 transform hover:-translate-y-0.5 
+                       transition-all duration-300"
             >
-              {loading ? 'Envoi...' : 'Envoyer la proposition'}
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Envoi en cours...</span>
+                </div>
+              ) : (
+                "Envoyer la proposition"
+              )}
             </button>
           </div>
         </form>
@@ -423,32 +449,32 @@ export default function UserProfilePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Carte de profil principale */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+      <div className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8 border border-gray-700">
         {/* En-tête avec fond dégradé */}
-        <div className="relative h-48 bg-gradient-to-r from-indigo-600 to-blue-500 mb-4">
+        <div className="relative h-64 bg-gradient-to-r from-indigo-600 to-blue-500">
           <div className="absolute inset-0 bg-grid-white/10"></div>
         </div>
 
         <div className="relative px-8 pb-8">
           {/* Avatar et informations principales */}
-          <div className="relative -mt-24 mb-6">
-            <div className="flex flex-col md:flex-row md:items-end gap-6">
+          <div className="relative -mt-32 mb-8">
+            <div className="flex flex-col md:flex-row gap-8">
               {/* Avatar */}
               <div className="flex-shrink-0">
                 {userData?.user.image ? (
-                  <div className="w-40 h-40 rounded-2xl border-4 border-white shadow-lg overflow-hidden">
+                  <div className="w-48 h-48 rounded-2xl border-4 border-gray-800 shadow-lg overflow-hidden">
                     <Image
                       src={userData.user.image}
                       alt={userData.user.name}
-                      width={160}
-                      height={160}
+                      width={192}
+                      height={192}
                       className="object-cover w-full h-full"
                     />
                   </div>
                 ) : (
-                  <div className="w-40 h-40 rounded-2xl border-4 border-white shadow-lg 
-                                bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <span className="text-4xl text-gray-400">
+                  <div className="w-48 h-48 rounded-2xl border-4 border-gray-800 shadow-lg 
+                                bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
+                    <span className="text-5xl text-gray-400">
                       {userData?.user.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -456,17 +482,17 @@ export default function UserProfilePage() {
               </div>
 
               {/* Informations principales */}
-              <div className="flex-grow md:pb-2">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900">{userData?.user.name}</h1>
-                    <div className="flex items-center gap-4 mt-2 text-gray-600">
+              <div className="flex-grow space-y-4">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                  <div className="space-y-4">
+                    <h1 className="text-4xl font-bold text-gray-100">{userData?.user.name}</h1>
+                    <div className="flex items-center gap-6 text-gray-300">
                       <div className="flex items-center gap-2">
-                        <FaBriefcase className="text-indigo-500" />
+                        <FaBriefcase className="text-indigo-400" />
                         <span>{userData?.projects.length || 0} projets</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <FaCode className="text-blue-500" />
+                        <FaCode className="text-blue-400" />
                         <span>{userData?.collaborations.length || 0} collaborations</span>
                       </div>
                     </div>
@@ -478,10 +504,10 @@ export default function UserProfilePage() {
                       {/* Bouton Contacter */}
                       <button
                         onClick={() => router.push(`/messages?user=${userData?.user._id}`)}
-                        className={`px-6 py-3 rounded-xl font-medium shadow-md
+                        className="px-6 py-3 rounded-xl font-medium shadow-md
                                   transition-all duration-300 transform hover:-translate-y-0.5
-                                  flex items-center gap-2
-                                  bg-gradient-to-r from-green-500 to-teal-500 text-white hover:shadow-lg`}
+                                  flex items-center justify-center gap-2
+                                  bg-gradient-to-r from-green-500 to-teal-500 text-white hover:shadow-lg"
                       >
                         <FaEnvelope />
                         Contacter
@@ -493,10 +519,10 @@ export default function UserProfilePage() {
                         disabled={userData?.user.availability === 'occupé'}
                         className={`px-6 py-3 rounded-xl font-medium shadow-md
                                   transition-all duration-300 transform hover:-translate-y-0.5
-                                  flex items-center gap-2
+                                  flex items-center justify-center gap-2
                                   ${userData?.user.availability !== 'occupé'
                                     ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:shadow-lg'
-                                    : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
                                   }`}
                       >
                         <FaBriefcase />
@@ -515,12 +541,12 @@ export default function UserProfilePage() {
             <div className="md:col-span-2 space-y-8">
               {/* Description */}
               {userData?.user.description && (
-                <div className="prose prose-indigo max-w-none">
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 
+                <div className="prose prose-invert max-w-none">
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 
                                bg-clip-text text-transparent">
                     À propos
                   </h2>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-300 leading-relaxed">
                     {userData.user.description}
                   </p>
                 </div>
@@ -529,7 +555,7 @@ export default function UserProfilePage() {
               {/* Projets */}
               {userData?.projects.length > 0 && (
                 <div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 
                                bg-clip-text text-transparent mb-6">
                     Projets
                   </h2>
@@ -552,7 +578,7 @@ export default function UserProfilePage() {
               {/* Collaborations */}
               {userData?.collaborations.length > 0 && (
                 <div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 
                                bg-clip-text text-transparent mb-6">
                     Collaborations
                   </h2>
@@ -579,8 +605,8 @@ export default function UserProfilePage() {
             {/* Barre latérale */}
             <div className="space-y-8">
               {/* Disponibilité */}
-              <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-100 mb-4 flex items-center gap-2">
                   <FaClock className="text-indigo-500" />
                   Disponibilité
                 </h3>
@@ -598,14 +624,14 @@ export default function UserProfilePage() {
 
               {/* Compétences */}
               {userData?.user.skills && userData.user.skills.length > 0 && (
-                <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Compétences</h3>
+                <div className="bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-100 mb-4">Compétences</h3>
                   <div className="flex flex-wrap gap-2">
                     {userData.user.skills.map((skill, index) => (
                       <span
                         key={index}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 
-                                 text-indigo-700 border border-indigo-100"
+                        className="px-4 py-2 rounded-xl bg-indigo-900/50 text-indigo-300 
+                                 border border-indigo-500/50"
                       >
                         {skill}
                       </span>
@@ -616,14 +642,14 @@ export default function UserProfilePage() {
 
               {/* Technologies préférées */}
               {userData?.user.favoriteTechnologies && userData.user.favoriteTechnologies.length > 0 && (
-                <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Technologies préférées</h3>
+                <div className="bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-100 mb-4">Technologies préférées</h3>
                   <div className="flex flex-wrap gap-2">
                     {userData.user.favoriteTechnologies.map((tech, index) => (
                       <span
                         key={index}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 
-                                 text-green-700 border border-green-100"
+                        className="px-4 py-2 rounded-xl bg-green-900/50 text-green-300 
+                                 border border-green-500/50"
                       >
                         {tech}
                       </span>
@@ -634,18 +660,18 @@ export default function UserProfilePage() {
 
               {/* Informations professionnelles */}
               {(userData?.user.hourlyRate || userData?.user.yearsOfExperience) && (
-                <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations professionnelles</h3>
+                <div className="bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-100 mb-4">Informations professionnelles</h3>
                   <div className="space-y-3">
                     {userData.user.hourlyRate && (
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <span className="font-medium">{userData.user.hourlyRate}€</span>
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <span className="font-medium text-gray-200">{userData.user.hourlyRate}€</span>
                         <span>/ heure</span>
                       </div>
                     )}
                     {userData.user.yearsOfExperience && (
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <span className="font-medium">{userData.user.yearsOfExperience}</span>
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <span className="font-medium text-gray-200">{userData.user.yearsOfExperience}</span>
                         <span>années d'expérience</span>
                       </div>
                     )}

@@ -68,7 +68,7 @@ export default function ProfilesPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4 text-center">
           <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-600">Chargement des profils...</p>
+          <p className="text-gray-400">Chargement des profils...</p>
         </div>
       </div>
     );
@@ -91,7 +91,7 @@ export default function ProfilesPage() {
       </div>
 
       {/* Filtres */}
-      <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+      <div className="bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 border border-gray-700">
         <div className="space-y-6">
           {/* Barre de recherche */}
           <div className="relative">
@@ -101,8 +101,8 @@ export default function ProfilesPage() {
               placeholder="Rechercher un développeur..."
               value={filters.searchTerm}
               onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 
-                       focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+              className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-gray-100 
+                       focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300"
             />
           </div>
 
@@ -158,7 +158,7 @@ export default function ProfilesPage() {
                       transform hover:-translate-y-0.5
                       ${filters.skills.includes(skill)
                         ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
                       }
                     `}
                   >
@@ -230,11 +230,11 @@ export default function ProfilesPage() {
 
       {/* Liste des profils */}
       {filteredUsers.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl shadow-xl">
+        <div className="text-center py-16 bg-gray-800 rounded-2xl shadow-xl border border-gray-700">
           <div className="max-w-md mx-auto">
-            <FaUserFriends className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Aucun profil trouvé</h3>
-            <p className="mt-2 text-gray-500">
+            <FaUserFriends className="mx-auto h-12 w-12 text-gray-500" />
+            <h3 className="mt-4 text-lg font-medium text-gray-100">Aucun profil trouvé</h3>
+            <p className="mt-2 text-gray-400">
               Essayez de modifier vos critères de recherche pour trouver les développeurs que vous cherchez.
             </p>
           </div>

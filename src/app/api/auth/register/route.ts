@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import clientPromise from "@/lib/mongodb";
+import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
+
+function generateUsername(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, '') + Math.floor(Math.random() * 1000);
+}
 
 export async function POST(req: Request) {
   try {
@@ -13,10 +18,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const client = await clientPromise;
-    const db = client.db();
+    await dbConnect();
 
-    const existingUser = await db.collection('users').findOne({ email });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
         { error: "Email déjà utilisé" },
@@ -25,20 +29,23 @@ export async function POST(req: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
+    const username = generateUsername(name);
 
-    const result = await db.collection('users').insertOne({
+    const user = await User.create({
       email,
       password: hashedPassword,
       name,
+      username,
       image: null,
-      createdAt: new Date()
+      availability: 'en_recherche'
     });
 
     return NextResponse.json(
-      { message: "Inscription réussie" },
+      { message: "Inscription réussie", username },
       { status: 201 }
     );
   } catch (error) {
+    console.error('Erreur lors de l\'inscription:', error);
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }

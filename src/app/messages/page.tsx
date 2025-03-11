@@ -153,31 +153,32 @@ function MessagesContent() {
 
   return (
     <div className="container mx-auto px-4 py-8 mb-20">
-      <h1 className="text-2xl font-bold mb-6">Messages</h1>
+      <h1 className="text-2xl font-bold mb-6 bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">Messages</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6" style={{ maxHeight: 'calc(100vh - 250px)' }}>
         {/* Liste des conversations */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden h-full max-h-full">
-          <div className="p-4 border-b sticky top-0 bg-white z-10">
+        <div className="bg-gray-800 rounded-xl shadow-md overflow-hidden h-full max-h-full border border-gray-700">
+          <div className="p-4 border-b border-gray-700 sticky top-0 bg-gray-800 z-10">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Rechercher une conversation..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-700 bg-gray-900 text-gray-100 
+                         focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 placeholder-gray-500"
               />
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             </div>
           </div>
           
           <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 320px)' }}>
             {loading && !selectedUser ? (
               <div className="flex justify-center items-center h-32">
-                <FaSpinner className="animate-spin text-blue-500 text-2xl" />
+                <FaSpinner className="animate-spin text-indigo-500 text-2xl" />
               </div>
             ) : filteredConversations.length === 0 && !newUserData ? (
-              <div className="text-center text-gray-500 py-8">
+              <div className="text-center text-gray-400 py-8">
                 <p>Aucune conversation trouvée</p>
               </div>
             ) : (
@@ -186,13 +187,13 @@ function MessagesContent() {
                   <div
                     key={conv.user._id}
                     onClick={() => setSelectedUser(conv.user)}
-                    className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${
-                      selectedUser?._id === conv.user._id ? 'bg-blue-50' : ''
+                    className={`p-4 border-b border-gray-700 hover:bg-gray-700/50 cursor-pointer transition-colors duration-200 ${
+                      selectedUser?._id === conv.user._id ? 'bg-gray-700' : ''
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
+                        <div className="w-12 h-12 rounded-xl bg-gray-700 overflow-hidden">
                           {conv.user.image ? (
                             <Image 
                               src={conv.user.image} 
@@ -202,25 +203,25 @@ function MessagesContent() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-500 text-lg">
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg">
                               {conv.user.name.charAt(0).toUpperCase()}
                             </div>
                           )}
                         </div>
                         {conv.unreadCount > 0 && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xs">
                             {conv.unreadCount}
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{conv.user.name}</h3>
-                        <p className="text-sm text-gray-500 truncate">
+                        <h3 className="font-medium text-gray-100 truncate">{conv.user.name}</h3>
+                        <p className="text-sm text-gray-400 truncate">
                           {conv.lastMessage.sender === 'me' ? 'Vous: ' : ''}
                           {conv.lastMessage.content}
                         </p>
                       </div>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-500">
                         {new Date(conv.lastMessage.createdAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -231,12 +232,12 @@ function MessagesContent() {
                 {newUserData && !conversations.some(conv => conv.user._id === newUserData._id) && (
                   <div
                     onClick={() => setSelectedUser(newUserData)}
-                    className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${
-                      selectedUser?._id === newUserData._id ? 'bg-blue-50' : ''
+                    className={`p-4 border-b border-gray-700 hover:bg-gray-700/50 cursor-pointer transition-colors duration-200 ${
+                      selectedUser?._id === newUserData._id ? 'bg-gray-700' : ''
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
+                      <div className="w-12 h-12 rounded-xl bg-gray-700 overflow-hidden">
                         {newUserData.image ? (
                           <Image 
                             src={newUserData.image} 
@@ -246,14 +247,14 @@ function MessagesContent() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-500 text-lg">
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg">
                             {newUserData.name.charAt(0).toUpperCase()}
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{newUserData.name}</h3>
-                        <p className="text-sm text-blue-500 truncate">
+                        <h3 className="font-medium text-gray-100 truncate">{newUserData.name}</h3>
+                        <p className="text-sm text-indigo-400 truncate">
                           Nouvelle conversation
                         </p>
                       </div>
@@ -268,10 +269,10 @@ function MessagesContent() {
         {/* Zone de chat */}
         <div className="md:col-span-2 h-full">
           {selectedUser ? (
-            <div className="bg-white rounded-lg shadow-md h-full flex flex-col">
+            <div className="bg-gray-800 rounded-xl shadow-md h-full flex flex-col border border-gray-700">
               {/* Header */}
-              <div className="p-4 border-b flex items-center gap-3 sticky top-0 bg-white z-10">
-                <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+              <div className="p-4 border-b border-gray-700 flex items-center gap-3 sticky top-0 bg-gray-800 z-10">
+                <div className="w-10 h-10 rounded-xl bg-gray-700 overflow-hidden">
                   {selectedUser.image ? (
                     <Image 
                       src={selectedUser.image} 
@@ -281,14 +282,14 @@ function MessagesContent() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
                       {selectedUser.name.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
                 <Link 
                   href={`/profile/${selectedUser._id}`}
-                  className="font-medium hover:text-blue-600 transition-colors"
+                  className="font-medium text-gray-100 hover:text-indigo-400 transition-colors"
                 >
                   {selectedUser.name}
                 </Link>
@@ -303,20 +304,20 @@ function MessagesContent() {
               >
                 {loading && messages.length === 0 ? (
                   <div className="flex justify-center items-center h-32">
-                    <FaSpinner className="animate-spin text-blue-500 text-2xl" />
+                    <FaSpinner className="animate-spin text-indigo-500 text-2xl" />
                   </div>
                 ) : error ? (
-                  <div className="text-center text-red-500 py-8">
+                  <div className="text-center text-red-400 py-8">
                     <p>{error}</p>
                     <button 
                       onClick={refreshMessages}
-                      className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                      className="mt-2 px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors"
                     >
                       Réessayer
                     </button>
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="text-center text-gray-500 py-8">
+                  <div className="text-center text-gray-400 py-8">
                     <p>Aucun message. Commencez la conversation!</p>
                   </div>
                 ) : (
@@ -326,16 +327,16 @@ function MessagesContent() {
                         key={msg._id} 
                         className={`flex ${msg.sender._id === session?.user?.id ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div className={`max-w-xs p-3 rounded-lg ${
+                        <div className={`max-w-xs p-3 rounded-xl ${
                           msg.sender._id === session?.user?.id 
-                            ? 'bg-blue-500 text-white' 
-                            : 'bg-gray-200 text-gray-800'
+                            ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white' 
+                            : 'bg-gray-700 text-gray-100'
                         }`}>
                           <p>{msg.content}</p>
                           <p className={`text-xs mt-1 ${
                             msg.sender._id === session?.user?.id 
-                              ? 'text-blue-100' 
-                              : 'text-gray-500'
+                              ? 'text-indigo-200' 
+                              : 'text-gray-400'
                           }`}>
                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
@@ -348,20 +349,23 @@ function MessagesContent() {
               </div>
               
               {/* Input */}
-              <div className="p-4 border-t bg-white sticky bottom-0">
+              <div className="p-4 border-t border-gray-700 bg-gray-800 sticky bottom-0">
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Tapez votre message..."
-                    className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 p-2 rounded-xl border border-gray-700 bg-gray-900 text-gray-100 
+                             focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 placeholder-gray-500"
                     onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={sending || !newMessage.trim()}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-xl 
+                             hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed 
+                             transform hover:-translate-y-0.5"
                   >
                     {sending ? (
                       <FaSpinner className="animate-spin" />
@@ -373,8 +377,8 @@ function MessagesContent() {
               </div>
             </div>
           ) : (
-            <div className="h-full bg-white rounded-lg shadow-md flex items-center justify-center">
-              <div className="text-center text-gray-500">
+            <div className="h-full bg-gray-800 rounded-xl shadow-md flex items-center justify-center border border-gray-700">
+              <div className="text-center text-gray-400">
                 <p className="text-lg mb-2">Sélectionnez une conversation</p>
                 <p className="text-sm">ou commencez-en une nouvelle</p>
               </div>

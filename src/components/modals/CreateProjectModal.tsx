@@ -53,15 +53,19 @@ export default function CreateProjectModal({
     setIsGenerating(true);
 
     try {
-      const genResponse = await fetch("/api/projects/project-services", {
+      // Première étape : Génération du contenu par l'IA
+      const genResponse = await fetch("/api/ai-services", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title,
-          description,
-          skills: selectedSkills.join(', ')
+          action: "generate-project-content",
+          data: {
+            title,
+            description,
+            skills: selectedSkills.join(', ')
+          }
         }),
       });
 
@@ -71,6 +75,7 @@ export default function CreateProjectModal({
 
       const genData = await genResponse.json();
 
+      // Deuxième étape : Création du projet avec le contenu généré
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -124,9 +129,9 @@ export default function CreateProjectModal({
 
   return (
     <div className="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl w-[600px] max-h-[85vh] overflow-y-auto shadow-2xl">
+      <div className="bg-gray-800 rounded-2xl w-[600px] max-h-[85vh] overflow-y-auto shadow-2xl border border-gray-700">
         {/* En-tête */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 sticky top-0 z-10">
+        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 sticky top-0 z-10">
           <h2 className="text-xl font-bold text-white flex items-center gap-3">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
@@ -140,15 +145,16 @@ export default function CreateProjectModal({
           {/* Informations de base */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Titre du projet
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 
-                         focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 
+                         text-gray-100 placeholder-gray-500
+                         focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
                          transition-all duration-200"
                 placeholder="Ex: Application de gestion de tâches"
                 required
@@ -156,14 +162,15 @@ export default function CreateProjectModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Description
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 
-                         focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 
+                         text-gray-100 placeholder-gray-500
+                         focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
                          transition-all duration-200"
                 rows={4}
                 placeholder="Décrivez votre projet en quelques phrases..."
@@ -174,7 +181,7 @@ export default function CreateProjectModal({
 
           {/* Type de projet */}
           <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-300">
               Type de projet
             </label>
             <div className="grid grid-cols-2 gap-4">
@@ -182,8 +189,8 @@ export default function CreateProjectModal({
                 relative flex flex-col items-center p-4 rounded-xl cursor-pointer
                 border-2 transition-all duration-200
                 ${projectType === 'personnel' 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-200 hover:border-blue-200'}
+                  ? 'border-indigo-500 bg-indigo-900/20' 
+                  : 'border-gray-700 hover:border-indigo-600/50'}
               `}>
                 <input
                   type="radio"
@@ -192,12 +199,12 @@ export default function CreateProjectModal({
                   onChange={(e) => setProjectType(e.target.value as 'personnel' | 'collaboratif')}
                   className="sr-only"
                 />
-                <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <span className="font-medium text-gray-900">Personnel</span>
-                <span className="text-xs text-gray-500 text-center mt-1">
+                <span className="font-medium text-gray-100">Personnel</span>
+                <span className="text-xs text-gray-400 text-center mt-1">
                   Projet individuel sans recrutement
                 </span>
               </label>
@@ -206,8 +213,8 @@ export default function CreateProjectModal({
                 relative flex flex-col items-center p-4 rounded-xl cursor-pointer
                 border-2 transition-all duration-200
                 ${projectType === 'collaboratif' 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-200 hover:border-blue-200'}
+                  ? 'border-indigo-500 bg-indigo-900/20' 
+                  : 'border-gray-700 hover:border-indigo-600/50'}
               `}>
                 <input
                   type="radio"
@@ -216,12 +223,12 @@ export default function CreateProjectModal({
                   onChange={(e) => setProjectType(e.target.value as 'personnel' | 'collaboratif')}
                   className="sr-only"
                 />
-                <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span className="font-medium text-gray-900">Collaboratif</span>
-                <span className="text-xs text-gray-500 text-center mt-1">
+                <span className="font-medium text-gray-100">Collaboratif</span>
+                <span className="text-xs text-gray-400 text-center mt-1">
                   Ouvert aux collaborations
                 </span>
               </label>
@@ -230,7 +237,7 @@ export default function CreateProjectModal({
 
           {/* Visibilité du projet */}
           <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-300">
               Visibilité du projet
             </label>
             <div className="grid grid-cols-2 gap-4">
@@ -238,8 +245,8 @@ export default function CreateProjectModal({
                 relative flex flex-col items-center p-4 rounded-xl cursor-pointer
                 border-2 transition-all duration-200
                 ${visibility === 'public' 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-200 hover:border-blue-200'}
+                  ? 'border-indigo-500 bg-indigo-900/20' 
+                  : 'border-gray-700 hover:border-indigo-600/50'}
               `}>
                 <input
                   type="radio"
@@ -248,14 +255,12 @@ export default function CreateProjectModal({
                   onChange={(e) => setVisibility(e.target.value as 'public' | 'private')}
                   className="sr-only"
                 />
-                <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
                 </svg>
-                <span className="font-medium text-gray-900">Public</span>
-                <span className="text-xs text-gray-500 text-center mt-1">
+                <span className="font-medium text-gray-100">Public</span>
+                <span className="text-xs text-gray-400 text-center mt-1">
                   Visible par tous les utilisateurs
                 </span>
               </label>
@@ -264,8 +269,8 @@ export default function CreateProjectModal({
                 relative flex flex-col items-center p-4 rounded-xl cursor-pointer
                 border-2 transition-all duration-200
                 ${visibility === 'private' 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-200 hover:border-blue-200'}
+                  ? 'border-indigo-500 bg-indigo-900/20' 
+                  : 'border-gray-700 hover:border-indigo-600/50'}
               `}>
                 <input
                   type="radio"
@@ -274,13 +279,13 @@ export default function CreateProjectModal({
                   onChange={(e) => setVisibility(e.target.value as 'public' | 'private')}
                   className="sr-only"
                 />
-                <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z" />
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                <span className="font-medium text-gray-900">Privé</span>
-                <span className="text-xs text-gray-500 text-center mt-1">
-                  Visible uniquement par vous et vos collaborateurs
+                <span className="font-medium text-gray-100">Privé</span>
+                <span className="text-xs text-gray-400 text-center mt-1">
+                  Visible uniquement par vous
                 </span>
               </label>
             </div>
@@ -288,85 +293,75 @@ export default function CreateProjectModal({
 
           {/* Compétences requises */}
           <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-300">
               Compétences requises
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="flex flex-wrap gap-2">
               {AVAILABLE_SKILLS.map((skill) => (
-                <label key={skill} className={`
-                  flex items-center gap-2 p-3 rounded-xl cursor-pointer
-                  border transition-all duration-200
-                  ${selectedSkills.includes(skill)
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-200'}
-                `}>
-                  <input
-                    type="checkbox"
-                    checked={selectedSkills.includes(skill)}
-                    onChange={() => toggleSkill(skill)}
-                    className="rounded text-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="text-sm">{skill}</span>
-                </label>
+                <button
+                  key={skill}
+                  type="button"
+                  onClick={() => toggleSkill(skill)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+                    ${selectedSkills.includes(skill)
+                      ? 'bg-indigo-900/50 text-indigo-300 border border-indigo-500'
+                      : 'bg-gray-700 text-gray-300 border border-gray-600 hover:border-indigo-500/50'
+                    }`}
+                >
+                  {skill}
+                </button>
               ))}
             </div>
           </div>
 
-          {/* URL GitHub */}
+          {/* Lien GitHub */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              URL GitHub (optionnel)
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Lien GitHub (optionnel)
             </label>
             <input
               type="url"
               name="githubUrl"
               value={formData.githubUrl}
               onChange={handleChange}
-              placeholder="https://github.com/username/repository"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 
-                       focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+              className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 
+                       text-gray-100 placeholder-gray-500
+                       focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
                        transition-all duration-200"
+              placeholder="https://github.com/username/project"
             />
           </div>
 
-          {/* États de chargement et erreurs */}
-          {(loading || isGenerating) && (
-            <div className="flex items-center gap-3 p-4 bg-blue-50 text-blue-700 rounded-xl">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" 
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-              <span>{isGenerating ? "Génération du contenu..." : "Création du projet..."}</span>
-            </div>
-          )}
-
           {error && (
-            <div className="p-4 bg-red-50 text-red-600 rounded-xl">
+            <div className="p-4 bg-red-900/50 border border-red-700 rounded-xl text-red-200">
               {error}
             </div>
           )}
 
           {/* Boutons d'action */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 text-gray-700 font-medium hover:text-gray-900 
-                       transition-colors"
+              className="px-4 py-2 text-gray-300 hover:text-gray-100 transition-colors"
             >
               Annuler
             </button>
             <button
               type="submit"
-              disabled={loading || isGenerating}
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 
-                       text-white rounded-xl font-medium hover:from-blue-600 
-                       hover:to-indigo-600 transition-all duration-200 
-                       disabled:opacity-50 transform hover:-translate-y-0.5 
-                       disabled:hover:transform-none"
+              disabled={loading}
+              className={`
+                px-6 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 
+                text-white rounded-xl font-medium
+                hover:from-indigo-600 hover:to-blue-600 
+                focus:ring-2 focus:ring-indigo-500/20 
+                transform transition-all duration-200 
+                hover:-translate-y-0.5
+                disabled:opacity-50 disabled:cursor-not-allowed
+                ${loading ? 'animate-pulse' : ''}
+              `}
             >
-              {loading || isGenerating ? "Création en cours..." : "Créer le projet"}
+              {loading ? 'Création en cours...' : 'Créer le projet'}
             </button>
           </div>
         </form>

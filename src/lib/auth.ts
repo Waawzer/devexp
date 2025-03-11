@@ -21,26 +21,48 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Informations de connexion manquantes');
-        }
+        try {
+          // Vérification de la connexion MongoDB
+          const dbConnect = (await import('@/lib/dbConnect')).default;
+          await dbConnect();
+          console.log('Connexion MongoDB établie');
 
-        const user = await User.findOne({ email: credentials.email });
-        if (!user) {
-          throw new Error('Utilisateur non trouvé');
-        }
+          if (!credentials?.email || !credentials?.password) {
+            console.error('Informations de connexion manquantes');
+            throw new Error('Informations de connexion manquantes');
+          }
 
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isPasswordValid) {
-          throw new Error('Mot de passe incorrect');
-        }
+          console.log('Tentative de connexion pour:', credentials.email);
+          const user = await User.findOne({ email: credentials.email });
+          
+          if (!user) {
+            console.error('Utilisateur non trouvé:', credentials.email);
+            throw new Error('Utilisateur non trouvé');
+          }
 
-        return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          image: user.image,
-        };
+          console.log('Utilisateur trouvé, vérification du mot de passe');
+          if (!user.password) {
+            console.error('Utilisateur sans mot de passe (probablement compte Google):', credentials.email);
+            throw new Error('Ce compte ne peut pas se connecter avec un mot de passe. Utilisez Google pour vous connecter.');
+          }
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+          
+          if (!isPasswordValid) {
+            console.error('Mot de passe incorrect pour:', credentials.email);
+            throw new Error('Mot de passe incorrect');
+          }
+
+          console.log('Connexion réussie pour:', credentials.email);
+          return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          };
+        } catch (error) {
+          console.error('Erreur dans authorize:', error);
+          throw error;
+        }
       }
     })
   ],

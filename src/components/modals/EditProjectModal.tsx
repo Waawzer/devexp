@@ -186,11 +186,11 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
 
   return (
     <div className="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl w-[800px] max-h-[85vh] overflow-hidden shadow-2xl">
+      <div className="bg-gray-800 rounded-2xl w-[800px] max-h-[85vh] overflow-hidden shadow-2xl border border-gray-700">
         {/* En-tête fixe */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 sticky top-0 z-10 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-white flex items-center gap-3">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 sticky top-0 z-10 flex justify-between items-center border-b border-gray-700">
+          <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400 flex items-center gap-3">
+            <svg className="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
@@ -198,7 +198,7 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
           </h2>
           <button 
             onClick={onClose}
-            className="text-white/80 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
+            className="text-gray-400 hover:text-indigo-400 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -206,19 +206,20 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[70vh]">
+        <div className="p-6 overflow-y-auto max-h-[70vh] bg-gray-800">
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Informations principales */}
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Titre</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Titre</label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 
-                           focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                  className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900
+                           text-gray-100 placeholder-gray-500
+                           focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
                            transition-all duration-200"
                   required
                 />
@@ -226,14 +227,14 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
 
               {/* Type de projet */}
               <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">Type de projet</label>
+                <label className="block text-sm font-medium text-gray-300">Type de projet</label>
                 <div className="grid grid-cols-2 gap-4">
                   <label className={`
                     relative flex flex-col items-center p-4 rounded-xl cursor-pointer
                     border-2 transition-all duration-200
                     ${formData.projectType === 'personnel' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-blue-200'}
+                      ? 'border-indigo-500 bg-indigo-900/20' 
+                      : 'border-gray-700 hover:border-indigo-600/50'}
                   `}>
                     <input
                       type="radio"
@@ -246,12 +247,12 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
                       }))}
                       className="sr-only"
                     />
-                    <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <span className="font-medium text-gray-900">Personnel</span>
-                    <span className="text-xs text-gray-500 text-center mt-1">
+                    <span className="font-medium text-gray-100">Personnel</span>
+                    <span className="text-xs text-gray-400 text-center mt-1">
                       Projet individuel sans recrutement
                     </span>
                   </label>
@@ -260,8 +261,8 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
                     relative flex flex-col items-center p-4 rounded-xl cursor-pointer
                     border-2 transition-all duration-200
                     ${formData.projectType === 'collaboratif' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-blue-200'}
+                      ? 'border-indigo-500 bg-indigo-900/20' 
+                      : 'border-gray-700 hover:border-indigo-600/50'}
                   `}>
                     <input
                       type="radio"
@@ -274,27 +275,28 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
                       }))}
                       className="sr-only"
                     />
-                    <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <span className="font-medium text-gray-900">Collaboratif</span>
-                    <span className="text-xs text-gray-500 text-center mt-1">
+                    <span className="font-medium text-gray-100">Collaboratif</span>
+                    <span className="text-xs text-gray-400 text-center mt-1">
                       Ouvert aux collaborations
                     </span>
                   </label>
                 </div>
               </div>
 
+              {/* Visibilité du projet */}
               <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">Visibilité du projet</label>
+                <label className="block text-sm font-medium text-gray-300">Visibilité du projet</label>
                 <div className="grid grid-cols-2 gap-4">
                   <label className={`
                     relative flex flex-col items-center p-4 rounded-xl cursor-pointer
                     border-2 transition-all duration-200
                     ${formData.visibility === 'public' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-blue-200'}
+                      ? 'border-indigo-500 bg-indigo-900/20' 
+                      : 'border-gray-700 hover:border-indigo-600/50'}
                   `}>
                     <input
                       type="radio"
@@ -307,14 +309,12 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
                       }))}
                       className="sr-only"
                     />
-                    <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
                     </svg>
-                    <span className="font-medium text-gray-900">Public</span>
-                    <span className="text-xs text-gray-500 text-center mt-1">
+                    <span className="font-medium text-gray-100">Public</span>
+                    <span className="text-xs text-gray-400 text-center mt-1">
                       Visible par tous les utilisateurs
                     </span>
                   </label>
@@ -323,8 +323,8 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
                     relative flex flex-col items-center p-4 rounded-xl cursor-pointer
                     border-2 transition-all duration-200
                     ${formData.visibility === 'private' 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-blue-200'}
+                      ? 'border-indigo-500 bg-indigo-900/20' 
+                      : 'border-gray-700 hover:border-indigo-600/50'}
                   `}>
                     <input
                       type="radio"
@@ -337,220 +337,196 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
                       }))}
                       className="sr-only"
                     />
-                    <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-8 h-8 text-indigo-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z" />
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <span className="font-medium text-gray-900">Privé</span>
-                    <span className="text-xs text-gray-500 text-center mt-1">
-                      Visible uniquement par vous et vos collaborateurs
+                    <span className="font-medium text-gray-100">Privé</span>
+                    <span className="text-xs text-gray-400 text-center mt-1">
+                      Visible uniquement par vous
                     </span>
                   </label>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <div className="space-y-3">
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                <div className="relative">
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 
-                             focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                    rows={6}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900
+                             text-gray-100 placeholder-gray-500
+                             focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
                              transition-all duration-200"
-                    rows={4}
                     required
                   />
                   <button
                     type="button"
                     onClick={handleGenerateDescription}
-                    disabled={isGenerating || !formData.description}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium 
-                             text-blue-700 bg-blue-50 rounded-xl hover:bg-blue-100 
-                             focus:outline-none focus:ring-2 focus:ring-offset-2 
-                             focus:ring-blue-500 disabled:opacity-50 
-                             disabled:cursor-not-allowed transition-all duration-200"
+                    disabled={isGenerating}
+                    className="absolute bottom-3 right-3 px-3 py-1.5 bg-gradient-to-r 
+                             from-indigo-500 to-blue-500 text-white text-sm rounded-lg 
+                             hover:from-indigo-600 hover:to-blue-600 transition-all duration-200 
+                             disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isGenerating ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-700" 
-                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" 
-                                  stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" 
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Génération en cours...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="-ml-0.5 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                        </svg>
-                        Améliorer la description
-                      </>
-                    )}
+                    {isGenerating ? 'Génération...' : 'Améliorer avec l\'IA'}
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* Compétences */}
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Compétences requises
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {AVAILABLE_SKILLS.map((skill) => (
-                  <label key={skill} className={`
-                    flex items-center gap-2 p-3 rounded-xl cursor-pointer
-                    border transition-all duration-200
-                    ${selectedSkills.includes(skill)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-200'}
-                  `}>
-                    <input
-                      type="checkbox"
-                      checked={selectedSkills.includes(skill)}
-                      onChange={() => toggleSkill(skill)}
-                      className="rounded text-blue-500 focus:ring-blue-500"
-                    />
-                    <span className="text-sm">{skill}</span>
-                  </label>
-                ))}
+              {/* Compétences requises */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-300">
+                  Compétences requises
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {AVAILABLE_SKILLS.map((skill) => (
+                    <button
+                      key={skill}
+                      type="button"
+                      onClick={() => toggleSkill(skill)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+                        ${selectedSkills.includes(skill)
+                          ? 'bg-indigo-900/50 text-indigo-300 border border-indigo-500'
+                          : 'bg-gray-700 text-gray-300 border border-gray-600 hover:border-indigo-500/50'
+                        }`}
+                    >
+                      {skill}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* État et liens */}
-            <div className="grid grid-cols-2 gap-6">
+              {/* Statut du projet */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Lien GitHub
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Statut du projet
+                </label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as ProjectStatus }))}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900
+                           text-gray-100
+                           focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
+                           transition-all duration-200"
+                >
+                  {PROJECT_STATUSES.map((status) => (
+                    <option key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Lien GitHub */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Lien GitHub (optionnel)
                 </label>
                 <input
                   type="url"
                   name="githubUrl"
                   value={formData.githubUrl}
                   onChange={handleChange}
-                  placeholder="https://github.com/username/repository"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 
-                           focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                  className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900
+                           text-gray-100 placeholder-gray-500
+                           focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
                            transition-all duration-200"
+                  placeholder="https://github.com/username/project"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  État du projet
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    status: e.target.value as ProjectStatus 
-                  }))}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 
-                           focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
-                           transition-all duration-200"
-                >
-                  {PROJECT_STATUSES.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
 
-            {/* Images */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">Images du projet</h3>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {formData.images.map((image, index) => (
-                  <div key={index} className="relative group rounded-xl overflow-hidden 
-                                          border border-gray-200 bg-gray-50 p-3">
-                    <div className="relative h-40 w-full mb-3">
-                      <Image
-                        src={image.url}
-                        alt={image.caption || `Image ${index + 1}`}
-                        fill
-                        className="object-cover rounded-lg"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 
-                                  transition-opacity flex items-center justify-center">
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 
-                                   transform transition-all duration-200 hover:scale-110"
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                    <input
-                      type="text"
-                      value={image.caption || ''}
-                      onChange={(e) => {
-                        const newImages = [...formData.images];
-                        newImages[index].caption = e.target.value;
-                        setFormData(prev => ({ ...prev, images: newImages }));
-                      }}
-                      placeholder="Légende de l'image"
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg 
-                               focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
-                               transition-all duration-200"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Upload de nouvelle image */}
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6">
-                <div className="space-y-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="block w-full text-sm text-gray-500 
-                             file:mr-4 file:py-2 file:px-4 file:rounded-full 
-                             file:border-0 file:text-sm file:font-semibold
-                             file:bg-blue-50 file:text-blue-700 
-                             hover:file:bg-blue-100 
-                             transition-all duration-200"
-                  />
-                  {newImage.url && (
-                    <div className="flex items-end gap-4">
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          value={newImage.caption}
-                          onChange={(e) => setNewImage(prev => ({ 
-                            ...prev, 
-                            caption: e.target.value 
-                          }))}
-                          placeholder="Légende (optionnel)"
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 
-                                   focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
-                                   transition-all duration-200"
+              {/* Images du projet */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-300">Images du projet</label>
+                
+                {/* Liste des images existantes */}
+                <div className="grid grid-cols-2 gap-4">
+                  {formData.images.map((image, index) => (
+                    <div key={index} className="relative group">
+                      <div className="aspect-video rounded-xl overflow-hidden border border-gray-700">
+                        <Image
+                          src={image.url}
+                          alt={image.caption || `Image ${index + 1}`}
+                          width={400}
+                          height={225}
+                          className="w-full h-full object-cover"
                         />
                       </div>
                       <button
                         type="button"
-                        onClick={addImage}
-                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 
-                                 text-white rounded-xl font-medium hover:from-blue-600 
-                                 hover:to-indigo-600 transition-all duration-200 
-                                 transform hover:-translate-y-0.5"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg 
+                                 opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                                 hover:bg-red-600"
                       >
-                        Ajouter
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                       </button>
+                      {image.caption && (
+                        <p className="mt-1 text-sm text-gray-400 truncate">{image.caption}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Ajout d'une nouvelle image */}
+                <div className="space-y-4 p-4 border border-gray-700 rounded-xl bg-gray-900/50">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Ajouter une image
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="block w-full text-sm text-gray-400
+                               file:mr-4 file:py-2 file:px-4
+                               file:rounded-full file:border-0
+                               file:text-sm file:font-medium
+                               file:bg-indigo-900/50 file:text-indigo-300
+                               hover:file:bg-indigo-900/70"
+                    />
+                  </div>
+                  {newImage.url && (
+                    <div className="space-y-4">
+                      <div className="aspect-video rounded-xl overflow-hidden border border-gray-700">
+                        <Image
+                          src={newImage.url}
+                          alt="Nouvelle image"
+                          width={400}
+                          height={225}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex gap-4">
+                        <input
+                          type="text"
+                          value={newImage.caption}
+                          onChange={(e) => setNewImage(prev => ({ ...prev, caption: e.target.value }))}
+                          placeholder="Légende de l'image (optionnel)"
+                          className="flex-1 px-4 py-2 rounded-xl border border-gray-700 bg-gray-900
+                                   text-gray-100 placeholder-gray-500
+                                   focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
+                                   transition-all duration-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={addImage}
+                          className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 
+                                   text-white rounded-xl font-medium
+                                   hover:from-indigo-600 hover:to-blue-600 
+                                   transition-all duration-200"
+                        >
+                          Ajouter
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -558,31 +534,27 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
             </div>
 
             {error && (
-              <div className="p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-3">
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{error}</span>
+              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+                {error}
               </div>
             )}
 
             {/* Boutons d'action */}
-            <div className="flex justify-end gap-3 pt-6 border-t">
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2.5 text-gray-700 font-medium hover:text-gray-900 
-                         transition-colors"
+                className="px-6 py-3 rounded-xl border border-gray-700 text-gray-400
+                         hover:bg-gray-700 hover:text-gray-200
+                         transition-all duration-200"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 
-                         text-white rounded-xl font-medium hover:from-blue-600 
-                         hover:to-indigo-600 transition-all duration-200 
-                         transform hover:-translate-y-0.5"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500
+                         text-white font-medium hover:from-indigo-600 hover:to-blue-600
+                         transition-all duration-200 shadow-lg shadow-indigo-500/20"
               >
                 Enregistrer les modifications
               </button>

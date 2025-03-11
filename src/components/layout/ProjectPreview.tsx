@@ -29,10 +29,10 @@ export default function ProjectPreview({ project, isOwner, collaborationRole }: 
   const router = useRouter();
   
   const statusColors = {
-    'en développement': 'from-yellow-400 to-orange-400 text-white',
-    'en production': 'from-green-400 to-emerald-400 text-white',
-    'en pause': 'from-blue-400 to-indigo-400 text-white',
-    'abandonné': 'from-red-400 to-pink-400 text-white',
+    'en développement': 'from-yellow-500 to-orange-500 text-white',
+    'en production': 'from-emerald-500 to-green-500 text-white',
+    'en pause': 'from-blue-500 to-indigo-500 text-white',
+    'abandonné': 'from-red-500 to-pink-500 text-white',
   };
 
   const handleAuthorClick = (e: React.MouseEvent) => {
@@ -42,10 +42,10 @@ export default function ProjectPreview({ project, isOwner, collaborationRole }: 
   };
 
   return (
-    <div className="w-[280px] group">
+    <div className="w-[376px] group">
       <Link href={`/projects/${project._id}`} className="block">
-        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 
-                    transform hover:-translate-y-1 overflow-hidden">
+        <div className="bg-gray-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 
+                    transform hover:-translate-y-1 overflow-hidden border border-gray-700">
           <div className="relative h-[160px] w-full">
             <Image
               src={project.img || '/default-project.jpg'}
@@ -53,11 +53,11 @@ export default function ProjectPreview({ project, isOwner, collaborationRole }: 
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent" />
             
             <div className="absolute inset-0 p-4 flex flex-col justify-between">
               <div className="flex justify-between items-start gap-2">
-                <h2 className="text-lg font-bold text-white drop-shadow-md line-clamp-2">
+                <h2 className="text-lg font-bold text-white drop-shadow-md line-clamp-2 bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text">
                   {project.title}
                 </h2>
                 <div className="flex flex-col gap-2 items-end">
@@ -71,15 +71,15 @@ export default function ProjectPreview({ project, isOwner, collaborationRole }: 
                   <span className={`
                     px-3 py-1 rounded-full text-xs font-medium shadow-lg
                     ${project.projectType === 'collaboratif' 
-                      ? 'bg-gradient-to-r from-purple-400 to-pink-400 text-white' 
-                      : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700'}
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
+                      : 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-200'}
                   `}>
                     {project.projectType === 'collaboratif' ? 'Collaboratif' : 'Personnel'}
                   </span>
                 </div>
               </div>
 
-              <p className="text-sm text-gray-200 line-clamp-2">
+              <p className="text-sm text-gray-300 line-clamp-2">
                 {project.description}
               </p>
             </div>
@@ -100,30 +100,30 @@ export default function ProjectPreview({ project, isOwner, collaborationRole }: 
               {project.skills.map((skill, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 
-                           text-blue-700 rounded-full text-xs font-medium 
-                           transition-transform hover:scale-105"
+                  className="px-2 py-1 bg-gradient-to-r from-gray-700 to-gray-600 
+                           text-gray-200 rounded-full text-xs font-medium 
+                           transition-transform hover:scale-105 border border-gray-600"
                 >
                   {skill}
                 </span>
               ))}
             </div>
 
-            <div className="flex justify-between items-center text-sm pt-2 border-t">
+            <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-700">
               <div className="flex items-center gap-2">
-                <span className="text-gray-500">Par</span>
+                <span className="text-gray-400">Par</span>
                 <button 
                   onClick={handleAuthorClick}
-                  className="font-medium text-blue-600 hover:text-blue-700 
+                  className="font-medium text-indigo-400 hover:text-indigo-300 
                            transition-colors hover:underline"
                 >
                   {project.userId.name}
                 </button>
                 {isOwner && (
-                  <span className="text-blue-600 font-medium">(Vous)</span>
+                  <span className="text-indigo-400 font-medium">(Vous)</span>
                 )}
               </div>
-              <span className="text-gray-500">
+              <span className="text-gray-400">
                 {formatDistanceToNow(new Date(project.createdAt), {
                   addSuffix: true,
                   locale: fr,

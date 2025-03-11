@@ -30,25 +30,27 @@ export default function ProjectFilters({
   };
   
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+    <div className="bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 border border-gray-700">
       <div className="flex flex-col gap-6">
         {/* Barre de recherche avec icône */}
         <div className="relative">
-          <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             placeholder="Rechercher un projet..."
             value={filters.searchTerm}
             onChange={(e) => onFilterChange({ ...filters, searchTerm: e.target.value })}
-            className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 
-                     focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+            className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-700 bg-gray-900 
+                     text-gray-300 placeholder-gray-500
+                     focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
+                     transition-all duration-300"
           />
         </div>
 
         {/* Bouton pour ouvrir/fermer les filtres sur mobile */}
         <button
           onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-          className="md:hidden flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          className="md:hidden flex items-center gap-2 text-gray-400 hover:text-gray-300 transition-colors"
         >
           <FaFilter />
           <span>Filtres</span>
@@ -61,12 +63,13 @@ export default function ProjectFilters({
         `}>
           {/* Type de projet */}
           <div className="flex-1 min-w-[200px] space-y-2">
-            <h3 className="text-sm font-semibold text-gray-700">Type de projet</h3>
+            <h3 className="text-sm font-semibold text-gray-300">Type de projet</h3>
             <select
               value={filters.projectType}
               onChange={(e) => onFilterChange({ ...filters, projectType: e.target.value })}
-              className="w-full p-3 rounded-xl border border-gray-200 focus:border-indigo-500 
-                       focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+              className="w-full p-3 rounded-xl border border-gray-700 bg-gray-900 
+                       text-gray-300 focus:border-indigo-500 focus:ring-2 
+                       focus:ring-indigo-500/20 transition-all duration-300"
             >
               <option value="tous">Tous les projets</option>
               <option value="personnel">Projets personnels</option>
@@ -76,7 +79,7 @@ export default function ProjectFilters({
 
           {/* Compétences */}
           <div className="flex-[2] min-w-[300px] space-y-2">
-            <h3 className="text-sm font-semibold text-gray-700">Compétences requises</h3>
+            <h3 className="text-sm font-semibold text-gray-300">Compétences requises</h3>
             <div className="flex flex-wrap gap-2">
               {availableSkills.map((skill) => (
                 <button
@@ -85,8 +88,8 @@ export default function ProjectFilters({
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 
                             transform hover:-translate-y-0.5 ${
                     filters.skills.includes(skill)
-                      ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-lg shadow-indigo-500/20'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
                   }`}
                 >
                   {skill}
@@ -98,16 +101,16 @@ export default function ProjectFilters({
 
         {/* Résumé des filtres actifs */}
         {(filters.skills.length > 0 || filters.projectType !== 'tous' || filters.searchTerm) && (
-          <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100">
-            <span className="text-sm text-gray-500">Filtres actifs :</span>
+          <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-700">
+            <span className="text-sm text-gray-400">Filtres actifs :</span>
             <div className="flex flex-wrap gap-2">
               {filters.projectType !== 'tous' && (
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm 
-                               bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100">
+                               bg-indigo-900/50 text-indigo-300 border border-indigo-500/50">
                   {filters.projectType === 'personnel' ? 'Projets personnels' : 'Projets collaboratifs'}
                   <button
                     onClick={() => onFilterChange({ ...filters, projectType: 'tous' })}
-                    className="text-blue-400 hover:text-blue-600"
+                    className="text-indigo-400 hover:text-indigo-300"
                   >
                     <FaTimes size={12} />
                   </button>
@@ -117,12 +120,12 @@ export default function ProjectFilters({
                 <span
                   key={skill}
                   className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm 
-                           bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100"
+                           bg-indigo-900/50 text-indigo-300 border border-indigo-500/50"
                 >
                   {skill}
                   <button
                     onClick={() => toggleSkillFilter(skill)}
-                    className="text-blue-400 hover:text-blue-600"
+                    className="text-indigo-400 hover:text-indigo-300"
                   >
                     <FaTimes size={12} />
                   </button>
@@ -130,11 +133,11 @@ export default function ProjectFilters({
               ))}
               {filters.searchTerm && (
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm 
-                               bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100">
+                               bg-indigo-900/50 text-indigo-300 border border-indigo-500/50">
                   Recherche: {filters.searchTerm}
                   <button
                     onClick={() => onFilterChange({ ...filters, searchTerm: '' })}
-                    className="text-blue-400 hover:text-blue-600"
+                    className="text-indigo-400 hover:text-indigo-300"
                   >
                     <FaTimes size={12} />
                   </button>
@@ -142,7 +145,7 @@ export default function ProjectFilters({
               )}
               <button
                 onClick={onReset}
-                className="text-sm text-red-500 hover:text-red-700 transition-colors"
+                className="text-sm text-red-400 hover:text-red-300 transition-colors"
               >
                 Réinitialiser tout
               </button>

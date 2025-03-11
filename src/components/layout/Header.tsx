@@ -36,6 +36,7 @@ export default function Header() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const { showNotification } = useNotifications();
@@ -101,6 +102,22 @@ export default function Header() {
     return () => clearInterval(interval);
   }, [session]);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const isAuthenticated = status === "authenticated" && session?.user;
 
   const handleNotificationClick = async (notification: Notification) => {
@@ -149,21 +166,21 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-4 shadow-lg">
+    <header className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-4 shadow-lg border-b border-gray-700">
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold">
+        <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">
           DevExp
         </Link>
         <nav className="space-x-4 flex items-center">
           {status === "loading" ? (
-            <div className="animate-pulse bg-gray-600 h-8 w-20 rounded" />
+            <div className="animate-pulse bg-gray-700 h-8 w-20 rounded" />
           ) : session?.user ? (
             <>
               {/* Icône de notification */}
-              <div className="relative">
+              <div className="relative" ref={notificationsRef}>
                 <button
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                  className="p-2 hover:text-gray-300 relative"
+                  className="p-2 hover:text-indigo-400 transition-colors relative"
                 >
                   <FaBell className="w-5 h-5" />
                   {notifications.length > 0 && (
@@ -175,19 +192,19 @@ export default function Header() {
 
                 {/* Menu déroulant des notifications */}
                 {isNotificationsOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
+                  <div className="absolute right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-xl overflow-hidden z-50 border border-gray-700">
                     <div className="max-h-96 overflow-y-auto">
                       {notifications.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500">
+                        <div className="p-4 text-center text-gray-400">
                           Aucune notification
                         </div>
                       ) : (
-                        <div className="divide-y divide-gray-100">
+                        <div className="divide-y divide-gray-700">
                           {notifications.map((notification) => (
                             <button
                               key={notification._id}
                               onClick={() => handleNotificationClick(notification)}
-                              className="w-full text-left p-4 hover:bg-gray-50 transition-colors flex items-start gap-3"
+                              className="w-full text-left p-4 hover:bg-gray-700 transition-colors flex items-start gap-3"
                             >
                               {notification.from.image ? (
                                 <Image
@@ -198,18 +215,18 @@ export default function Header() {
                                   className="rounded-full"
                                 />
                               ) : (
-                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                  <FaUser className="w-5 h-5 text-gray-500" />
+                                <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+                                  <FaUser className="w-5 h-5 text-gray-400" />
                                 </div>
                               )}
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">
+                                <p className="text-sm font-medium text-gray-100">
                                   {notification.title}
                                 </p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-400">
                                   {notification.message}
                                 </p>
-                                <p className="text-xs text-gray-400 mt-1">
+                                <p className="text-xs text-gray-500 mt-1">
                                   {formatDate(notification.createdAt)}
                                 </p>
                               </div>
@@ -223,13 +240,13 @@ export default function Header() {
               </div>
 
               {/* Menu utilisateur existant */}
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-2 hover:text-gray-300"
+                  className="flex items-center space-x-2 hover:text-indigo-400 transition-colors"
                 >
                   {profileImage ? (
-                    <div className="w-8 h-8 rounded-full overflow-hidden relative">
+                    <div className="w-8 h-8 rounded-full overflow-hidden relative border border-gray-700">
                       <Image
                         src={profileImage}
                         alt="Profile"
@@ -247,24 +264,20 @@ export default function Header() {
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-xl shadow-xl py-1 z-50 border border-gray-700">
                     <Link
                       href="/profile/my-profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-gray-100 hover:bg-gray-700 transition-colors"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      Mon Profil
-                    </Link>
-                    <Link
-                      href="/projects?view=my-projects"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      Mes Projets
+                      Mon profil
                     </Link>
                     <button
-                      onClick={() => signOut()}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        signOut();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 transition-colors"
                     >
                       Déconnexion
                     </button>
@@ -275,7 +288,8 @@ export default function Header() {
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+              className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-xl 
+                       hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
             >
               Connexion
             </button>
@@ -283,21 +297,7 @@ export default function Header() {
         </nav>
       </div>
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
-      />
-
-      {/* Overlay pour fermer les menus déroulants */}
-      {(isDropdownOpen || isNotificationsOpen) && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => {
-            setIsDropdownOpen(false);
-            setIsNotificationsOpen(false);
-          }}
-        />
-      )}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </header>
   );
 }

@@ -135,7 +135,7 @@ export default function ProfilePage() {
 
   if (status === "loading") {
     return <div className="flex justify-center items-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
     </div>;
   }
 
@@ -147,18 +147,18 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Carte de profil principale */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-700">
         {/* En-tête avec fond dégradé */}
         <div className="relative h-48 bg-gradient-to-r from-indigo-600 to-blue-500">
           <div className="absolute inset-0 bg-grid-white/10"></div>
         </div>
 
         <div className="relative px-8 pb-8">
-          {/* Avatar avec overlay d'édition */}
+          {/* Avatar et informations principales */}
           <div className="relative -mt-24 mb-4 flex justify-between items-start">
             <div className="relative group">
               {formData.image ? (
-                <div className="w-40 h-40 rounded-2xl border-4 border-white shadow-lg overflow-hidden">
+                <div className="w-40 h-40 rounded-2xl border-4 border-gray-800 shadow-lg overflow-hidden">
                   <Image
                     src={formData.image}
                     alt="Photo de profil"
@@ -168,7 +168,7 @@ export default function ProfilePage() {
                   />
                 </div>
               ) : (
-                <div className="w-40 h-40 rounded-2xl border-4 border-white shadow-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                <div className="w-40 h-40 rounded-2xl border-4 border-gray-800 shadow-lg bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
                   <span className="text-4xl text-gray-400">
                     {formData.name.charAt(0).toUpperCase()}
                   </span>
@@ -193,21 +193,21 @@ export default function ProfilePage() {
             </div>
 
             {/* Boutons d'action */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 mt-4 md:mt-0">
               <button
                 onClick={() => router.push(`/profile/${session?.user?.id}`)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-gray-700 
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gray-700 text-gray-200 
                          shadow-md hover:shadow-lg transition-all duration-300"
               >
-                <FaEye className="text-gray-500" />
+                <FaEye className="text-gray-400" />
                 <span>Voir profil public</span>
               </button>
               <button
                 onClick={() => setIsEditing(!isEditing)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-md hover:shadow-lg 
+                className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl shadow-md hover:shadow-lg 
                          transition-all duration-300 ${
                   isEditing
-                    ? 'bg-gray-100 text-gray-700'
+                    ? 'bg-gray-700 text-gray-200'
                     : 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white'
                 }`}
               >
@@ -231,38 +231,38 @@ export default function ProfilePage() {
               {/* Champs de formulaire */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Nom</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 
-                             focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-gray-100 
+                             focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 
-                             focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-gray-100 
+                             focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300"
                     rows={4}
                   />
                 </div>
 
                 {/* Compétences avec animation */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Compétences</label>
+                  <label className="block text-sm font-medium text-gray-300">Compétences</label>
                   <div className="flex gap-2 mb-2">
                     <input
                       type="text"
                       value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
                       placeholder="Ajouter une compétence"
-                      className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-500 
-                               focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                      className="flex-1 px-4 py-2 rounded-xl border border-gray-700 bg-gray-900 text-gray-100 
+                               focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300"
                     />
                     <button
                       type="button"
@@ -278,14 +278,13 @@ export default function ProfilePage() {
                       <span
                         key={index}
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-sm 
-                                 bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-700 
-                                 border border-indigo-100 group"
+                                 bg-indigo-900/50 text-indigo-300 border border-indigo-500/50 group"
                       >
                         {skill}
                         <button
                           type="button"
                           onClick={() => removeSkill(skill)}
-                          className="text-indigo-400 hover:text-indigo-600 transition-colors"
+                          className="text-indigo-400 hover:text-indigo-300 transition-colors"
                         >
                           <FaTimes size={12} />
                         </button>
@@ -296,7 +295,7 @@ export default function ProfilePage() {
 
                 {/* Technologies préférées */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-300">
                     Technologies préférées (max 3)
                   </label>
                   <div className="flex gap-2 mb-2">
@@ -306,9 +305,9 @@ export default function ProfilePage() {
                       onChange={(e) => setNewFavTech(e.target.value)}
                       placeholder="Ajouter une technologie"
                       disabled={formData.favoriteTechnologies.length >= 3}
-                      className="flex-1 px-4 py-2 rounded-xl border border-gray-200 focus:border-indigo-500 
-                               focus:ring-2 focus:ring-indigo-200 transition-all duration-300 
-                               disabled:bg-gray-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-4 py-2 rounded-xl border border-gray-700 bg-gray-900 text-gray-100 
+                               focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300 
+                               disabled:bg-gray-800 disabled:cursor-not-allowed"
                     />
                     <button
                       type="button"
@@ -324,7 +323,7 @@ export default function ProfilePage() {
                       disabled={formData.favoriteTechnologies.length >= 3}
                       className={`p-2 rounded-xl transition-colors duration-300 ${
                         formData.favoriteTechnologies.length >= 3
-                          ? 'bg-gray-300 cursor-not-allowed'
+                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
                           : 'bg-indigo-500 text-white hover:bg-indigo-600'
                       }`}
                     >
@@ -336,8 +335,7 @@ export default function ProfilePage() {
                       <span
                         key={index}
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-sm 
-                                 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 
-                                 border border-green-100"
+                                 bg-green-900/50 text-green-300 border border-green-500/50"
                       >
                         {tech}
                         <button
@@ -348,7 +346,7 @@ export default function ProfilePage() {
                               favoriteTechnologies: formData.favoriteTechnologies.filter(t => t !== tech),
                             });
                           }}
-                          className="text-green-400 hover:text-green-600 transition-colors"
+                          className="text-green-400 hover:text-green-300 transition-colors"
                         >
                           <FaTimes size={12} />
                         </button>
@@ -359,7 +357,7 @@ export default function ProfilePage() {
 
                 {/* Disponibilité */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Disponibilité
                   </label>
                   <select
@@ -368,8 +366,8 @@ export default function ProfilePage() {
                       ...formData,
                       availability: e.target.value as 'disponible' | 'occupé' | 'en_recherche'
                     })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 
-                             focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-gray-100 
+                             focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300"
                   >
                     <option value="disponible">Disponible</option>
                     <option value="occupé">Occupé</option>
@@ -391,8 +389,8 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-6 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium 
-                           hover:bg-gray-200 transition-colors duration-300"
+                  className="px-6 py-3 rounded-xl bg-gray-700 text-gray-200 font-medium 
+                           hover:bg-gray-600 transition-colors duration-300"
                 >
                   Annuler
                 </button>
@@ -402,34 +400,34 @@ export default function ProfilePage() {
             /* Mode affichage */
             <div className="space-y-8">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">{formData.name}</h1>
-                <p className="text-gray-500">{formData.email}</p>
+                <h1 className="text-3xl font-bold text-gray-100">{formData.name}</h1>
+                <p className="text-gray-400">{formData.email}</p>
                 <div className="flex gap-4 mt-2">
-                  <div className="text-sm text-gray-600">
-                    <span className="font-semibold text-indigo-600">{formData.projects?.length || 0}</span> projets créés
+                  <div className="text-sm text-gray-300">
+                    <span className="font-semibold text-indigo-400">{formData.projects?.length || 0}</span> projets créés
                   </div>
-                  <div className="text-sm text-gray-600">
-                    <span className="font-semibold text-indigo-600">{formData.collaborations?.length || 0}</span> collaborations
+                  <div className="text-sm text-gray-300">
+                    <span className="font-semibold text-indigo-400">{formData.collaborations?.length || 0}</span> collaborations
                   </div>
                 </div>
               </div>
 
               {formData.description && (
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">À propos</h2>
-                  <p className="text-gray-600 leading-relaxed">{formData.description}</p>
+                  <h2 className="text-xl font-semibold text-gray-100 mb-2">À propos</h2>
+                  <p className="text-gray-300 leading-relaxed">{formData.description}</p>
                 </div>
               )}
 
               {formData.skills.length > 0 && (
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-3">Compétences</h2>
+                  <h2 className="text-xl font-semibold text-gray-100 mb-3">Compétences</h2>
                   <div className="flex flex-wrap gap-2">
                     {formData.skills.map((skill, index) => (
                       <span
                         key={index}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 
-                                 text-indigo-700 border border-indigo-100"
+                        className="px-4 py-2 rounded-xl bg-indigo-900/50 text-indigo-300 
+                                 border border-indigo-500/50"
                       >
                         {skill}
                       </span>
@@ -440,13 +438,13 @@ export default function ProfilePage() {
 
               {formData.favoriteTechnologies.length > 0 && (
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-3">Technologies préférées</h2>
+                  <h2 className="text-xl font-semibold text-gray-100 mb-3">Technologies préférées</h2>
                   <div className="flex flex-wrap gap-2">
                     {formData.favoriteTechnologies.map((tech, index) => (
                       <span
                         key={index}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 
-                                 text-green-700 border border-green-100"
+                        className="px-4 py-2 rounded-xl bg-green-900/50 text-green-300 
+                                 border border-green-500/50"
                       >
                         {tech}
                       </span>
@@ -456,13 +454,13 @@ export default function ProfilePage() {
               )}
 
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">Disponibilité</h2>
+                <h2 className="text-xl font-semibold text-gray-100 mb-3">Disponibilité</h2>
                 <span className={`inline-flex px-4 py-2 rounded-xl text-sm font-medium ${
                   formData.availability === 'disponible'
-                    ? 'bg-green-50 text-green-700 border border-green-100'
+                    ? 'bg-green-900/50 text-green-300 border border-green-500/50'
                     : formData.availability === 'occupé'
-                    ? 'bg-red-50 text-red-700 border border-red-100'
-                    : 'bg-blue-50 text-blue-700 border border-blue-100'
+                    ? 'bg-red-900/50 text-red-300 border border-red-500/50'
+                    : 'bg-blue-900/50 text-blue-300 border border-blue-500/50'
                 }`}>
                   {formData.availability.replace('_', ' ')}
                 </span>

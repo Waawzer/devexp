@@ -56,19 +56,19 @@ export default function Sidebar() {
 
   return (
     <div 
-      className={`bg-gradient-to-b from-gray-900 to-gray-800 text-white transition-all duration-300 ease-in-out h-screen sticky top-0 flex flex-col ${
+      className={`bg-gradient-to-b from-gray-900 to-gray-800 text-white transition-all duration-300 ease-in-out h-screen sticky top-0 flex flex-col border-r border-gray-700 ${
         collapsed ? 'w-20' : 'w-72'
       }`}
     >
-      <div className="p-6 flex justify-between items-center border-b border-gray-700/50">
+      <div className="p-6 flex justify-between items-center border-b border-gray-700">
         {!collapsed && (
-          <div className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+          <div className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">
             DevExp
           </div>
         )}
         <button 
           onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-full hover:bg-gray-700/50 transition-colors text-gray-400 hover:text-white"
+          className="p-2 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-indigo-400"
         >
           {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
         </button>
@@ -81,8 +81,8 @@ export default function Sidebar() {
               href="/" 
               className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
                 pathname === '/' 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
-                  : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-indigo-400'
               }`}
             >
               <FaHome className={`${collapsed ? 'mx-auto text-xl' : 'mr-3'}`} />
@@ -96,8 +96,8 @@ export default function Sidebar() {
               onClick={() => toggleDropdown('projects')}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
                 isActive('/projects') 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
-                  : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-indigo-400'
               }`}
             >
               <div className="flex items-center">
@@ -111,14 +111,14 @@ export default function Sidebar() {
             
             {/* Sous-menu Projets */}
             {!collapsed && projectsOpen && (
-              <ul className="mt-1 ml-7 space-y-1 border-l-2 border-gray-700/50 pl-4">
+              <ul className="mt-1 ml-7 space-y-1 border-l-2 border-gray-700 pl-4">
                 <li>
                   <Link 
                     href="/projects" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
                       pathname === '/projects' && !searchParams.get('view')
-                        ? 'bg-blue-600/20 text-blue-300' 
-                        : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
+                        ? 'bg-indigo-900/40 text-indigo-300' 
+                        : 'text-gray-400 hover:bg-gray-700/50 hover:text-indigo-400'
                     }`}
                   >
                     <FaList className="mr-2 text-sm" />
@@ -130,8 +130,8 @@ export default function Sidebar() {
                     href="/projects?view=my-projects" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
                       isActive('/projects', 'my-projects')
-                        ? 'bg-blue-600/20 text-blue-300' 
-                        : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
+                        ? 'bg-indigo-900/40 text-indigo-300' 
+                        : 'text-gray-400 hover:bg-gray-700/50 hover:text-indigo-400'
                     }`}
                   >
                     <FaUsers className="mr-2 text-sm" />
@@ -143,8 +143,8 @@ export default function Sidebar() {
                     href="/projects?view=my-collaborations" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
                       isActive('/projects', 'my-collaborations')
-                        ? 'bg-blue-600/20 text-blue-300' 
-                        : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
+                        ? 'bg-indigo-900/40 text-indigo-300' 
+                        : 'text-gray-400 hover:bg-gray-700/50 hover:text-indigo-400'
                     }`}
                   >
                     <FaHandshake className="mr-2 text-sm" />
@@ -160,19 +160,19 @@ export default function Sidebar() {
               href="/messages" 
               className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
                 isActive('/messages') 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
-                  : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-indigo-400'
               }`}
             >
               <FaEnvelope className={`${collapsed ? 'mx-auto text-xl' : 'mr-3'}`} />
               {!collapsed && (
                 <div className="flex justify-between items-center w-full">
                   <span>Messages</span>
-                  <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">Nouveau</span>
+                  <span className="bg-indigo-500 text-white text-xs px-2 py-1 rounded-full">Nouveau</span>
                 </div>
               )}
               {collapsed && (
-                <span className="absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-full"></span>
+                <span className="absolute top-0 right-0 w-3 h-3 bg-indigo-500 rounded-full"></span>
               )}
             </Link>
           </li>
@@ -183,8 +183,8 @@ export default function Sidebar() {
               onClick={() => toggleDropdown('missions')}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
                 pathname.startsWith('/mission') 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
-                  : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-indigo-400'
               }`}
             >
               <div className="flex items-center">
@@ -198,14 +198,14 @@ export default function Sidebar() {
             
             {/* Sous-menu Missions */}
             {!collapsed && missionsOpen && (
-              <ul className="mt-1 ml-7 space-y-1 border-l-2 border-gray-700/50 pl-4">
+              <ul className="mt-1 ml-7 space-y-1 border-l-2 border-gray-700 pl-4">
                 <li>
                   <Link 
                     href="/mission" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
                       pathname === '/mission' && !searchParams.get('view')
-                        ? 'bg-blue-600/20 text-blue-300' 
-                        : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
+                        ? 'bg-indigo-900/40 text-indigo-300' 
+                        : 'text-gray-400 hover:bg-gray-700/50 hover:text-indigo-400'
                     }`}
                   >
                     <FaListUl className="mr-2 text-sm" />
@@ -217,8 +217,8 @@ export default function Sidebar() {
                     href="/mission?view=my-missions" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
                       isActive('/mission', 'my-missions')
-                        ? 'bg-blue-600/20 text-blue-300' 
-                        : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
+                        ? 'bg-indigo-900/40 text-indigo-300' 
+                        : 'text-gray-400 hover:bg-gray-700/50 hover:text-indigo-400'
                     }`}
                   >
                     <FaClipboardList className="mr-2 text-sm" />
@@ -230,8 +230,8 @@ export default function Sidebar() {
                     href="/mission?view=assigned" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
                       isActive('/mission', 'assigned')
-                        ? 'bg-blue-600/20 text-blue-300' 
-                        : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
+                        ? 'bg-indigo-900/40 text-indigo-300' 
+                        : 'text-gray-400 hover:bg-gray-700/50 hover:text-indigo-400'
                     }`}
                   >
                     <FaTasks className="mr-2 text-sm" />
@@ -247,12 +247,12 @@ export default function Sidebar() {
               href="/profile" 
               className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
                 isActive('/profile') 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
-                  : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-indigo-400'
               }`}
             >
               <FaUserTie className={`${collapsed ? 'mx-auto text-xl' : 'mr-3'}`} />
-              {!collapsed && <span>Freelances</span>}
+              {!collapsed && <span>Profils</span>}
             </Link>
           </li>
         </ul>

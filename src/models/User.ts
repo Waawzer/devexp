@@ -24,11 +24,12 @@ export interface UserInput {
 
 // Définir le schéma
 const UserSchema = new Schema({
-  name: String,
+  name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  password: String,
   emailVerified: Date,
   image: String,
-  username: String,
+  username: { type: String, sparse: true },
   description: String,
   skills: [String],
   favoriteTechnologies: {

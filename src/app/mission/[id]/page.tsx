@@ -347,23 +347,23 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
   // Fonction pour obtenir la couleur de priorité
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgente': return 'bg-red-100 text-red-800 border-red-200';
-      case 'haute': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'moyenne': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'basse': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'urgente': return 'bg-red-500/10 text-red-400 border border-red-500/50';
+      case 'haute': return 'bg-orange-500/10 text-orange-400 border border-orange-500/50';
+      case 'moyenne': return 'bg-blue-500/10 text-blue-400 border border-blue-500/50';
+      case 'basse': return 'bg-green-500/10 text-green-400 border border-green-500/50';
+      default: return 'bg-gray-500/10 text-gray-400 border border-gray-500/50';
     }
   };
 
   // Fonction pour obtenir la couleur de statut
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'à faire': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'en cours': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'en révision': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'terminée': return 'bg-green-100 text-green-800 border-green-200';
-      case 'annulée': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'à faire': return 'bg-gray-500/10 text-gray-400 border border-gray-500/50';
+      case 'en cours': return 'bg-blue-500/10 text-blue-400 border border-blue-500/50';
+      case 'en révision': return 'bg-purple-500/10 text-purple-400 border border-purple-500/50';
+      case 'terminée': return 'bg-green-500/10 text-green-400 border border-green-500/50';
+      case 'annulée': return 'bg-red-500/10 text-red-400 border border-red-500/50';
+      default: return 'bg-gray-500/10 text-gray-400 border border-gray-500/50';
     }
   };
 
@@ -458,7 +458,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
       <div className="mb-6 flex items-center gap-4">
         <Link 
           href={getBackLink()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors"
         >
           <FaArrowLeft />
           <span>Retour aux missions</span>
@@ -466,20 +466,20 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
       </div>
 
       {/* Carte principale de la mission */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+      <div className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8 border border-gray-700">
         {/* En-tête avec titre et actions */}
-        <div className="relative p-6 border-b border-gray-100">
+        <div className="relative p-6 border-b border-gray-700">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             {isEditing ? (
               <input
                 type="text"
                 value={editedMission.title || ''}
                 onChange={(e) => setEditedMission({ ...editedMission, title: e.target.value })}
-                className="text-2xl font-bold w-full p-2 border border-gray-300 rounded-lg"
+                className="text-2xl font-bold w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-gray-100"
                 placeholder="Titre de la mission"
               />
             ) : (
-              <h1 className="text-2xl font-bold text-gray-900">{mission.title}</h1>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">{mission.title}</h1>
             )}
 
             <div className="flex items-center gap-2">
@@ -488,7 +488,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                   <button
                     onClick={handleSaveEdit}
                     disabled={submitting}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50"
                   >
                     <FaSave />
                     <span>Enregistrer</span>
@@ -498,7 +498,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                       setIsEditing(false);
                       setEditedMission(mission);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-gray-200 rounded-lg hover:bg-gray-600 transition-colors"
                   >
                     <FaTimes />
                     <span>Annuler</span>
@@ -510,14 +510,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setIsEditing(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg hover:from-indigo-600 hover:to-blue-600 transition-all duration-300"
                       >
                         <FaEdit />
                         <span>Modifier</span>
                       </button>
                       <button
                         onClick={() => setDeleteConfirmOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
                       >
                         <FaTrash />
                         <span>Supprimer</span>
@@ -540,7 +540,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
             {mission.projectId && (
               <Link 
                 href={`/projects/${mission.projectId._id}`}
-                className="px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 border border-indigo-200 hover:bg-indigo-200 transition-colors flex items-center gap-1"
+                className="px-3 py-1 rounded-full text-sm font-medium bg-indigo-900/50 text-indigo-300 border border-indigo-500/50 hover:bg-indigo-900/70 transition-colors flex items-center gap-1"
               >
                 <FaProjectDiagram className="text-xs" />
                 <span>Projet: {mission.projectId.title}</span>
@@ -553,13 +553,13 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
         <div className="p-6">
           {/* Description */}
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
+            <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent mb-3">Description</h2>
             {isEditing ? (
               <div className="space-y-3">
                 <textarea
                   value={editedMission.description || ''}
                   onChange={(e) => setEditedMission({ ...editedMission, description: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg min-h-[150px]"
+                  className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg min-h-[150px] text-gray-100"
                   placeholder="Description de la mission"
                 />
                 <button
@@ -567,14 +567,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                   onClick={handleGenerateDescription}
                   disabled={isGeneratingDescription || !editedMission.description}
                   className="inline-flex items-center px-4 py-2 text-sm font-medium 
-                           text-blue-700 bg-blue-50 rounded-xl hover:bg-blue-100 
-                           focus:outline-none focus:ring-2 focus:ring-offset-2 
-                           focus:ring-blue-500 disabled:opacity-50 
+                           text-indigo-300 bg-indigo-900/50 rounded-xl hover:bg-indigo-900/70 
+                           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800
+                           focus:ring-indigo-500 disabled:opacity-50 
                            disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {isGeneratingDescription ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-700" 
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-300" 
                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" 
                                 stroke="currentColor" strokeWidth="4" />
@@ -595,9 +595,9 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                 </button>
               </div>
             ) : (
-              <div className="prose prose-gray max-w-none">
+              <div className="prose prose-invert max-w-none">
                 {mission.description.split('\n').map((paragraph, index) => (
-                  <p key={index} className="mb-2 text-gray-700">{paragraph}</p>
+                  <p key={index} className="mb-2 text-gray-300">{paragraph}</p>
                 ))}
               </div>
             )}
@@ -607,11 +607,11 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             {/* Colonne gauche */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Informations</h2>
+              <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent mb-3">Informations</h2>
               <div className="space-y-4">
                 {/* Créateur */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                  <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
                     {mission.creatorId.image ? (
                       <Image 
                         src={mission.creatorId.image} 
@@ -621,14 +621,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <FaUser className="text-gray-500" />
+                      <FaUser className="text-gray-400" />
                     )}
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Créée par</p>
+                    <p className="text-sm text-gray-400">Créée par</p>
                     <Link 
                       href={`/profile/${mission.creatorId._id}`}
-                      className="font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                      className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
                     >
                       {mission.creatorId.name}
                     </Link>
@@ -637,7 +637,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
                 {/* Assigné à */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                  <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
                     {mission.assignedTo?.image ? (
                       <Image 
                         src={mission.assignedTo.image} 
@@ -647,15 +647,15 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <FaUser className="text-gray-500" />
+                      <FaUser className="text-gray-400" />
                     )}
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Assignée à</p>
+                    <p className="text-sm text-gray-400">Assignée à</p>
                     {mission.assignedTo ? (
                       <Link 
                         href={`/profile/${mission.assignedTo._id}`}
-                        className="font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                        className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
                       >
                         {mission.assignedTo.name}
                       </Link>
@@ -667,18 +667,18 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
                 {/* Dates */}
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <FaCalendarAlt className="text-gray-400" />
+                  <div className="flex items-center gap-2 text-gray-300">
+                    <FaCalendarAlt className="text-gray-500" />
                     <span>Créée le: {formatDate(mission.createdAt)}</span>
                   </div>
                   {mission.startedAt && (
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <FaCalendarAlt className="text-blue-400" />
+                    <div className="flex items-center gap-2 text-gray-300">
+                      <FaCalendarAlt className="text-indigo-400" />
                       <span>Démarrée le: {formatDate(mission.startedAt)}</span>
                     </div>
                   )}
                   {mission.completedAt && (
-                    <div className="flex items-center gap-2 text-gray-700">
+                    <div className="flex items-center gap-2 text-gray-300">
                       <FaCalendarAlt className="text-green-400" />
                       <span>Terminée le: {formatDate(mission.completedAt)}</span>
                     </div>
@@ -689,33 +689,33 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
             {/* Colonne droite */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Détails</h2>
+              <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent mb-3">Détails</h2>
               <div className="space-y-4">
                 {/* Deadline */}
                 <div className="flex items-center gap-2">
                   <FaClock className={`${
                     isOverdue(mission.deadline) && mission.status !== 'terminée' 
-                      ? 'text-red-500' 
-                      : 'text-gray-400'
+                      ? 'text-red-400' 
+                      : 'text-gray-500'
                   }`} />
                   <div>
-                    <p className="text-sm text-gray-500">Date d'échéance</p>
+                    <p className="text-sm text-gray-400">Date d'échéance</p>
                     {isEditing ? (
                       <input
                         type="date"
                         value={editedMission.deadline ? new Date(editedMission.deadline).toISOString().split('T')[0] : ''}
                         onChange={(e) => setEditedMission({ ...editedMission, deadline: e.target.value })}
-                        className="p-2 border border-gray-300 rounded-lg"
+                        className="p-2 bg-gray-900 border border-gray-700 rounded-lg text-gray-100"
                       />
                     ) : (
                       <p className={`font-medium ${
                         isOverdue(mission.deadline) && mission.status !== 'terminée' 
-                          ? 'text-red-500' 
-                          : 'text-gray-700'
+                          ? 'text-red-400' 
+                          : 'text-gray-300'
                       }`}>
                         {mission.deadline ? formatDate(mission.deadline) : 'Non définie'}
                         {isOverdue(mission.deadline) && mission.status !== 'terminée' && (
-                          <span className="ml-2 text-red-500 flex items-center gap-1">
+                          <span className="ml-2 text-red-400 flex items-center gap-1">
                             <FaExclamationTriangle />
                             <span>En retard</span>
                           </span>
@@ -727,42 +727,42 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
                 {/* Heures estimées / complétées */}
                 <div className="flex items-center gap-2">
-                  <FaHourglassHalf className="text-gray-400" />
+                  <FaHourglassHalf className="text-gray-500" />
                   <div className="flex-1">
-                    <p className="text-sm text-gray-500">Temps</p>
+                    <p className="text-sm text-gray-400">Temps</p>
                     {isEditing ? (
                       <div className="flex items-center gap-2">
                         <input
                           type="number"
                           value={editedMission.estimatedHours || ''}
                           onChange={(e) => setEditedMission({ ...editedMission, estimatedHours: parseInt(e.target.value) || 0 })}
-                          className="p-2 border border-gray-300 rounded-lg w-20"
+                          className="p-2 bg-gray-900 border border-gray-700 rounded-lg text-gray-100 w-20"
                           min="0"
                         />
-                        <span>heures estimées</span>
+                        <span className="text-gray-300">heures estimées</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         {mission.estimatedHours ? (
                           <>
-                            <span className="font-medium text-gray-700">
+                            <span className="font-medium text-gray-300">
                               {mission.completedHours}/{mission.estimatedHours} heures
                             </span>
                             {isAssigned && (
                               <div className="flex items-center gap-1 ml-2">
                                 <button
                                   onClick={() => handleCompletedHoursChange(Math.max(0, mission.completedHours - 1))}
-                                  className="p-1 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+                                  className="p-1 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
                                   disabled={mission.completedHours <= 0 || submitting}
                                 >
-                                  <FaMinus className="text-xs" />
+                                  <FaMinus className="text-xs text-gray-300" />
                                 </button>
                                 <button
                                   onClick={() => handleCompletedHoursChange(mission.completedHours + 1)}
-                                  className="p-1 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+                                  className="p-1 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
                                   disabled={mission.completedHours >= (mission.estimatedHours || 0) || submitting}
                                 >
-                                  <FaPlus className="text-xs" />
+                                  <FaPlus className="text-xs text-gray-300" />
                                 </button>
                               </div>
                             )}
@@ -777,7 +777,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
                 {/* Compétences */}
                 <div>
-                  <p className="text-sm text-gray-500 mb-2">Compétences requises</p>
+                  <p className="text-sm text-gray-400 mb-2">Compétences requises</p>
                   {isEditing ? (
                     <input
                       type="text"
@@ -786,7 +786,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                         ...editedMission, 
                         skills: e.target.value.split(',').map(s => s.trim()).filter(Boolean) 
                       })}
-                      className="w-full p-2 border border-gray-300 rounded-lg"
+                      className="w-full p-2 bg-gray-900 border border-gray-700 rounded-lg text-gray-100"
                       placeholder="Compétences séparées par des virgules"
                     />
                   ) : (
@@ -794,7 +794,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                       {mission.skills.map((skill, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                          className="px-3 py-1 bg-indigo-900/50 text-indigo-300 rounded-full text-sm border border-indigo-500/50"
                         >
                           {skill}
                         </span>
@@ -811,8 +811,10 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
           {/* Actions de statut */}
           {(isCreator || isAssigned) && !isEditing && (
-            <div className="mb-8 p-4 bg-gray-50 rounded-xl">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Changer le statut</h2>
+            <div className="mb-8 p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+              <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent mb-3">
+                Changer le statut
+              </h2>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => handleStatusChange('à faire')}
@@ -893,14 +895,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
           {/* Commentaires */}
           <div className="mt-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Commentaires</h2>
+            <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent mb-4">Commentaires</h2>
             
             {/* Liste des commentaires */}
             <div className="space-y-4 mb-6 max-h-[400px] overflow-y-auto p-2">
               {mission.comments && mission.comments.length > 0 ? (
                 mission.comments.map((comment) => (
                   <div key={comment._id} className="flex gap-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 bg-gray-700 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
                       {comment.userId.image ? (
                         <Image 
                           src={comment.userId.image} 
@@ -910,14 +912,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <FaUser className="text-gray-500" />
+                        <FaUser className="text-gray-400" />
                       )}
                     </div>
-                    <div className="flex-1 bg-gray-50 rounded-lg p-3">
+                    <div className="flex-1 bg-gray-900/50 rounded-lg p-3 border border-gray-700">
                       <div className="flex justify-between items-center mb-1">
                         <Link 
                           href={`/profile/${comment.userId._id}`}
-                          className="font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                          className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
                         >
                           {comment.userId.name}
                         </Link>
@@ -925,7 +927,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                           {formatDate(comment.createdAt)}
                         </span>
                       </div>
-                      <p className="text-gray-700">{comment.content}</p>
+                      <p className="text-gray-300">{comment.content}</p>
                     </div>
                   </div>
                 ))
@@ -944,14 +946,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Ajouter un commentaire..."
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-100 placeholder-gray-500"
                   rows={2}
                   required
                 />
                 <button
                   type="submit"
                   disabled={submitting || !newComment.trim()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 self-end"
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50 self-end"
                 >
                   <FaPaperPlane />
                 </button>
@@ -963,23 +965,23 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
       {/* Modal de confirmation de suppression */}
       {deleteConfirmOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Confirmer la suppression</h3>
-            <p className="text-gray-700 mb-6">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-xl p-6 max-w-md w-full border border-gray-700">
+            <h3 className="text-xl font-bold text-gray-100 mb-4">Confirmer la suppression</h3>
+            <p className="text-gray-300 mb-6">
               Êtes-vous sûr de vouloir supprimer cette mission ? Cette action est irréversible.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-gray-700 text-gray-200 rounded-lg hover:bg-gray-600 transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={handleDeleteMission}
                 disabled={submitting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-50"
               >
                 {submitting ? "Suppression..." : "Supprimer"}
               </button>
@@ -990,16 +992,16 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
       {/* Section des candidatures pour le créateur */}
       {isCreator && mission.applications && mission.applications.length > 0 && (
-        <div className="mt-8 p-6 bg-white rounded-xl shadow-md">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">
+        <div className="mt-8 p-6 bg-gray-800 rounded-xl shadow-md border border-gray-700">
+          <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent mb-3">
             Candidatures ({mission.applications.length})
           </h2>
           <div className="space-y-4">
             {mission.applications.map((application) => (
-              <div key={application._id} className="bg-gray-50 p-4 rounded-lg">
+              <div key={application._id} className="bg-gray-900/50 p-4 rounded-lg border border-gray-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
                       {application.user.image ? (
                         <Image 
                           src={application.user.image} 
@@ -1009,13 +1011,13 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <FaUser className="text-gray-500" />
+                        <FaUser className="text-gray-400" />
                       )}
                     </div>
                     <div>
                       <Link 
                         href={`/profile/${application.user._id}`}
-                        className="font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                        className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
                       >
                         {application.user.name}
                       </Link>
@@ -1034,14 +1036,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                       <button
                         onClick={() => handleApplicationAction(application._id, 'accept')}
                         disabled={submitting || (mission.assignedTo && mission.assignedTo._id !== application.user._id)}
-                        className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+                        className="px-3 py-1 bg-green-500/10 text-green-400 rounded hover:bg-green-500/20 transition-colors disabled:opacity-50"
                       >
                         Accepter
                       </button>
                       <button
                         onClick={() => handleApplicationAction(application._id, 'reject')}
                         disabled={submitting}
-                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50"
+                        className="px-3 py-1 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 transition-colors disabled:opacity-50"
                       >
                         Refuser
                       </button>
@@ -1049,14 +1051,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                   ) : (
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                       application.status === 'acceptée' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-green-500/10 text-green-400' 
+                        : 'bg-red-500/10 text-red-400'
                     }`}>
                       {application.status === 'acceptée' ? 'Acceptée' : 'Refusée'}
                     </span>
                   )}
                 </div>
-                <p className="mt-2 text-gray-700">{application.message}</p>
+                <p className="mt-2 text-gray-300">{application.message}</p>
               </div>
             ))}
           </div>
@@ -1065,9 +1067,9 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
       {/* Modal de candidature */}
       {applyModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Candidater à cette mission</h3>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-xl p-6 max-w-md w-full border border-gray-700">
+            <h3 className="text-xl font-bold text-gray-100 mb-4">Candidater à cette mission</h3>
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -1075,14 +1077,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
               submitApplication(message);
             }}>
               <div className="mb-4">
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-1">
                   Message de candidature
                 </label>
                 <textarea
                   id="message"
                   name="message"
                   rows={4}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-100 placeholder-gray-500"
                   placeholder="Expliquez pourquoi vous êtes intéressé par cette mission et quelles sont vos compétences pertinentes..."
                   required
                 />
@@ -1091,14 +1093,14 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
                 <button
                   type="button"
                   onClick={() => setApplyModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 bg-gray-700 text-gray-200 rounded-lg hover:bg-gray-600 transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50"
                 >
                   {submitting ? "Envoi en cours..." : "Envoyer ma candidature"}
                 </button>
