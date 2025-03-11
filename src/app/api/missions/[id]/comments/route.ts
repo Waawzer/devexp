@@ -1,3 +1,8 @@
+// Add interface for collaborator
+interface Collaborator {
+  user: any;
+}
+
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -40,7 +45,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       if (project) {
         const isProjectOwner = project.userId.toString() === session.user.id;
         const isProjectCollaborator = project.collaborators?.some(
-          collab => collab.user.toString() === session.user.id
+          (collab: Collaborator) => collab.user.toString() === session.user.id
         );
         isProjectMember = isProjectOwner || isProjectCollaborator;
       }

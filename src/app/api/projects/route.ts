@@ -3,9 +3,10 @@ import dbConnect from "@/lib/dbConnect";
 import Project from "@/models/Project";
 import { withAuth } from "@/lib/services/authService";
 import { getAuthSession } from "@/lib/services/authService";
+import { Session } from "next-auth";
 
 // Fonction utilitaire pour filtrer les projets selon les droits d'accès
-async function getProjectsQuery(session) {
+async function getProjectsQuery(session: Session | null) {
   if (!session?.user) {
     // Si non connecté, ne montrer que les projets publics
     return { visibility: 'public' };

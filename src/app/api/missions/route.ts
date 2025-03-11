@@ -5,6 +5,7 @@ import User from "@/models/User";
 import { withAuth } from "@/lib/services/authService";
 import { checkProjectPermissions } from "@/lib/services/projectService";
 import { createNotification } from "@/lib/services/notificationService";
+import { Session } from "next-auth";
 
 // Récupérer toutes les missions avec filtres
 export async function GET(req: NextRequest) {
@@ -129,7 +130,7 @@ export async function POST(req: NextRequest) {
 }
 
 // Gérer les actions spécifiques de mission (anciennement dans mission-services)
-async function handleMissionAction(req: NextRequest, session) {
+async function handleMissionAction(req: NextRequest, session: Session) {
   const { action, missionData, missionId } = await req.json();
   
   // Rediriger vers les endpoints appropriés
@@ -176,7 +177,7 @@ async function handleMissionAction(req: NextRequest, session) {
 }
 
 // Fonction auxiliaire pour créer une mission
-async function createMission(missionData, session) {
+async function createMission(missionData: any, session: Session) {
   await dbConnect();
   
   // Vérifier si le projet existe si un projectId est fourni

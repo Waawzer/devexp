@@ -6,6 +6,11 @@ import Mission from "@/models/Mission";
 import User from "@/models/User";
 import Project from "@/models/Project";
 
+// Add interface for collaborator
+interface Collaborator {
+  user: any;
+}
+
 // Récupérer une mission spécifique
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -37,7 +42,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       if (project) {
         const isProjectOwner = project.userId.toString() === session.user.id;
         const isProjectCollaborator = project.collaborators?.some(
-          collab => collab.user.toString() === session.user.id
+          (collab: Collaborator) => collab.user.toString() === session.user.id
         );
         isProjectMember = isProjectOwner || isProjectCollaborator;
       }

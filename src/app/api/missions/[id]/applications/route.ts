@@ -7,6 +7,13 @@ import User from '@/models/User';
 import Notification from '@/models/Notification';
 import { handleApplication } from '@/lib/services/applicationService';
 
+// Ajouter cette interface en haut du fichier
+interface Application {
+  _id: any;
+  user: string;
+  status: string;
+}
+
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
@@ -74,7 +81,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     // Trouver la candidature
     const application = mission.applications?.find(
-      app => app._id.toString() === applicationId
+      (app: Application) => app._id.toString() === applicationId
     );
 
     if (!application) {

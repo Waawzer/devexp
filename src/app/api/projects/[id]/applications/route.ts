@@ -7,6 +7,12 @@ import User from '@/models/User';
 import Notification from '@/models/Notification';
 import { handleApplication } from '@/lib/services/applicationService';
 
+// Add interface at the top of file
+interface Application {
+  user: any;
+  type: string;
+}
+
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
@@ -290,7 +296,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     // Trouver l'application correspondante
     const application = project.applications?.find(
-      app => app.user.toString() === session.user.id && app.type === 'mission_proposal'
+      (app: Application) => app.user.toString() === session.user.id && app.type === 'mission_proposal'
     );
 
     if (!application) {

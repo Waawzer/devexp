@@ -4,6 +4,11 @@ import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import Project from '@/models/Project';
 
+// Add interface for collaborator
+interface Collaborator {
+  user: any;
+}
+
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +30,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       
       if (projectBasic.collaborators && projectBasic.collaborators.length > 0) {
         isCollaborator = projectBasic.collaborators.some(
-          collab => collab.user.toString() === session.user.id
+          (collab: Collaborator) => collab.user.toString() === session.user.id
         );
       }
     }
