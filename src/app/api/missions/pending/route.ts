@@ -5,6 +5,8 @@ import dbConnect from "@/lib/dbConnect";
 import Mission from "@/models/Mission";
 import Notification from "@/models/Notification";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Route API pour récupérer les missions proposées à l'utilisateur
  * qui sont en attente d'acceptation
