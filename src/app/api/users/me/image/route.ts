@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import cloudinary from '@/lib/cloudinary';
 import User from '@/models/User';
 import dbConnect from '@/lib/dbConnect';
+import { UploadApiResponse } from 'cloudinary';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,14 +25,15 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Upload vers Cloudinary
-    const result = await new Promise((resolve, reject) => {
+    const result = await new Promise<UploadApiResponse>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
           folder: 'profile_pictures',
         },
         (error, result) => {
           if (error) reject(error);
-          resolve(result);
+          if (!result) reject(new Error('Upload failed'));
+          resolve(result as UploadApiResponse);
         }
       ).end(buffer);
     });
