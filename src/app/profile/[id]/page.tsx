@@ -31,6 +31,9 @@ interface Project {
   };
   img: string;
   skills: string[];
+  createdAt: string;
+  status: 'en développement' | 'en production' | 'en pause' | 'abandonné';
+  projectType: 'personnel' | 'collaboratif';
   collaborators?: Array<{
     user: {
       _id: string;
@@ -38,6 +41,16 @@ interface Project {
     };
     role: string;
   }>;
+}
+
+interface Mission {
+  _id: string;
+  title: string;
+  assignedTo?: {
+    _id: string;
+    name: string;
+  };
+  projectId?: string;
 }
 
 // Simplifions la fonction getDisplayName
@@ -140,7 +153,7 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
   const { id } = useParams();
   const { data: session } = useSession();
   const [projects, setProjects] = useState<Array<{ _id: string; title: string }>>([]);
-  const [missions, setMissions] = useState<Array<{ _id: string; title: string; projectId?: string }>>([]);
+  const [missions, setMissions] = useState<Mission[]>([]);
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedMission, setSelectedMission] = useState('');
   const [proposalType, setProposalType] = useState<'project' | 'mission'>('project');
@@ -166,7 +179,7 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
         if (response.ok) {
           const data = await response.json();
           // Filtrer les missions qui ne sont pas encore assignées
-          const availableMissions = data.filter(mission => !mission.assignedTo);
+          const availableMissions = data.filter((mission: Mission) => !mission.assignedTo);
           setMissions(availableMissions);
         }
       } catch (error) {
