@@ -60,7 +60,7 @@ export default function TreeModal({ isOpen, onClose, githubUrl }: TreeModalProps
         if (!response.ok) {
           const errorData = await response.json();
           console.error('TreeModal - Erreur API:', errorData);
-          throw new Error(errorData.error || 'Erreur lors de la récupération de l\'arborescence');
+          throw new Error(errorData.error || 'Erreur lors de la récupération de l&apos;arborescence');
         }
         
         const data = await response.json();

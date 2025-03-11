@@ -159,7 +159,7 @@ export default function MissionFilters({
                     }}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded-lg flex justify-between items-center"
                   >
-                    <span>Date d'échéance</span>
+                    <span>Date d&apos;échéance</span>
                     {sortBy === 'deadline' && (
                       <span className="text-blue-600">{sortOrder === 'desc' ? '↓' : '↑'}</span>
                     )}

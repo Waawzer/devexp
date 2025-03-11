@@ -52,10 +52,6 @@ export default function ProjectsPage() {
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchProjects();
-  }, [viewType]);
-
   const fetchProjects = async () => {
     try {
       setLoading(true);
@@ -76,6 +72,11 @@ export default function ProjectsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewType]);
 
   const handleProjectCreated = () => {
     fetchProjects();
@@ -247,7 +248,7 @@ export default function ProjectsPage() {
             <h3 className="mt-4 text-lg font-medium text-gray-900">Aucun projet trouvé</h3>
             <p className="mt-2 text-gray-500">
               {viewType === 'my-projects' ? 
-                "Vous n'avez pas encore créé de projets." : 
+                "Vous n&apos;avez pas encore créé de projets." : 
                 viewType === 'my-collaborations' ? 
                 "Vous ne collaborez sur aucun projet pour le moment." :
                 "Essayez de modifier vos critères de recherche pour trouver ce que vous cherchez."}

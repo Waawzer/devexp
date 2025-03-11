@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Collaborator {
   user: {
@@ -74,7 +75,7 @@ export default function AddCollaboratorModal({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'Erreur lors de l\'ajout du collaborateur');
+        throw new Error(data.message || 'Erreur l&apos;ajout du collaborateur');
       }
 
       onCollaboratorAdded();
@@ -180,10 +181,12 @@ export default function AddCollaboratorModal({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         {application.user.image ? (
-                          <img
+                          <Image
                             src={application.user.image}
                             alt={application.user.name}
-                            className="w-12 h-12 rounded-full ring-2 ring-white shadow-md"
+                            width={48}
+                            height={48}
+                            className="w-12 h-12 rounded-full ring-2 ring-white shadow-md object-cover"
                           />
                         ) : (
                           <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 

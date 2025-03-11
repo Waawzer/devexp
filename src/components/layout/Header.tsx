@@ -60,34 +60,39 @@ export default function Header() {
   }, [session]);
 
   useEffect(() => {
+    if (!session?.user?.id) return;
+    
+    const seenNotificationIds = new Set();
+    
     const fetchNotifications = async () => {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch('/api/notifications');
-          if (response.ok) {
-            const data = await response.json();
-            const unreadNotifications = data.filter(
-              (notif: any) => !notif.read
-            );
-            setNotifications(unreadNotifications);
-            
-            const newNotifications = unreadNotifications.filter(
-              notif => !notifications.some(n => n._id === notif._id)
-            );
-            
-            newNotifications.forEach((notif: any) => {
-              showNotification({
-                type: notif.type,
-                message: notif.message,
-                from: notif.from.name,
-                projectId: notif.projectId?._id,
-                _id: notif._id
-              });
-            });
+      try {
+        const response = await fetch('/api/notifications');
+        if (response.ok) {
+          const data = await response.json();
+          const unreadNotifications = data.filter(
+            (notif: any) => !notif.read
+          );
+          
+          setNotifications(unreadNotifications);
+          
+          for (const notif of unreadNotifications) {
+            if (!seenNotificationIds.has(notif._id)) {
+              seenNotificationIds.add(notif._id);
+              
+              if (typeof showNotification === 'function') {
+                showNotification({
+                  type: notif.type,
+                  message: notif.message,
+                  from: notif.from.name,
+                  projectId: notif.projectId?._id,
+                  _id: notif._id
+                });
+              }
+            }
           }
-        } catch (error) {
-          console.error('Erreur:', error);
         }
+      } catch (error) {
+        console.error('Erreur:', error);
       }
     };
 
