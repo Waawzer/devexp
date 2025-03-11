@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -145,6 +145,21 @@ function ApplyModal({ isOpen, onClose, projectId }: {
 }
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="space-y-4 text-center">
+          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <ProjectContent params={params} />
+    </Suspense>
+  );
+}
+
+function ProjectContent({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
