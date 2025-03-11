@@ -1,5 +1,21 @@
 import { ObjectId } from 'mongoose';
+import { Model } from 'mongoose';
 import { createNotification } from './notificationService';
+
+interface Application {
+  user: any;
+  status: string;
+}
+
+interface ApplicationParams {
+  type: 'project' | 'mission';
+  itemId: string;
+  userId: string;
+  message: string;
+  model: Model<any>;
+  creatorId: string;
+  itemTitle: string;
+}
 
 /**
  * Gère les candidatures pour les projets et missions
@@ -12,7 +28,7 @@ export async function handleApplication({
   model, // Modèle (Project ou Mission)
   creatorId, // ID du créateur
   itemTitle // Titre du projet ou de la mission
-}) {
+}: ApplicationParams) {
   // Vérifier si l'utilisateur n'a pas déjà une candidature active
   const item = await model.findById(itemId);
   
@@ -30,7 +46,7 @@ export async function handleApplication({
   
   // Vérifier si l'utilisateur n'a pas déjà une candidature active
   const existingApplication = item.applications?.find(
-    app => app.user.toString() === userId && 
+    (app: Application) => app.user.toString() === userId && 
           (app.status === 'en_attente' || app.status === 'accepté' || app.status === 'acceptée')
   );
   
@@ -46,8 +62,8 @@ export async function handleApplication({
     type: type === 'project' ? 'application' : 'mission_application',
     from: userId,
     to: creatorId,
-    projectId: type === 'project' ? itemId : null,
-    missionId: type === 'mission' ? itemId : null,
+    projectId: type === 'project' ? itemId : undefined,
+    missionId: type === 'mission' ? itemId : undefined,
     title: 'Nouvelle candidature',
     message: `Un utilisateur a postulé à votre ${type === 'project' ? 'projet' : 'mission'} "${itemTitle}"`
   });

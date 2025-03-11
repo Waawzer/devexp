@@ -5,8 +5,19 @@ import { withAuth } from "@/lib/services/authService";
 import { getAuthSession } from "@/lib/services/authService";
 import { Session } from "next-auth";
 
+// Add interface for query type
+interface ProjectQuery {
+  visibility?: string;
+  userId?: string;
+  $or?: Array<{
+    visibility?: string;
+    userId?: string;
+    'collaborators.user'?: string;
+  }>;
+}
+
 // Fonction utilitaire pour filtrer les projets selon les droits d'accès
-async function getProjectsQuery(session: Session | null) {
+async function getProjectsQuery(session: Session | null): Promise<ProjectQuery> {
   if (!session?.user) {
     // Si non connecté, ne montrer que les projets publics
     return { visibility: 'public' };
@@ -27,7 +38,7 @@ export async function GET(req: NextRequest) {
     const session = await getAuthSession();
     await dbConnect();
 
-    const query = await getProjectsQuery(session);
+    const query: ProjectQuery = await getProjectsQuery(session);
     
     // Paramètres de filtrage supplémentaires
     const { searchParams } = new URL(req.url);

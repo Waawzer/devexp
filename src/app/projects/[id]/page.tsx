@@ -12,6 +12,27 @@ import AddCollaboratorModal from "@/components/modals/AddCollaboratorModal";
 import ImageGallery from "@/components/layout/ImageGallery";
 import { toast } from "react-hot-toast";
 import MissionProposalActions from '@/components/notifications/MissionProposalActions';
+import { ProjectStatus } from '@/models/Project';
+
+interface Application {
+  user: {
+    _id: string;
+    name: string;
+    image?: string;
+  };
+  message: string;
+  status: 'en_attente' | 'accepté' | 'refusé';
+  createdAt: string;
+  type: 'application' | 'mission_proposal';
+}
+
+interface Collaborator {
+  user: {
+    _id: string;
+    name: string;
+  };
+  role: string;
+}
 
 interface Project {
   _id: string;
@@ -23,27 +44,11 @@ interface Project {
   };
   img: string;
   skills: string[];
-  status: string;
+  status: ProjectStatus;
   githubUrl?: string;
   specifications?: string;
-  collaborators?: Array<{
-    user: {
-      _id: string;
-      name: string;
-    };
-    role: string;
-  }>;
-  applications?: Array<{
-    user: {
-      _id: string;
-      name: string;
-      image?: string;
-    };
-    message: string;
-    status: 'en_attente' | 'accepté' | 'refusé';
-    createdAt: string;
-    type: 'application' | 'mission_proposal';
-  }>;
+  collaborators?: Array<Collaborator>;
+  applications?: Array<Application>;
   projectType: 'personnel' | 'collaboratif';
   createdAt: string;
   images?: Array<{

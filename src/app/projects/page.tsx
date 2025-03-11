@@ -25,7 +25,7 @@ interface Project {
   };
   img: string;
   skills: string[];
-  status: string;
+  status: 'en développement' | 'en production' | 'en pause' | 'abandonné';
   projectType: 'personnel' | 'collaboratif';
   createdAt: string;
   collaborators?: Array<{
