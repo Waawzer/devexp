@@ -407,7 +407,7 @@ export default function MissionsPage() {
                 <p className="text-gray-600 line-clamp-2 mb-4">{mission.description}</p>
                 
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {mission.skills && mission.skills.slice(0, 3).map((skill, index) => (
+                  {mission.skills && mission.skills.slice(0, 3).map((skill: string, index: number) => (
                     <span
                       key={index}
                       className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs"
