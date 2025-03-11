@@ -5,6 +5,7 @@ import dbConnect from '@/lib/dbConnect';
 import Mission from '@/models/Mission';
 import User from '@/models/User';
 import Notification from '@/models/Notification';
+import { handleApplication } from '@/lib/services/applicationService';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -14,72 +15,30 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     await dbConnect();
-    const { message } = await req.json();
-
+    
+    const { message, targetUserId } = await req.json();
+    
     const mission = await Mission.findById(params.id);
     if (!mission) {
       return NextResponse.json({ message: 'Mission non trouvée' }, { status: 404 });
     }
 
-    // Vérifier si l'utilisateur n'est pas déjà le créateur de la mission
-    if (mission.creatorId.toString() === session.user.id) {
-      return NextResponse.json(
-        { message: 'Vous ne pouvez pas candidater à votre propre mission' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier si l'utilisateur n'est pas déjà assigné à la mission
-    if (mission.assignedTo && mission.assignedTo.toString() === session.user.id) {
-      return NextResponse.json(
-        { message: 'Vous êtes déjà assigné à cette mission' },
-        { status: 400 }
-      );
-    }
-
-    // Vérifier si l'utilisateur n'a pas déjà une candidature active
-    const existingApplication = mission.applications?.find(
-      app => app.user.toString() === session.user.id && 
-            (app.status === 'en_attente' || app.status === 'acceptée')
-    );
-    if (existingApplication) {
-      return NextResponse.json(
-        { message: 'Vous avez déjà une candidature active pour cette mission' },
-        { status: 400 }
-      );
-    }
-
-    // Créer la notification pour le créateur de la mission
-    await Notification.create({
-      type: 'mission_application',
-      from: session.user.id,
-      to: mission.creatorId,
-      missionId: mission._id,
-      title: 'Nouvelle candidature',
-      message: `${session.user.name} a postulé à votre mission "${mission.title}"`,
-      status: 'pending'
+    // Utiliser le service applicationService
+    const result = await handleApplication({
+      type: 'mission',
+      itemId: params.id,
+      userId: session.user.id,
+      message,
+      model: Mission,
+      creatorId: mission.creatorId,
+      itemTitle: mission.title
     });
 
-    // Ajouter la candidature
-    const updatedMission = await Mission.findByIdAndUpdate(
-      params.id,
-      {
-        $push: {
-          applications: {
-            user: session.user.id,
-            message,
-            status: 'en_attente',
-            createdAt: new Date()
-          }
-        }
-      },
-      { new: true }
-    ).populate('applications.user', 'name image');
+    if (!result.success) {
+      return NextResponse.json({ message: result.message }, { status: 400 });
+    }
 
-    return NextResponse.json(
-      { message: 'Candidature envoyée avec succès' },
-      { status: 200 }
-    );
+    return NextResponse.json(result.item);
   } catch (error) {
     console.error('Erreur:', error);
     return NextResponse.json(

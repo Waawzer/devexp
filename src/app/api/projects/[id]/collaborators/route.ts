@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import dbConnect from '@/lib/dbConnect';
 import Project from '@/models/Project';
+import User from '@/models/User';
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -25,6 +26,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         { message: 'Non autorisé à modifier les collaborateurs' },
         { status: 403 }
       );
+    }
+
+    // Vérifier que l'utilisateur existe avant de l'ajouter
+    const userExists = await User.findById(userId);
+    if (!userExists) {
+      return NextResponse.json({ message: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
     // Ajouter le collaborateur et supprimer la candidature

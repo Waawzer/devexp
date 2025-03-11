@@ -44,7 +44,7 @@ export default function Home() {
                 <Link href="/projects" className="button-primary">
                   Découvrir les projets
                 </Link>
-                <Link href="/projects/my-projects" className="button-secondary">
+                <Link href="/projects?view=my-projects" className="button-secondary">
                   Mes projets
                 </Link>
               </div>

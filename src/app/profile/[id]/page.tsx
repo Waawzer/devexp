@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import ProjectPreview from "@/components/layout/ProjectPreview";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
@@ -140,25 +140,43 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
   const { id } = useParams();
   const { data: session } = useSession();
   const [projects, setProjects] = useState<Array<{ _id: string; title: string }>>([]);
+  const [missions, setMissions] = useState<Array<{ _id: string; title: string; projectId?: string }>>([]);
   const [selectedProject, setSelectedProject] = useState('');
+  const [selectedMission, setSelectedMission] = useState('');
+  const [proposalType, setProposalType] = useState<'project' | 'mission'>('project');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchMyProjects = async () => {
       try {
-        const response = await fetch('/api/projects/my-projects');
+        const response = await fetch('/api/projects?type=my-projects');
         if (response.ok) {
           const data = await response.json();
           setProjects(data);
         }
       } catch (error) {
-        console.error('Erreur:', error);
+        console.error('Erreur lors de la récupération des projets:', error);
+      }
+    };
+
+    const fetchMyMissions = async () => {
+      try {
+        const response = await fetch('/api/missions?view=my-missions');
+        if (response.ok) {
+          const data = await response.json();
+          // Filtrer les missions qui ne sont pas encore assignées
+          const availableMissions = data.filter(mission => !mission.assignedTo);
+          setMissions(availableMissions);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des missions:', error);
       }
     };
 
     if (isOpen) {
       fetchMyProjects();
+      fetchMyMissions();
     }
   }, [isOpen]);
 
@@ -167,23 +185,42 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
     setLoading(true);
     
     try {
-      const response = await fetch(`/api/projects/${selectedProject}/applications`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          targetUserId: targetUserId,
-          message: message,
-          type: 'mission_proposal'
-        }),
-      });
+      if (proposalType === 'project') {
+        // Proposition de mission via un projet
+        const response = await fetch(`/api/projects/${selectedProject}/applications`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            targetUserId: targetUserId,
+            message: message,
+            type: 'mission_proposal'
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'envoi de la proposition');
+        if (!response.ok) {
+          throw new Error('Erreur lors de l\'envoi de la proposition de projet');
+        }
+      } else {
+        // Proposition d'une mission existante
+        const response = await fetch(`/api/missions/${selectedMission}/applications`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            targetUserId: targetUserId,
+            message: message,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de l\'envoi de la proposition de mission');
+        }
       }
 
-      toast.success('Proposition de mission envoyée avec succès');
+      toast.success('Proposition envoyée avec succès');
       onClose();
     } catch (error) {
       toast.error('Erreur lors de l\'envoi de la proposition');
@@ -197,30 +234,88 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-[500px]">
+      <div className="bg-white p-6 rounded-lg w-[500px] max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">
           Proposer une mission à {targetUserName}
         </h2>
         
         <form onSubmit={handleSubmit}>
+          {/* Type de proposition */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sélectionner un projet
+              Type de proposition
             </label>
-            <select
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
-              className="w-full p-2 border rounded-md"
-              required
-            >
-              <option value="">Choisir un projet</option>
-              {projects.map((project) => (
-                <option key={project._id} value={project._id}>
-                  {project.title}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setProposalType('project')}
+                className={`flex-1 py-2 px-4 rounded-md ${
+                  proposalType === 'project' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                Nouveau projet
+              </button>
+              <button
+                type="button"
+                onClick={() => setProposalType('mission')}
+                className={`flex-1 py-2 px-4 rounded-md ${
+                  proposalType === 'mission' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                Mission existante
+              </button>
+            </div>
           </div>
+
+          {/* Sélection du projet ou de la mission */}
+          {proposalType === 'project' ? (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sélectionner un projet
+              </label>
+              <select
+                value={selectedProject}
+                onChange={(e) => setSelectedProject(e.target.value)}
+                className="w-full p-2 border rounded-md"
+                required
+              >
+                <option value="">Choisir un projet</option>
+                {projects.map((project) => (
+                  <option key={project._id} value={project._id}>
+                    {project.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sélectionner une mission
+              </label>
+              <select
+                value={selectedMission}
+                onChange={(e) => setSelectedMission(e.target.value)}
+                className="w-full p-2 border rounded-md"
+                required
+              >
+                <option value="">Choisir une mission</option>
+                {missions.map((mission) => (
+                  <option key={mission._id} value={mission._id}>
+                    {mission.title}
+                  </option>
+                ))}
+              </select>
+              {missions.length === 0 && (
+                <p className="text-sm text-amber-600 mt-1">
+                  Vous n'avez pas de missions disponibles à proposer.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -231,7 +326,9 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
               onChange={(e) => setMessage(e.target.value)}
               className="w-full p-2 border rounded-md"
               rows={4}
-              placeholder="Décrivez brièvement la mission et vos attentes..."
+              placeholder={proposalType === 'project' 
+                ? "Décrivez brièvement la mission et vos attentes..." 
+                : "Expliquez pourquoi vous proposez cette mission à cet utilisateur..."}
               required
             />
           </div>
@@ -246,9 +343,9 @@ function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, i
             </button>
             <button
               type="submit"
-              disabled={loading || !isAvailable}
+              disabled={loading || !isAvailable || (proposalType === 'project' && !selectedProject) || (proposalType === 'mission' && !selectedMission)}
               className={`px-4 py-2 rounded-md ${
-                isAvailable
+                isAvailable && ((proposalType === 'project' && selectedProject) || (proposalType === 'mission' && selectedMission))
                   ? 'bg-blue-500 hover:bg-blue-600 text-white'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
@@ -272,6 +369,7 @@ export default function UserProfilePage() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMissionModalOpen, setIsMissionModalOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -361,22 +459,37 @@ export default function UserProfilePage() {
                     </div>
                   </div>
 
-                  {/* Bouton de proposition de mission */}
+                  {/* Boutons d'action */}
                   {session?.user?.id !== userData?.user._id && (
-                    <button
-                      onClick={() => setIsMissionModalOpen(true)}
-                      disabled={userData?.user.availability === 'occupé'}
-                      className={`px-6 py-3 rounded-xl font-medium shadow-md
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      {/* Bouton Contacter */}
+                      <button
+                        onClick={() => router.push(`/messages?user=${userData?.user._id}`)}
+                        className={`px-6 py-3 rounded-xl font-medium shadow-md
+                                  transition-all duration-300 transform hover:-translate-y-0.5
+                                  flex items-center gap-2
+                                  bg-gradient-to-r from-green-500 to-teal-500 text-white hover:shadow-lg`}
+                      >
+                        <FaEnvelope />
+                        Contacter
+                      </button>
+                      
+                      {/* Bouton de proposition de mission */}
+                      <button
+                        onClick={() => setIsMissionModalOpen(true)}
+                        disabled={userData?.user.availability === 'occupé'}
+                        className={`px-6 py-3 rounded-xl font-medium shadow-md
                                   transition-all duration-300 transform hover:-translate-y-0.5
                                   flex items-center gap-2
                                   ${userData?.user.availability !== 'occupé'
                                     ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:shadow-lg'
                                     : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                                   }`}
-                    >
-                      <FaEnvelope />
-                      {userData?.user.availability !== 'occupé' ? 'Proposer une mission' : 'Non disponible'}
-                    </button>
+                      >
+                        <FaBriefcase />
+                        {userData?.user.availability !== 'occupé' ? 'Proposer une mission' : 'Non disponible'}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

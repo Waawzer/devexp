@@ -21,7 +21,7 @@ interface Application {
   message: string;
   status: 'en_attente' | 'accepté' | 'refusé';
   createdAt: string;
-  type?: 'application' | 'mission_proposal';
+  type: 'application' | 'mission_proposal';
 }
 
 interface AddCollaboratorModalProps {
@@ -49,12 +49,14 @@ export default function AddCollaboratorModal({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Filtrer pour n'avoir que les candidatures en attente et non liées à des propositions de mission
+    console.log('Applications reçues:', applications);
+    // Filtrer pour n'avoir que les candidatures en attente
     const filteredApplications = applications.filter(
       (app: Application) => 
-        app.type !== 'mission_proposal' && 
-        app.status === 'en_attente'
+        app.status === 'en_attente' && 
+        (!app.type || app.type === 'application')
     );
+    console.log('Applications filtrées:', filteredApplications);
     setLocalApplications(filteredApplications);
   }, [applications]);
 

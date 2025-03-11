@@ -1,32 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/dbConnect";
 import Mission from "@/models/Mission";
-import Project from "@/models/Project";
 import User from "@/models/User";
-import { MissionStatus, MissionPriority } from "@/models/Mission";
+import { withAuth } from "@/lib/services/authService";
+import { checkProjectPermissions } from "@/lib/services/projectService";
+import { createNotification } from "@/lib/services/notificationService";
 
-// Récupérer toutes les missions
+// Récupérer toutes les missions avec filtres
 export async function GET(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ message: "Non autorisé" }, { status: 401 });
-    }
-
+  return withAuth(req, async (session) => {
     await dbConnect();
     
     // Récupérer les paramètres de requête pour le filtrage
     const { searchParams } = new URL(req.url);
+    const view = searchParams.get('view'); // 'my-missions', 'assigned', ou null (toutes)
     const projectId = searchParams.get('projectId');
-    const status = searchParams.get('status') as MissionStatus | null;
-    const priority = searchParams.get('priority') as MissionPriority | null;
-    const assignedToMe = searchParams.get('assignedToMe') === 'true';
-    const createdByMe = searchParams.get('createdByMe') === 'true';
+    const status = searchParams.get('status');
+    const priority = searchParams.get('priority');
     
     // Construire la requête
     const query: any = {};
+    
+    // Filtrer par vue
+    if (view === 'my-missions') {
+      // Missions que j'ai créées
+      query.creatorId = session.user.id;
+    } else if (view === 'assigned') {
+      // Missions qui me sont assignées par d'autres
+      query.assignedTo = session.user.id;
+      query.creatorId = { $ne: session.user.id }; // Exclure les missions que j'ai créées
+    } else {
+      // Toutes les missions (vue par défaut)
+      // Pas de filtre spécifique
+    }
     
     // Filtrer par projet si spécifié
     if (projectId) {
@@ -34,32 +40,16 @@ export async function GET(req: NextRequest) {
     }
     
     // Filtrer par statut si spécifié
-    if (status) {
+    if (status && status !== 'toutes') {
       query.status = status;
     }
     
-    // Filtrer par priorité si spécifié
-    if (priority) {
+    // Filtrer par priorité si spécifiée
+    if (priority && priority !== 'toutes') {
       query.priority = priority;
     }
     
-    // Filtrer par assignation à l'utilisateur courant
-    if (assignedToMe) {
-      query.assignedTo = session.user.id;
-    }
-    
-    // Filtrer par création par l'utilisateur courant
-    if (createdByMe) {
-      query.creatorId = session.user.id;
-    }
-    
-    // Si aucun filtre spécifique n'est appliqué, montrer les missions où l'utilisateur est impliqué
-    if (!projectId && !assignedToMe && !createdByMe) {
-      query.$or = [
-        { creatorId: session.user.id },
-        { assignedTo: session.user.id }
-      ];
-    }
+    console.log("Query:", JSON.stringify(query));
     
     // Récupérer les missions
     const missions = await Mission.find(query)
@@ -69,42 +59,29 @@ export async function GET(req: NextRequest) {
       .sort({ createdAt: -1 });
 
     return NextResponse.json(missions);
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Erreur serveur", error: (error as Error).message },
-      { status: 500 }
-    );
-  }
+  });
 }
 
 // Créer une nouvelle mission
 export async function POST(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ message: "Non autorisé" }, { status: 401 });
-    }
-
+  return withAuth(req, async (session) => {
     await dbConnect();
     const data = await req.json();
     
+    // Si c'est une action spécifique (comme dans mission-services)
+    if (data.action) {
+      return handleMissionAction(req, session);
+    }
+    
     // Vérifier si le projet existe si un projectId est fourni
     if (data.projectId) {
-      const project = await Project.findById(data.projectId);
-      if (!project) {
-        return NextResponse.json(
-          { message: "Projet non trouvé" },
-          { status: 404 }
-        );
+      const { exists, hasEditRights } = await checkProjectPermissions(data.projectId, session.user.id);
+      
+      if (!exists) {
+        return NextResponse.json({ message: "Projet non trouvé" }, { status: 404 });
       }
       
-      // Vérifier que l'utilisateur est propriétaire ou collaborateur du projet
-      const isOwner = project.userId.toString() === session.user.id;
-      const isCollaborator = project.collaborators?.some(
-        collab => collab.user.toString() === session.user.id
-      );
-      
-      if (!isOwner && !isCollaborator) {
+      if (!hasEditRights) {
         return NextResponse.json(
           { message: "Non autorisé à créer une mission pour ce projet" },
           { status: 403 }
@@ -135,12 +112,123 @@ export async function POST(req: NextRequest) {
       .populate('assignedTo', 'name _id image')
       .populate('projectId', 'title _id');
 
+    // Si la mission est assignée, créer une notification
+    if (data.assignedTo && data.assignedTo !== session.user.id) {
+      await createNotification({
+        type: 'mission_assigned',
+        from: session.user.id,
+        to: data.assignedTo,
+        missionId: mission._id,
+        title: 'Nouvelle mission',
+        message: `${session.user.name} vous a assigné une mission: "${mission.title}"`
+      });
+    }
+
     return NextResponse.json(populatedMission, { status: 201 });
-  } catch (error) {
-    console.error("Erreur lors de la création de la mission:", error);
-    return NextResponse.json(
-      { message: "Erreur serveur", error: (error as Error).message },
-      { status: 500 }
-    );
+  });
+}
+
+// Gérer les actions spécifiques de mission (anciennement dans mission-services)
+async function handleMissionAction(req: NextRequest, session) {
+  const { action, missionData, missionId } = await req.json();
+  
+  // Rediriger vers les endpoints appropriés
+  switch (action) {
+    case 'create':
+      // Créer une nouvelle mission
+      return createMission(missionData, session);
+      
+    case 'update':
+      // Mettre à jour une mission existante
+      const updateUrl = new URL(`/api/missions/${missionId}`, req.url);
+      const updateRequest = new Request(updateUrl, {
+        method: 'PUT',
+        headers: req.headers,
+        body: JSON.stringify(missionData)
+      });
+      return fetch(updateRequest);
+      
+    case 'delete':
+      // Supprimer une mission
+      const deleteUrl = new URL(`/api/missions/${missionId}`, req.url);
+      const deleteRequest = new Request(deleteUrl, {
+        method: 'DELETE',
+        headers: req.headers
+      });
+      return fetch(deleteRequest);
+      
+    case 'addComment':
+      // Ajouter un commentaire
+      const commentUrl = new URL(`/api/missions/${missionId}/comments`, req.url);
+      const commentRequest = new Request(commentUrl, {
+        method: 'POST',
+        headers: req.headers,
+        body: JSON.stringify({ content: missionData.content })
+      });
+      return fetch(commentRequest);
+      
+    default:
+      return NextResponse.json(
+        { message: "Action non reconnue" },
+        { status: 400 }
+      );
   }
+}
+
+// Fonction auxiliaire pour créer une mission
+async function createMission(missionData, session) {
+  await dbConnect();
+  
+  // Vérifier si le projet existe si un projectId est fourni
+  if (missionData.projectId) {
+    const { exists, hasEditRights } = await checkProjectPermissions(missionData.projectId, session.user.id);
+    
+    if (!exists) {
+      return NextResponse.json({ message: "Projet non trouvé" }, { status: 404 });
+    }
+    
+    if (!hasEditRights) {
+      return NextResponse.json(
+        { message: "Non autorisé à créer une mission pour ce projet" },
+        { status: 403 }
+      );
+    }
+  }
+  
+  // Vérifier si l'utilisateur assigné existe
+  if (missionData.assignedTo) {
+    const assignedUser = await User.findById(missionData.assignedTo);
+    if (!assignedUser) {
+      return NextResponse.json(
+        { message: "Utilisateur assigné non trouvé" },
+        { status: 404 }
+      );
+    }
+  }
+
+  // Créer la mission
+  const mission = await Mission.create({
+    ...missionData,
+    creatorId: session.user.id,
+    createdAt: new Date(),
+  });
+
+  const populatedMission = await Mission.findById(mission._id)
+    .populate('creatorId', 'name _id image')
+    .populate('assignedTo', 'name _id image')
+    .populate('projectId', 'title _id');
+
+  // Si la mission est assignée, créer une notification
+  if (missionData.assignedTo && missionData.assignedTo !== session.user.id) {
+    await createNotification({
+      type: 'mission_assigned',
+      from: session.user.id,
+      to: missionData.assignedTo,
+      missionId: mission._id,
+      title: 'Nouvelle mission',
+      message: `${session.user.name} vous a assigné une mission: "${mission.title}"`
+    });
+  }
+
+  return NextResponse.json(populatedMission, { status: 201 });
 } 

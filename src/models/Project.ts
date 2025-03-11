@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 
 export type ProjectStatus = 'en développement' | 'en production' | 'en pause' | 'abandonné';
 export type ProjectType = 'personnel' | 'collaboratif';
+export type ProjectVisibility = 'public' | 'private';
 
 // Interface for project input data
 export interface ProjectInput {
@@ -11,6 +12,7 @@ export interface ProjectInput {
   githubUrl?: string;
   status: ProjectStatus;
   projectType: ProjectType;
+  visibility: ProjectVisibility;
 }
 
 // Mongoose schema for projects
@@ -105,6 +107,12 @@ const ProjectSchema = new Schema({
     enum: ['personnel', 'collaboratif'],
     required: true,
     default: 'personnel'
+  },
+  visibility: { 
+    type: String,
+    enum: ['public', 'private'],
+    default: 'public',
+    required: true
   }
 });
 

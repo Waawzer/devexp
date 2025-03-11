@@ -7,12 +7,13 @@ interface Notification {
   message: string;
   from: string;
   projectId?: string;
+  messageId?: string;
   _id?: string;
 }
 
 export const useNotifications = () => {
   const showNotification = (notification: Notification) => {
-    const { type, message, from, projectId, _id } = notification;
+    const { type, message, from, projectId, messageId, _id } = notification;
 
     const commonToastOptions = {
       duration: 10000, // 10 secondes
@@ -92,6 +93,64 @@ export const useNotifications = () => {
                   <p className="text-xs text-purple-500 mt-1">{message}</p>
                   <p className="text-xs text-purple-400 mt-1">De: {from}</p>
                 </div>
+              </div>
+            </div>
+          ),
+          commonToastOptions
+        );
+        break;
+
+      case 'new_message':
+        toast.custom(
+          (t) => (
+            <div
+              className={`${
+                t.visible ? 'animate-enter' : 'animate-leave'
+              } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+            >
+              <div className="flex-1 w-0 p-4">
+                <div className="flex items-start">
+                  <div className="ml-3 flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      {from}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {message}
+                    </p>
+                    <div className="mt-2 flex space-x-3">
+                      <button
+                        onClick={() => {
+                          if (messageId) {
+                            // Marquer comme lu et rediriger
+                            fetch(`/api/messages/${messageId}/read`, {
+                              method: 'PUT',
+                            }).then(() => {
+                              window.location.href = `/messages?user=${notification.from}`;
+                              toast.dismiss(t.id);
+                            });
+                          }
+                        }}
+                        className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                      >
+                        Répondre
+                      </button>
+                      <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="text-sm text-gray-500 hover:text-gray-700"
+                      >
+                        Ignorer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex border-l border-gray-200">
+                <button
+                  onClick={() => toast.dismiss(t.id)}
+                  className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-gray-400 hover:text-gray-500 focus:outline-none"
+                >
+                  <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                </button>
               </div>
             </div>
           ),

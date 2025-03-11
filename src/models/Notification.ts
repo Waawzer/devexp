@@ -3,7 +3,7 @@ import mongoose, { Schema, model, models } from 'mongoose';
 const notificationSchema = new Schema({
   type: {
     type: String,
-    enum: ['mission_proposal', 'application'],
+    enum: ['mission_proposal', 'application', 'new_message'],
     required: true
   },
   from: {
@@ -19,7 +19,12 @@ const notificationSchema = new Schema({
   projectId: {
     type: Schema.Types.ObjectId,
     ref: 'Project',
-    required: true
+    required: false
+  },
+  messageId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Message',
+    required: false
   },
   title: String,
   message: String,

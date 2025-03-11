@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { 
   FaProjectDiagram, 
@@ -16,7 +16,9 @@ import {
   FaPlus,
   FaList,
   FaUsers,
-  FaHandshake
+  FaHandshake,
+  FaListUl,
+  FaClipboardList
 } from 'react-icons/fa';
 
 export default function Sidebar() {
@@ -24,10 +26,16 @@ export default function Sidebar() {
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [missionsOpen, setMissionsOpen] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
 
-  const isActive = (path: string) => {
-    return pathname?.startsWith(path);
+  // Fonction pour vérifier si un lien est actif
+  const isActive = (path: string, viewParam?: string) => {
+    if (!viewParam) {
+      return pathname === path;
+    }
+    
+    return pathname === path && searchParams.get('view') === viewParam;
   };
 
   // Fonction pour gérer les clics sur les menus déroulants
@@ -108,7 +116,7 @@ export default function Sidebar() {
                   <Link 
                     href="/projects" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                      pathname === '/projects' 
+                      pathname === '/projects' && !searchParams.get('view')
                         ? 'bg-blue-600/20 text-blue-300' 
                         : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
                     }`}
@@ -119,9 +127,9 @@ export default function Sidebar() {
                 </li>
                 <li>
                   <Link 
-                    href="/projects/my-projects" 
+                    href="/projects?view=my-projects" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                      pathname === '/projects/my-projects' 
+                      isActive('/projects', 'my-projects')
                         ? 'bg-blue-600/20 text-blue-300' 
                         : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
                     }`}
@@ -132,9 +140,9 @@ export default function Sidebar() {
                 </li>
                 <li>
                   <Link 
-                    href="/projects/my-collaborations" 
+                    href="/projects?view=my-collaborations" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                      pathname === '/projects/my-collaborations' 
+                      isActive('/projects', 'my-collaborations')
                         ? 'bg-blue-600/20 text-blue-300' 
                         : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
                     }`}
@@ -174,7 +182,7 @@ export default function Sidebar() {
             <button 
               onClick={() => toggleDropdown('missions')}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive('/mission') 
+                pathname.startsWith('/mission') 
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
                   : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
               }`}
@@ -195,33 +203,33 @@ export default function Sidebar() {
                   <Link 
                     href="/mission" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                      pathname === '/mission' 
+                      pathname === '/mission' && !searchParams.get('view')
                         ? 'bg-blue-600/20 text-blue-300' 
                         : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
                     }`}
                   >
-                    <FaList className="mr-2 text-sm" />
-                    <span className="text-sm">Voir toutes les missions</span>
+                    <FaListUl className="mr-2 text-sm" />
+                    <span className="text-sm">Toutes les missions</span>
                   </Link>
                 </li>
                 <li>
                   <Link 
-                    href="/mission/my-missions" 
+                    href="/mission?view=my-missions" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                      pathname === '/mission/my-missions' 
+                      isActive('/mission', 'my-missions')
                         ? 'bg-blue-600/20 text-blue-300' 
                         : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
                     }`}
                   >
-                    <FaPlus className="mr-2 text-sm" />
+                    <FaClipboardList className="mr-2 text-sm" />
                     <span className="text-sm">Mes missions</span>
                   </Link>
                 </li>
                 <li>
                   <Link 
-                    href="/mission/assigned" 
+                    href="/mission?view=assigned" 
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                      pathname === '/mission/assigned' 
+                      isActive('/mission', 'assigned')
                         ? 'bg-blue-600/20 text-blue-300' 
                         : 'text-gray-400 hover:bg-gray-800/30 hover:text-gray-200'
                     }`}

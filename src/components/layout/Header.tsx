@@ -12,16 +12,17 @@ import { toast } from 'react-hot-toast';
 
 interface Notification {
   _id: string;
-  type: 'mission_proposal' | 'application';
+  type: 'mission_proposal' | 'application' | 'new_message';
   from: {
     _id: string;
     name: string;
     image?: string;
   };
-  projectId: {
+  projectId?: {
     _id: string;
     title: string;
   };
+  messageId?: string;
   title: string;
   message: string;
   read: boolean;
@@ -79,7 +80,7 @@ export default function Header() {
                 type: notif.type,
                 message: notif.message,
                 from: notif.from.name,
-                projectId: notif.projectId._id,
+                projectId: notif.projectId?._id,
                 _id: notif._id
               });
             });
@@ -115,9 +116,16 @@ export default function Header() {
       );
 
       if (notification.type === 'mission_proposal') {
-        router.push(`/projects/${notification.projectId._id}`);
+        router.push(`/projects/${notification.projectId?._id}`);
       } else if (notification.type === 'application') {
-        router.push(`/projects/${notification.projectId._id}?tab=applications`);
+        router.push(`/projects/${notification.projectId?._id}?tab=applications`);
+      } else if (notification.type === 'new_message') {
+        if (notification.messageId) {
+          await fetch(`/api/messages/${notification.messageId}/read`, {
+            method: 'PUT'
+          });
+        }
+        router.push(`/messages?user=${notification.from._id}`);
       }
     } catch (error) {
       console.error('Erreur:', error);
@@ -243,7 +251,7 @@ export default function Header() {
                       Mon Profil
                     </Link>
                     <Link
-                      href="/projects/my-projects"
+                      href="/projects?view=my-projects"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsDropdownOpen(false)}
                     >

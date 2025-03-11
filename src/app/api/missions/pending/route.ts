@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       );
       
       return {
-        mission,
+        ...mission.toObject(),
         notification: notification ? {
           _id: notification._id,
           from: notification.from,

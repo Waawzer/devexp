@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams, useRouter } from "next/navigation";
 import ProjectPreview from "@/components/layout/ProjectPreview";
-import { FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
+import ProjectFilters from "@/components/projects/ProjectFilters";
+import CreateProjectModal from "@/components/modals/CreateProjectModal";
+import Link from "next/link";
+import { FaPlus, FaArrowLeft } from "react-icons/fa";
+
+// Constantes partagées
+const AVAILABLE_SKILLS = [
+  "JavaScript", "Python", "React", "Node.js", "TypeScript", 
+  "HTML/CSS", "Front-end", "Back-end", "Base de données", "DevOps",
+];
 
 interface Project {
   _id: string;
@@ -18,23 +28,21 @@ interface Project {
   status: string;
   projectType: 'personnel' | 'collaboratif';
   createdAt: string;
+  collaborators?: Array<{
+    user: {
+      _id: string;
+      name: string;
+    };
+    role: string;
+  }>;
 }
-
-const AVAILABLE_SKILLS = [
-  "JavaScript",
-  "Python",
-  "React",
-  "Node.js",
-  "TypeScript",
-  "HTML/CSS",
-  "Front-end",
-  "Back-end",
-  "Base de données",
-  "DevOps",
-];
 
 export default function ProjectsPage() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const viewType = searchParams.get('view') || 'all'; // 'all', 'my-projects', 'my-collaborations'
+  
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -42,15 +50,23 @@ export default function ProjectsPage() {
     skills: [] as string[],
     searchTerm: '',
   });
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [viewType]);
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch("/api/projects");
+      setLoading(true);
+      let url = "/api/projects";
+      
+      // Utiliser le paramètre type pour filtrer côté serveur
+      if (viewType === 'my-projects' || viewType === 'my-collaborations') {
+        url += `?type=${viewType}`;
+      }
+      
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Erreur lors de la récupération des projets");
       const data = await response.json();
       setProjects(data);
@@ -61,6 +77,12 @@ export default function ProjectsPage() {
     }
   };
 
+  const handleProjectCreated = () => {
+    fetchProjects();
+    setIsCreateModalOpen(false);
+  };
+
+  // Filtrer les projets côté client
   const filteredProjects = projects.filter(project => {
     // Filtre par type de projet
     if (filters.projectType !== 'tous' && project.projectType !== filters.projectType) {
@@ -87,14 +109,37 @@ export default function ProjectsPage() {
     return true;
   });
 
-  const toggleSkillFilter = (skill: string) => {
-    setFilters(prev => ({
-      ...prev,
-      skills: prev.skills.includes(skill)
-        ? prev.skills.filter(s => s !== skill)
-        : [...prev.skills, skill]
-    }));
+  // Réinitialiser les filtres
+  const resetFilters = () => {
+    setFilters({
+      projectType: 'tous',
+      skills: [],
+      searchTerm: '',
+    });
   };
+
+  // Déterminer le titre et la description en fonction du type de vue
+  const getViewTitle = () => {
+    switch (viewType) {
+      case 'my-projects':
+        return {
+          title: "Mes projets",
+          description: "Projets que vous avez créés et que vous gérez."
+        };
+      case 'my-collaborations':
+        return {
+          title: "Mes collaborations",
+          description: "Projets sur lesquels vous collaborez avec d'autres développeurs."
+        };
+      default:
+        return {
+          title: "Découvrez les projets",
+          description: "Explorez des projets passionnants et trouvez des opportunités de collaboration avec des développeurs talentueux."
+        };
+    }
+  };
+
+  const { title, description } = getViewTitle();
 
   if (loading) {
     return (
@@ -109,151 +154,76 @@ export default function ProjectsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Navigation entre les vues */}
+      {viewType !== 'all' && (
+        <div className="mb-6 flex items-center gap-4">
+          <Link 
+            href="/projects" 
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <FaArrowLeft />
+            <span>Retour aux projets</span>
+          </Link>
+        </div>
+      )}
+
       {/* En-tête avec fond dégradé */}
       <div className="relative mb-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-500 overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/10"></div>
         <div className="relative px-8 py-12 text-white">
-          <h1 className="text-3xl font-bold mb-4">
-            Découvrez les projets
-          </h1>
-          <p className="text-white/80 max-w-2xl">
-            Explorez des projets passionnants et trouvez des opportunités de collaboration 
-            avec des développeurs talentueux.
-          </p>
+          <h1 className="text-3xl font-bold mb-4">{title}</h1>
+          <p className="text-white/80 max-w-2xl">{description}</p>
         </div>
       </div>
 
-      {/* Barre de recherche et filtres */}
-      <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-        <div className="flex flex-col gap-6">
-          {/* Barre de recherche avec icône */}
-          <div className="relative">
-            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Rechercher un projet..."
-              value={filters.searchTerm}
-              onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 
-                       focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
-            />
+      {/* Barre d'actions pour mes projets */}
+      {viewType === 'my-projects' && (
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Gérer vos projets</h2>
+              <p className="text-gray-500">Créez et gérez vos projets personnels ou collaboratifs</p>
+            </div>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <FaPlus />
+              <span>Créer un projet</span>
+            </button>
           </div>
-
-          {/* Bouton pour ouvrir/fermer les filtres sur mobile */}
-          <button
-            onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-            className="md:hidden flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <FaFilter />
-            <span>Filtres</span>
-          </button>
-
-          {/* Conteneur des filtres */}
-          <div className={`
-            md:flex flex-wrap gap-6
-            ${isFilterMenuOpen ? 'block' : 'hidden md:block'}
-          `}>
-            {/* Type de projet */}
-            <div className="flex-1 min-w-[200px] space-y-2">
-              <h3 className="text-sm font-semibold text-gray-700">Type de projet</h3>
-              <select
-                value={filters.projectType}
-                onChange={(e) => setFilters(prev => ({ ...prev, projectType: e.target.value }))}
-                className="w-full p-3 rounded-xl border border-gray-200 focus:border-indigo-500 
-                         focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
-              >
-                <option value="tous">Tous les projets</option>
-                <option value="personnel">Projets personnels</option>
-                <option value="collaboratif">Projets collaboratifs</option>
-              </select>
-            </div>
-
-            {/* Compétences */}
-            <div className="flex-[2] min-w-[300px] space-y-2">
-              <h3 className="text-sm font-semibold text-gray-700">Compétences requises</h3>
-              <div className="flex flex-wrap gap-2">
-                {AVAILABLE_SKILLS.map((skill) => (
-                  <button
-                    key={skill}
-                    onClick={() => toggleSkillFilter(skill)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 
-                              transform hover:-translate-y-0.5 ${
-                      filters.skills.includes(skill)
-                        ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {skill}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Résumé des filtres actifs */}
-          {(filters.skills.length > 0 || filters.projectType !== 'tous' || filters.searchTerm) && (
-            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100">
-              <span className="text-sm text-gray-500">Filtres actifs :</span>
-              <div className="flex flex-wrap gap-2">
-                {filters.projectType !== 'tous' && (
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm 
-                                 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100">
-                    {filters.projectType === 'personnel' ? 'Projets personnels' : 'Projets collaboratifs'}
-                    <button
-                      onClick={() => setFilters(prev => ({ ...prev, projectType: 'tous' }))}
-                      className="text-blue-400 hover:text-blue-600"
-                    >
-                      <FaTimes size={12} />
-                    </button>
-                  </span>
-                )}
-                {filters.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm 
-                             bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100"
-                  >
-                    {skill}
-                    <button
-                      onClick={() => toggleSkillFilter(skill)}
-                      className="text-blue-400 hover:text-blue-600"
-                    >
-                      <FaTimes size={12} />
-                    </button>
-                  </span>
-                ))}
-                {filters.searchTerm && (
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm 
-                                 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100">
-                    Recherche: {filters.searchTerm}
-                    <button
-                      onClick={() => setFilters(prev => ({ ...prev, searchTerm: '' }))}
-                      className="text-blue-400 hover:text-blue-600"
-                    >
-                      <FaTimes size={12} />
-                    </button>
-                  </span>
-                )}
-                <button
-                  onClick={() => setFilters({ projectType: 'tous', skills: [], searchTerm: '' })}
-                  className="text-sm text-red-500 hover:text-red-700 transition-colors"
-                >
-                  Réinitialiser tout
-                </button>
-              </div>
-            </div>
-          )}
         </div>
-      </div>
+      )}
+
+      {/* Filtres communs à toutes les vues */}
+      <ProjectFilters 
+        filters={filters}
+        availableSkills={AVAILABLE_SKILLS}
+        onFilterChange={setFilters}
+        onReset={resetFilters}
+      />
 
       {/* En-tête des résultats */}
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-          Projets disponibles 
+          {viewType === 'my-projects' ? 'Mes projets' : 
+           viewType === 'my-collaborations' ? 'Mes collaborations' : 
+           'Projets disponibles'}
           <span className="ml-2 text-lg text-gray-500">
             ({filteredProjects.length})
           </span>
         </h2>
+        
+        {/* Bouton de création pour la vue principale */}
+        {viewType === 'all' && session?.user && (
+          <Link
+            href="/projects?view=my-projects"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <FaPlus />
+            <span>Mes projets</span>
+          </Link>
+        )}
       </div>
 
       {/* Liste des projets */}
@@ -276,8 +246,31 @@ export default function ProjectsPage() {
             </svg>
             <h3 className="mt-4 text-lg font-medium text-gray-900">Aucun projet trouvé</h3>
             <p className="mt-2 text-gray-500">
-              Essayez de modifier vos critères de recherche pour trouver ce que vous cherchez.
+              {viewType === 'my-projects' ? 
+                "Vous n'avez pas encore créé de projets." : 
+                viewType === 'my-collaborations' ? 
+                "Vous ne collaborez sur aucun projet pour le moment." :
+                "Essayez de modifier vos critères de recherche pour trouver ce que vous cherchez."}
             </p>
+            
+            {viewType === 'my-projects' && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <FaPlus />
+                <span>Créer un projet</span>
+              </button>
+            )}
+            
+            {viewType === 'my-collaborations' && (
+              <Link
+                href="/projects"
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Découvrir des projets
+              </Link>
+            )}
           </div>
         </div>
       ) : (
@@ -290,11 +283,23 @@ export default function ProjectsPage() {
               <ProjectPreview 
                 project={project}
                 isOwner={session?.user?.id === project.userId._id}
+                collaborationRole={
+                  viewType === 'my-collaborations' && project.collaborators
+                    ? project.collaborators.find(c => c.user._id === session?.user?.id)?.role
+                    : undefined
+                }
               />
             </div>
           ))}
         </div>
       )}
+
+      {/* Modal de création de projet */}
+      <CreateProjectModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onProjectCreated={handleProjectCreated}
+      />
     </div>
   );
 }

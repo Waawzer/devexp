@@ -42,6 +42,7 @@ interface Project {
     message: string;
     status: 'en_attente' | 'accepté' | 'refusé';
     createdAt: string;
+    type: 'application' | 'mission_proposal';
   }>;
   projectType: 'personnel' | 'collaboratif';
   createdAt: string;
@@ -49,6 +50,7 @@ interface Project {
     url: string;
     caption?: string;
   }>;
+  visibility: 'public' | 'private';
 }
 
 function ApplyModal({ isOpen, onClose, projectId }: {
@@ -69,11 +71,18 @@ function ApplyModal({ isOpen, onClose, projectId }: {
       const response = await fetch(`/api/projects/${projectId}/applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ 
+          message,
+          type: 'application'
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de l\'envoi de la candidature');
+        const errorData = await response.json();
+        console.error('Détails de l\'erreur:', errorData);
+        toast.error(errorData.message || 'Erreur lors de l\'envoi de la candidature');
+        setError(errorData.message || 'Erreur lors de l\'envoi de la candidature');
+        return;
       }
 
       toast.success('Candidature envoyée avec succès');
@@ -145,8 +154,31 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [pendingProposal, setPendingProposal] = useState<any>(null);
   const [notification, setNotification] = useState<any>(null);
 
+  // Déplacer fetchProject en dehors du useEffect
+  const fetchProject = async () => {
+    try {
+      const response = await fetch(`/api/projects/${params.id}`);
+      if (response.status === 403) {
+        router.push('/projects');
+        toast.error('Ce projet est privé');
+        return;
+      }
+      if (!response.ok) throw new Error("Erreur lors de la récupération du projet");
+      const data = await response.json();
+      setProject(data);
+    } catch (error) {
+      console.error("Erreur:", error);
+      toast.error("Erreur lors du chargement du projet");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchProject();
+  }, [params.id]);
+
+  useEffect(() => {
     const fetchProposal = async () => {
       if (!notificationId) return;
 
@@ -185,19 +217,6 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
     fetchNotification();
   }, [notificationId, session?.user?.id]);
-
-  const fetchProject = async () => {
-    try {
-      const response = await fetch(`/api/projects/${params.id}`);
-      if (!response.ok) throw new Error("Erreur lors de la récupération du projet");
-      const data = await response.json();
-      setProject(data);
-    } catch (error) {
-      console.error("Erreur:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = async () => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
@@ -293,6 +312,9 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   }
 
   const isOwner = session?.user?.id === project.userId._id;
+  const isCollaborator = project.collaborators?.some(
+    collab => collab.user._id.toString() === session?.user?.id
+  );
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -301,7 +323,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         <div className="relative h-96">
           <div className="absolute inset-0">
             <img
-              src={project.img || '/dev.bmp'}
+              src={project.img || '/default-project.jpg'}
               alt={project.title}
               className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
             />
@@ -356,29 +378,43 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               {project.specifications && (
                 <button
                   onClick={() => setIsSpecsModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 
-                           text-blue-600 transition-all duration-300 transform hover:-translate-y-1"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg 
+                            ${(project.visibility === 'private' && !isOwner && !isCollaborator)
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-blue-50 hover:bg-blue-100 text-blue-600'}`}
+                  disabled={project.visibility === 'private' && !isOwner && !isCollaborator}
                 >
                   <FaBook size={20} />
-                  <span>Spécifications</span>
+                  <span>
+                    {(project.visibility === 'private' && !isOwner && !isCollaborator)
+                      ? 'Spécifications privées'
+                      : 'Spécifications'
+                    }
+                  </span>
                 </button>
               )}
               {project.githubUrl && (
                 <button
                   onClick={() => setIsTreeModalOpen(true)}
-                  className="text-gray-600 hover:text-gray-900 transition-colors p-2"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg 
+                            ${(project.visibility === 'private' && !isOwner && !isCollaborator)
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-gray-50 hover:bg-gray-100 text-gray-600'}`}
+                  disabled={project.visibility === 'private' && !isOwner && !isCollaborator}
                   title="Voir l'arborescence"
                 >
                   <FaProjectDiagram size={20} />
+                  <span>Arborescence</span>
                 </button>
               )}
               {isOwner && (
                 <button
                   onClick={() => setIsAddCollaboratorModalOpen(true)}
-                  className="text-gray-600 hover:text-gray-900 transition-colors p-2"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600"
                   title="Gérer les collaborateurs"
                 >
                   <FaUsers size={20} />
+                  <span>Collaborateurs</span>
                 </button>
               )}
             </div>
@@ -388,8 +424,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <div className="relative">
                 <button 
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="p-3 hover:bg-gray-100 rounded-full transition-all duration-300
-                           transform hover:scale-110"
+                  className="p-3 hover:bg-gray-100 rounded-full transition-all duration-300"
                 >
                   <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
@@ -404,36 +439,25 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                       onClick={() => setIsMenuOpen(false)}
                     />
                     
-                    <div className="absolute right-0 mt-2 w-48 bg-white/80 backdrop-blur-lg rounded-xl
-                                  shadow-xl z-50 border border-gray-200/50 overflow-hidden">
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-50">
                       <div className="py-1">
                         <button
                           onClick={() => {
                             setIsEditModalOpen(true);
                             setIsMenuOpen(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80
-                                   transition-colors flex items-center gap-2"
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          <span>Modifier</span>
+                          Modifier
                         </button>
                         <button
                           onClick={() => {
                             handleDelete();
                             setIsMenuOpen(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50/80
-                                   transition-colors flex items-center gap-2"
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          <span>Supprimer</span>
+                          Supprimer
                         </button>
                       </div>
                     </div>
@@ -445,23 +469,29 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
           {/* Description avec style markdown */}
           <div className="prose prose-lg prose-gray max-w-none">
-            {project.description.split('\n').map((paragraph, index) => {
-              if (paragraph.trim().startsWith('•')) {
+            {project.visibility === 'private' && !isOwner && !isCollaborator ? (
+              <p className="text-gray-500 italic">
+                Ce projet est privé. Seuls le propriétaire et les collaborateurs peuvent voir sa description.
+              </p>
+            ) : (
+              project.description?.split('\n').map((paragraph, index) => {
+                if (paragraph.trim().startsWith('•')) {
+                  return (
+                    <div key={index} className="pl-6 my-2">
+                      <p className="flex items-center gap-2 text-gray-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        {paragraph.trim().substring(1)}
+                      </p>
+                    </div>
+                  );
+                }
                 return (
-                  <div key={index} className="pl-6 my-2">
-                    <p className="flex items-center gap-2 text-gray-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                      {paragraph.trim().substring(1)}
-                    </p>
-                  </div>
+                  <p key={index} className="mb-4 leading-relaxed text-gray-700">
+                    {paragraph}
+                  </p>
                 );
-              }
-              return (
-                <p key={index} className="mb-4 leading-relaxed text-gray-700">
-                  {paragraph}
-                </p>
-              );
-            })}
+              })
+            )}
           </div>
         </div>
       </div>
@@ -493,16 +523,22 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               Compétences requises
             </h2>
             <div className="flex flex-wrap gap-2">
-              {project.skills.map((skill, index) => (
-                <span
-                  key={index}
-                  className="px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r 
-                           from-blue-50 to-indigo-50 text-blue-700 border border-blue-100
-                           hover:shadow-md transition-all duration-300"
-                >
-                  {skill}
-                </span>
-              ))}
+              {project.visibility === 'private' && !isOwner && !isCollaborator ? (
+                <p className="text-gray-500 italic">
+                  Ce projet est privé. Seuls le propriétaire et les collaborateurs peuvent voir les compétences requises.
+                </p>
+              ) : (
+                project.skills?.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r 
+                             from-blue-50 to-indigo-50 text-blue-700 border border-blue-100
+                             hover:shadow-md transition-all duration-300"
+                  >
+                    {skill}
+                  </span>
+                ))
+              )}
             </div>
           </div>
 
@@ -616,35 +652,64 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
       )}
 
       {/* Modals */}
-      {project && isOwner && (
+      {project && (
         <>
-          <EditProjectModal
-            project={project}
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            onProjectUpdated={fetchProject}
-          />
-          <TreeModal
-            isOpen={isTreeModalOpen}
-            onClose={() => setIsTreeModalOpen(false)}
-            githubUrl={project.githubUrl || ''}
-          />
-          {project.specifications && (
+          {isOwner && (
+            <EditProjectModal
+              project={project}
+              isOpen={isEditModalOpen}
+              onClose={() => setIsEditModalOpen(false)}
+              onProjectUpdated={fetchProject}
+            />
+          )}
+          
+          {/* TreeModal accessible à tous pour les projets publics */}
+          {(project.visibility === 'public' || isOwner || isCollaborator) && (
+            <TreeModal
+              isOpen={isTreeModalOpen}
+              onClose={() => setIsTreeModalOpen(false)}
+              githubUrl={project.githubUrl || ''}
+            />
+          )}
+          
+          {/* SpecificationsModal accessible à tous pour les projets publics */}
+          {project.specifications && (project.visibility === 'public' || isOwner || isCollaborator) && (
             <SpecificationsModal
               isOpen={isSpecsModalOpen}
               onClose={() => setIsSpecsModalOpen(false)}
               specifications={project.specifications}
             />
           )}
-          <AddCollaboratorModal
-            isOpen={isAddCollaboratorModalOpen}
-            onClose={() => setIsAddCollaboratorModalOpen(false)}
-            projectId={project._id}
-            onCollaboratorAdded={fetchProject}
-            currentCollaborators={project.collaborators || []}
-            applications={project.applications || []}
-          />
+          
+          {isOwner && (
+            <AddCollaboratorModal
+              isOpen={isAddCollaboratorModalOpen}
+              onClose={() => setIsAddCollaboratorModalOpen(false)}
+              projectId={project._id}
+              onCollaboratorAdded={fetchProject}
+              currentCollaborators={project.collaborators || []}
+              applications={project.applications || []}
+            />
+          )}
         </>
+      )}
+
+      {/* Ajouter le modal de candidature ici */}
+      <ApplyModal
+        isOpen={isApplyModalOpen}
+        onClose={() => setIsApplyModalOpen(false)}
+        projectId={params.id}
+      />
+
+      {/* Ajouter un indicateur de visibilité */}
+      {project.visibility === 'private' && (
+        <div className="absolute top-4 left-4 bg-gray-900/80 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          Privé
+        </div>
       )}
     </div>
   );

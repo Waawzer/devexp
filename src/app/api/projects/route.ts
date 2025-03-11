@@ -1,61 +1,73 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/dbConnect";
 import Project from "@/models/Project";
-import User from "@/models/User";
+import { withAuth } from "@/lib/services/authService";
+import { getAuthSession } from "@/lib/services/authService";
 
-export async function GET() {
+// Fonction utilitaire pour filtrer les projets selon les droits d'accès
+async function getProjectsQuery(session) {
+  if (!session?.user) {
+    // Si non connecté, ne montrer que les projets publics
+    return { visibility: 'public' };
+  } else {
+    // Si connecté, montrer les projets publics ET les projets privés où l'utilisateur est impliqué
+    return {
+      $or: [
+        { visibility: 'public' },
+        { userId: session.user.id },
+        { 'collaborators.user': session.user.id }
+      ]
+    };
+  }
+}
+
+export async function GET(req: NextRequest) {
   try {
+    const session = await getAuthSession();
     await dbConnect();
-    // S'assurer que les modèles sont chargés
-    require('@/models/User');
-    require('@/models/Project');
+
+    const query = await getProjectsQuery(session);
     
-    const projects = await Project.find()
+    // Paramètres de filtrage supplémentaires
+    const { searchParams } = new URL(req.url);
+    const type = searchParams.get('type');
+    
+    // Filtrer par type si spécifié (my-projects, my-collaborations)
+    if (session?.user && type === 'my-projects') {
+      query.userId = session.user.id;
+    } else if (session?.user && type === 'my-collaborations') {
+      query.$or = [{ 'collaborators.user': session.user.id }];
+    }
+
+    const projects = await Project.find(query)
       .populate('userId', 'name _id')
       .sort({ createdAt: -1 });
 
     return NextResponse.json(projects);
   } catch (error) {
     return NextResponse.json(
-      { message: "Erreur serveur", error: (error as Error).message },
+      { message: 'Erreur serveur', error: (error as Error).message },
       { status: 500 }
     );
   }
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ message: "Non autorisé" }, { status: 401 });
-    }
-
+  return withAuth(req, async (session) => {
     await dbConnect();
-    // S'assurer que les modèles sont chargés
-    require('@/models/User');
-    require('@/models/Project');
-    
     const data = await req.json();
 
     const project = await Project.create({
       ...data,
       userId: session.user.id,
       createdAt: new Date(),
-      status: 'en développement',
+      status: data.status || 'en développement',
+      visibility: data.visibility || 'public'
     });
 
     const populatedProject = await Project.findById(project._id)
       .populate('userId', 'name _id');
 
     return NextResponse.json(populatedProject, { status: 201 });
-  } catch (error) {
-    console.error("Erreur:", error);
-    return NextResponse.json(
-      { message: "Erreur serveur", error: (error as Error).message },
-      { status: 500 }
-    );
-  }
+  });
 }

@@ -105,15 +105,12 @@ export default function CreateMissionModal({
     setLoading(true);
 
     try {
-      const response = await fetch("/api/missions/mission-services", {
+      const response = await fetch("/api/missions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          action: 'create',
-          missionData: missionData
-        }),
+        body: JSON.stringify(missionData),
       });
       
       if (!response.ok) {

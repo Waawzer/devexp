@@ -93,6 +93,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
   const commentsEndRef = useRef<HTMLDivElement>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
   useEffect(() => {
     if (sessionStatus === "authenticated") {
@@ -135,16 +136,12 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
   const handleStatusChange = async (newStatus: string) => {
     try {
       setSubmitting(true);
-      const response = await fetch(`/api/missions/mission-services`, {
-        method: "POST",
+      const response = await fetch(`/api/missions/${params.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          action: 'update',
-          missionId: params.id,
-          missionData: { status: newStatus }
-        }),
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) throw new Error("Erreur lors de la mise à jour du statut");
@@ -165,17 +162,12 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
     
     try {
       setSubmitting(true);
-      const response = await fetch(`/api/missions/mission-services`, {
-      
-        method: "POST",
+      const response = await fetch(`/api/missions/${params.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          action: 'update',
-          missionId: params.id,
-          missionData: { completedHours: hours }
-        })
+        body: JSON.stringify({ completedHours: hours })
       });
 
       if (!response.ok) throw new Error("Erreur lors de la mise à jour des heures complétées");
@@ -197,16 +189,12 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
 
     try {
       setSubmitting(true);
-      const response = await fetch(`/api/missions/mission-services`, {
+      const response = await fetch(`/api/missions/${params.id}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          action: 'addComment',
-          missionId: params.id,
-          missionData: { content: newComment }
-        }),
+        body: JSON.stringify({ content: newComment }),
       });
 
       if (!response.ok) throw new Error("Erreur lors de l'ajout du commentaire");
@@ -226,16 +214,12 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
   const handleSaveEdit = async () => {
     try {
       setSubmitting(true);
-      const response = await fetch(`/api/missions/mission-services`, {
-        method: "POST",
+      const response = await fetch(`/api/missions/${params.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          action: 'update',
-          missionId: params.id,
-          missionData: editedMission
-        }),
+        body: JSON.stringify(editedMission),
       });
 
       if (!response.ok) throw new Error("Erreur lors de la mise à jour de la mission");
@@ -255,15 +239,11 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
   const handleDeleteMission = async () => {
     try {
       setSubmitting(true);
-      const response = await fetch(`/api/missions/mission-services`, {
-        method: "POST",
+      const response = await fetch(`/api/missions/${params.id}`, {
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          action: 'delete',
-          missionId: params.id
-        }),
       });
 
       if (!response.ok) throw new Error("Erreur lors de la suppression de la mission");
@@ -393,6 +373,61 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
   // Vérifier si l'utilisateur est assigné à la mission
   const isAssigned = mission && mission.assignedTo && session?.user?.id === mission.assignedTo._id;
 
+  // Déterminer le lien de retour en fonction du type de mission
+  const getBackLink = () => {
+    if (mission) {
+      // Si l'utilisateur est le créateur de la mission
+      if (mission.creatorId._id === session?.user?.id) {
+        return "/mission?view=my-missions";
+      }
+      // Si l'utilisateur est assigné à la mission
+      else if (mission.assignedTo && mission.assignedTo._id === session?.user?.id) {
+        return "/mission?view=assigned";
+      }
+    }
+    // Par défaut, retour à toutes les missions
+    return "/mission";
+  };
+
+  // Ajouter cette nouvelle fonction pour générer une description améliorée
+  const handleGenerateDescription = async () => {
+    if (!editedMission.description) return;
+    
+    try {
+      setIsGeneratingDescription(true);
+      
+      const response = await fetch('/api/ai-services', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generate-mission-description',
+          data: {
+            description: editedMission.description,
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la génération de la description');
+      }
+
+      const data = await response.json();
+      setEditedMission(prev => ({
+        ...prev,
+        description: data.description,
+      }));
+      
+      toast.success('Description améliorée avec succès');
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Impossible de générer une description améliorée');
+    } finally {
+      setIsGeneratingDescription(false);
+    }
+  };
+
   if (sessionStatus === "loading" || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -407,7 +442,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
         <h2 className="text-2xl font-bold text-gray-700">Mission non trouvée</h2>
         <p className="mt-2 text-gray-500">La mission que vous recherchez n'existe pas ou a été supprimée.</p>
         <Link 
-          href="/mission" 
+          href={getBackLink()}
           className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <FaArrowLeft />
@@ -422,7 +457,7 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
       {/* En-tête avec navigation */}
       <div className="mb-6 flex items-center gap-4">
         <Link 
-          href="/mission" 
+          href={getBackLink()}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <FaArrowLeft />
@@ -520,12 +555,45 @@ export default function MissionDetailPage({ params }: { params: { id: string } }
           <div className="mb-8">
             <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
             {isEditing ? (
-              <textarea
-                value={editedMission.description || ''}
-                onChange={(e) => setEditedMission({ ...editedMission, description: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-lg min-h-[150px]"
-                placeholder="Description de la mission"
-              />
+              <div className="space-y-3">
+                <textarea
+                  value={editedMission.description || ''}
+                  onChange={(e) => setEditedMission({ ...editedMission, description: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg min-h-[150px]"
+                  placeholder="Description de la mission"
+                />
+                <button
+                  type="button"
+                  onClick={handleGenerateDescription}
+                  disabled={isGeneratingDescription || !editedMission.description}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium 
+                           text-blue-700 bg-blue-50 rounded-xl hover:bg-blue-100 
+                           focus:outline-none focus:ring-2 focus:ring-offset-2 
+                           focus:ring-blue-500 disabled:opacity-50 
+                           disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  {isGeneratingDescription ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-700" 
+                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" 
+                                stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" 
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Génération en cours...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="-ml-0.5 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                              d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                      </svg>
+                      Améliorer la description
+                    </>
+                  )}
+                </button>
+              </div>
             ) : (
               <div className="prose prose-gray max-w-none">
                 {mission.description.split('\n').map((paragraph, index) => (

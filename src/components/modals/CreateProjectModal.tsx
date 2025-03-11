@@ -39,6 +39,7 @@ export default function CreateProjectModal({
   const [specifications, setSpecifications] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [projectType, setProjectType] = useState<'personnel' | 'collaboratif'>('personnel');
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +81,8 @@ export default function CreateProjectModal({
           specifications: genData.specifications,
           img: genData.imageUrl,
           githubUrl: formData.githubUrl,
-          projectType
+          projectType,
+          visibility,
         }),
       });
 
@@ -94,6 +96,7 @@ export default function CreateProjectModal({
       setFormData({ githubUrl: '' });
       setSpecifications(null);
       setProjectType('personnel');
+      setVisibility('public');
       onProjectCreated();
       onClose();
     } catch (err) {
@@ -220,6 +223,64 @@ export default function CreateProjectModal({
                 <span className="font-medium text-gray-900">Collaboratif</span>
                 <span className="text-xs text-gray-500 text-center mt-1">
                   Ouvert aux collaborations
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Visibilité du projet */}
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Visibilité du projet
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <label className={`
+                relative flex flex-col items-center p-4 rounded-xl cursor-pointer
+                border-2 transition-all duration-200
+                ${visibility === 'public' 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-200'}
+              `}>
+                <input
+                  type="radio"
+                  value="public"
+                  checked={visibility === 'public'}
+                  onChange={(e) => setVisibility(e.target.value as 'public' | 'private')}
+                  className="sr-only"
+                />
+                <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span className="font-medium text-gray-900">Public</span>
+                <span className="text-xs text-gray-500 text-center mt-1">
+                  Visible par tous les utilisateurs
+                </span>
+              </label>
+
+              <label className={`
+                relative flex flex-col items-center p-4 rounded-xl cursor-pointer
+                border-2 transition-all duration-200
+                ${visibility === 'private' 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-200'}
+              `}>
+                <input
+                  type="radio"
+                  value="private"
+                  checked={visibility === 'private'}
+                  onChange={(e) => setVisibility(e.target.value as 'public' | 'private')}
+                  className="sr-only"
+                />
+                <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span className="font-medium text-gray-900">Privé</span>
+                <span className="text-xs text-gray-500 text-center mt-1">
+                  Visible uniquement par vous et vos collaborateurs
                 </span>
               </label>
             </div>
