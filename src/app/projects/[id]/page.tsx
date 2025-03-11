@@ -14,7 +14,16 @@ import { toast } from "react-hot-toast";
 import MissionProposalActions from '@/components/notifications/MissionProposalActions';
 import { ProjectStatus } from '@/models/Project';
 
+interface Collaborator {
+  user: {
+    _id: string;
+    username: string;
+  };
+  role: string;
+}
+
 interface Application {
+  _id: string;
   user: {
     _id: string;
     name: string;
@@ -24,14 +33,6 @@ interface Application {
   status: 'en_attente' | 'accepté' | 'refusé';
   createdAt: string;
   type: 'application' | 'mission_proposal';
-}
-
-interface Collaborator {
-  user: {
-    _id: string;
-    name: string;
-  };
-  role: string;
 }
 
 interface Project {
@@ -47,8 +48,8 @@ interface Project {
   status: ProjectStatus;
   githubUrl?: string;
   specifications?: string;
-  collaborators?: Array<Collaborator>;
-  applications?: Array<Application>;
+  collaborators?: Collaborator[];
+  applications?: Application[];
   projectType: 'personnel' | 'collaboratif';
   createdAt: string;
   images?: Array<{
@@ -564,7 +565,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                         href={`/profile/${collab.user._id}`}
                         className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
                       >
-                        {collab.user.name}
+                        {collab.user.username}
                       </Link>
                       <span className="text-sm px-3 py-1 rounded-full bg-gradient-to-r 
                                      from-gray-50 to-gray-100 text-gray-700 border border-gray-200">
