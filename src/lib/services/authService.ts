@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { Session } from 'next-auth';
 
 /**
  * Vérifie si l'utilisateur est authentifié
@@ -15,7 +16,7 @@ export async function getAuthSession() {
  * @param req Requête Next
  * @param handler Fonction à exécuter si authentifié
  */
-export async function withAuth(req: NextRequest, handler: Function) {
+export async function withAuth(req: NextRequest, handler: (session: Session) => Promise<any>) {
   const session = await getAuthSession();
   
   if (!session?.user) {

@@ -5,10 +5,11 @@ import Message from '@/models/Message';
 import User from '@/models/User';
 import { createNotification } from '@/lib/services/notificationService';
 import mongoose from 'mongoose';
+import { Session } from 'next-auth';
 
 // Récupérer les conversations ou les messages
 export async function GET(req: NextRequest) {
-  return withAuth(req, async (session) => {
+  return withAuth(req, async (session: Session) => {
     await dbConnect();
     
     // Récupérer les paramètres de requête
