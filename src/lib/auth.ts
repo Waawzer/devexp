@@ -2,10 +2,16 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GithubProvider from "next-auth/providers/github";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import User from "@/models/User";
+import dbConnect from "@/lib/dbConnect";
 // Importez vos providers et autres configurations
+
+function generateUsername(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, '') + Math.floor(Math.random() * 1000);
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -13,6 +19,10 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_ID as string,
       clientSecret: process.env.GOOGLE_SECRET as string,
+    }),
+    GithubProvider({
+      clientId: process.env.GITHUB_ID as string,
+      clientSecret: process.env.GITHUB_SECRET as string,
     }),
     CredentialsProvider({
       name: "credentials",
@@ -87,6 +97,36 @@ export const authOptions: NextAuthOptions = {
         session.user.image = token.picture as string;
       }
       return session;
+    }
+  },
+  events: {
+    async signIn({ user, account, profile }) {
+      // Ne s'exécute que pour les connexions OAuth (Google, GitHub)
+      if (account?.provider === 'google' || account?.provider === 'github') {
+        try {
+          await dbConnect();
+          
+          // Vérifier si l'utilisateur existe déjà
+          const existingUser = await User.findOne({ email: user.email });
+          
+          // Si l'utilisateur n'existe pas, le créer
+          if (!existingUser && user.email) {
+            const username = generateUsername(user.name || 'user');
+            
+            await User.create({
+              email: user.email,
+              name: user.name || username,
+              image: user.image,
+              username: username,
+              availability: 'en_recherche'
+            });
+            
+            console.log(`Nouvel utilisateur créé via ${account.provider}:`, user.email);
+          }
+        } catch (error) {
+          console.error(`Erreur lors de la création de l'utilisateur via ${account.provider}:`, error);
+        }
+      }
     }
   },
   pages: {
