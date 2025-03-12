@@ -352,28 +352,35 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
-                <div className="relative">
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    rows={6}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900
-                             text-gray-100 placeholder-gray-500
-                             focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
-                             transition-all duration-200"
-                    required
-                  />
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={6}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-700 bg-gray-900
+                           text-gray-100 placeholder-gray-500
+                           focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 
+                           transition-all duration-200"
+                  required
+                />
+                <div className="mt-2 flex justify-end">
                   <button
                     type="button"
                     onClick={handleGenerateDescription}
                     disabled={isGenerating}
-                    className="absolute bottom-3 right-3 px-3 py-1.5 bg-gradient-to-r 
-                             from-indigo-500 to-blue-500 text-white text-sm rounded-lg 
+                    className="px-3 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 
+                             text-white text-sm rounded-lg flex items-center gap-2
                              hover:from-indigo-600 hover:to-blue-600 transition-all duration-200 
                              disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isGenerating ? 'Génération...' : 'Améliorer avec l\'IA'}
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M10.5 7V9C10.5 10.1 9.6 11 8.5 11H6.5C5.4 11 4.5 10.1 4.5 9V7C4.5 5.9 5.4 5 6.5 5H8.5C9.6 5 10.5 5.9 10.5 7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M19.5 17V15C19.5 13.9 18.6 13 17.5 13H15.5C14.4 13 13.5 13.9 13.5 15V17C13.5 18.1 14.4 19 15.5 19H17.5C18.6 19 19.5 18.1 19.5 17Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M10.5 16.5V15.5C10.5 13.8 11.8 12.5 13.5 12.5H14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M4.5 12.5H9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {isGenerating ? 'Génération en cours...' : 'Améliorer avec l\'IA'}
                   </button>
                 </div>
               </div>

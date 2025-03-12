@@ -64,25 +64,26 @@ export default function CreateProjectModal({
           data: {
             title,
             description,
-            skills: selectedSkills.join(', ')
+            skills: selectedSkills.length > 0 ? selectedSkills.join(', ') : ''
           }
         }),
       });
 
       if (!genResponse.ok) {
-        throw new Error("Erreur lors de la génération du contenu");
+        const errorData = await genResponse.json();
+        throw new Error(errorData.message || "Erreur lors de la génération du contenu");
       }
 
       const genData = await genResponse.json();
 
-      // Deuxième étape : Création du projet avec le contenu généré
+      // Deuxième étape : Création du projet
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
           description,
-          skills: selectedSkills,
+          skills: selectedSkills, // Ici on garde le tableau pour la création du projet
           specifications: genData.specifications,
           img: genData.imageUrl,
           githubUrl: formData.githubUrl,
@@ -92,9 +93,11 @@ export default function CreateProjectModal({
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la création du projet");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erreur lors de la création du projet");
       }
 
+      // Réinitialiser le formulaire et fermer le modal
       setTitle("");
       setDescription("");
       setSelectedSkills([]);
@@ -105,6 +108,7 @@ export default function CreateProjectModal({
       onProjectCreated();
       onClose();
     } catch (err) {
+      console.error("Erreur:", err);
       setError((err as Error).message);
     } finally {
       setLoading(false);
@@ -140,6 +144,15 @@ export default function CreateProjectModal({
             Créer un nouveau projet
           </h2>
         </div>
+
+        {/* Barre de progression */}
+        {loading && (
+          <div className="relative w-full h-1 bg-gray-700">
+            <div className="absolute top-0 left-0 h-1 bg-gradient-to-r from-indigo-500 via-blue-500 to-indigo-500 animate-gradient-x" 
+                 style={{ width: isGenerating ? '60%' : '90%', transition: 'width 0.5s ease-in-out' }}>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Informations de base */}
@@ -344,6 +357,7 @@ export default function CreateProjectModal({
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-gray-300 hover:text-gray-100 transition-colors"
+              disabled={loading}
             >
               Annuler
             </button>
@@ -358,10 +372,21 @@ export default function CreateProjectModal({
                 transform transition-all duration-200 
                 hover:-translate-y-0.5
                 disabled:opacity-50 disabled:cursor-not-allowed
-                ${loading ? 'animate-pulse' : ''}
+                ${loading ? 'relative overflow-hidden' : ''}
               `}
             >
-              {loading ? 'Création en cours...' : 'Créer le projet'}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <span className="mr-2">
+                    {isGenerating ? 'Génération en cours' : 'Création en cours'}
+                  </span>
+                  <span className="flex space-x-1">
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                  </span>
+                </span>
+              ) : 'Créer le projet'}
             </button>
           </div>
         </form>

@@ -42,25 +42,44 @@ export async function POST(req: NextRequest) {
           );
         }
         
-        // Générer les spécifications et l'image en parallèle
-        const [projectSpecs, generatedImageUrl] = await Promise.all([
-          generateSpecifications(data.title, data.description, data.skills || []),
-          generateProjectImage(data.title, data.description)
-        ]);
+        try {
+          // Convertir les skills en string si c'est un tableau, ou utiliser une chaîne vide par défaut
+          const skillsString = Array.isArray(data.skills) 
+            ? data.skills.join(', ') 
+            : typeof data.skills === 'string' 
+              ? data.skills 
+              : '';
 
-        if (!generatedImageUrl) {
+          // Générer les spécifications et l'image en parallèle
+          const [projectSpecs, generatedImageUrl] = await Promise.all([
+            generateSpecifications(
+              data.title,
+              data.description,
+              skillsString
+            ),
+            generateProjectImage(data.title, data.description)
+          ]);
+
+          if (!generatedImageUrl) {
+            return NextResponse.json(
+              { message: 'Impossible de générer l\'image' },
+              { status: 500 }
+            );
+          }
+
+          const uploadedImageUrl = await uploadImageToCloudinary(generatedImageUrl);
+          
+          return NextResponse.json({
+            specifications: projectSpecs,
+            imageUrl: uploadedImageUrl
+          });
+        } catch (error) {
+          console.error('Erreur lors de la génération:', error);
           return NextResponse.json(
-            { message: 'Impossible de générer l\'image' },
+            { message: 'Erreur lors de la génération du contenu', error: (error as Error).message },
             { status: 500 }
           );
         }
-
-        const uploadedImageUrl = await uploadImageToCloudinary(generatedImageUrl);
-        
-        return NextResponse.json({
-          specifications: projectSpecs,
-          imageUrl: uploadedImageUrl
-        });
 
       case 'generate-project-description':
         if (!data.description) {
@@ -92,12 +111,23 @@ export async function POST(req: NextRequest) {
           );
         }
         
-        const specifications = await generateSpecifications(
-          data.title,
-          data.description,
-          data.skills || []
-        );
-        return NextResponse.json({ specifications });
+        try {
+          // Normaliser les skills
+          const skillsInput = data.skills || '';
+          
+          const specifications = await generateSpecifications(
+            data.title,
+            data.description,
+            skillsInput
+          );
+          return NextResponse.json({ specifications });
+        } catch (error) {
+          console.error('Erreur lors de la génération des spécifications:', error);
+          return NextResponse.json(
+            { message: 'Erreur lors de la génération des spécifications', error: (error as Error).message },
+            { status: 500 }
+          );
+        }
 
       case 'generate-image':
         if (!data.title || !data.description) {

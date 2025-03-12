@@ -60,28 +60,49 @@ Format souhaité:
 /**
  * Génère un cahier des charges à partir des informations du projet
  */
-export async function generateSpecifications(title: string, description: string, skills: string[]) {
+export async function generateSpecifications(
+  title: string,
+  description: string,
+  skills: string[] | string
+): Promise<string> {
   try {
-    const specificationPrompt = `En tant qu'expert en gestion de projet informatique, génère un cahier des charges détaillé pour le projet suivant:
-    Titre: ${title}
-    Description: ${description}
-    Compétences requises: ${skills.join(', ')}
-    
-    Format souhaité:
-    1. Objectifs du projet
-    2. Fonctionnalités principales
-    3. Spécifications techniques
-    4. Planning estimatif
-    5. Livrables attendus`;
+    // Normaliser les skills en chaîne de caractères
+    const skillsText = typeof skills === 'string' 
+      ? skills 
+      : Array.isArray(skills) 
+        ? skills.join(', ') 
+        : '';
+
+    const prompt = `
+      Génère un cahier des charges détaillé pour un projet de développement web avec les informations suivantes:
+      
+      Titre du projet: ${title}
+      Description: ${description}
+      Compétences techniques: ${skillsText}
+      
+      Le cahier des charges doit inclure:
+      1. Contexte et objectifs du projet
+      2. Fonctionnalités principales
+      3. Spécifications techniques
+      4. Livrables attendus
+      5. Contraintes et exigences particulières
+      
+      Formate le texte en markdown.
+    `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: specificationPrompt }],
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: "Tu es un expert en rédaction de cahiers des charges pour des projets de développement web." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 1500,
     });
 
-    return response.choices[0].message.content;
+    return response.choices[0].message.content || "";
   } catch (error) {
-    console.error('Erreur lors de la génération du cahier des charges:', error);
+    console.error("Erreur lors de la génération du cahier des charges:", error);
     throw error;
   }
 }
