@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { FaCamera, FaEdit, FaEye, FaPlus, FaTimes } from "react-icons/fa";
+import { compressImage } from '@/lib/utils';
+import { toast } from "react-hot-toast";
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
@@ -23,6 +25,7 @@ export default function ProfilePage() {
   });
   const [newSkill, setNewSkill] = useState('');
   const [newFavTech, setNewFavTech] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -104,17 +107,25 @@ export default function ProfilePage() {
     if (!e.target.files || !e.target.files[0]) return;
 
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('image', file);
-
+    
     try {
+      setLoading(true);
+      
+      // Compresser l'image avant de l'envoyer
+      const compressedFile = await compressImage(file);
+      
+      const formData = new FormData();
+      formData.append('image', compressedFile);
+
       const response = await fetch('/api/users/me/image', {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors du téléchargement de l\'image');
+        const errorText = await response.text();
+        console.error('Erreur de téléchargement:', errorText);
+        throw new Error(`Erreur lors du téléchargement: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -129,7 +140,10 @@ export default function ProfilePage() {
         },
       });
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur upload:', error);
+      toast.error(`Erreur lors du téléchargement: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    } finally {
+      setLoading(false);
     }
   };
 

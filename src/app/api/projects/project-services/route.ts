@@ -8,6 +8,10 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Set maximum duration to 60 seconds
 export const runtime = 'nodejs';
 
+// Configure bodyParser for larger payloads
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+
 export async function POST(req: NextRequest) {
   try {
     // Vérifier l'authentification
@@ -23,11 +27,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Aucun fichier fourni' }, { status: 400 });
     }
 
-    // Vérifier la taille du fichier (limite à 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB en octets
+    // Vérifier la taille du fichier (limite à 4MB pour Vercel)
+    const maxSize = 4 * 1024 * 1024; // 4MB en octets
     if (file.size > maxSize) {
       return NextResponse.json(
-        { message: 'Le fichier est trop volumineux. La taille maximale est de 5MB.' },
+        { message: 'Le fichier est trop volumineux. La taille maximale est de 4MB.' },
         { status: 413 }
       );
     }
@@ -36,11 +40,18 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload vers Cloudinary
+    // Upload vers Cloudinary avec compression et optimisation
     const result = await new Promise<any>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: 'project-images',
+          // Options d'optimisation pour Cloudinary
+          quality: 'auto', // Optimisation automatique de la qualité
+          fetch_format: 'auto', // Format optimal (webp si supporté)
+          transformation: [
+            { width: 1200, crop: 'limit' }, // Limiter la largeur max à 1200px
+            { quality: 'auto:good' } // Bonne qualité mais optimisée
+          ]
         },
         (error, result) => {
           if (error) {

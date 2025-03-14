@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ProjectStatus } from '@/models/Project';
+import { compressImage } from '@/lib/utils';
 
 interface ProjectImage {
   url: string;
@@ -126,21 +127,32 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
     if (!file) return;
 
     try {
+      // Afficher un message de chargement
+      setError("Compression et téléchargement de l'image en cours...");
+      
+      // Compresser l'image avant de l'envoyer
+      const compressedFile = await compressImage(file);
+      
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       
       const response = await fetch('/api/projects/project-services', {
         method: 'POST',
         body: formData
       });
 
-      if (!response.ok) throw new Error('Erreur lors du téléchargement');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erreur de téléchargement:', errorText);
+        throw new Error(`Erreur lors du téléchargement: ${response.status} ${response.statusText}`);
+      }
       
       const { url } = await response.json();
       setNewImage(prev => ({ ...prev, url }));
+      setError(null); // Effacer le message d'erreur/chargement
     } catch (error) {
       console.error('Erreur upload:', error);
-      setError('Erreur lors du téléchargement de l\'image');
+      setError(`Erreur lors du téléchargement: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
 
