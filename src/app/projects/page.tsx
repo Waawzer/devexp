@@ -169,33 +169,33 @@ function ProjectsContent() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-4">
       {/* Navigation entre les vues */}
       {viewType !== 'all' && (
-        <div className="mb-6 flex items-center gap-4">
+        <div className="mb-3 flex items-center gap-4">
           <Link 
             href="/projects" 
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors"
           >
-            <FaArrowLeft />
-            <span>Retour aux projets</span>
+            <FaArrowLeft size={14} />
+            <span className="text-sm">Retour aux projets</span>
           </Link>
         </div>
       )}
 
       {/* Barre d'actions pour mes projets */}
       {viewType === 'my-projects' && (
-        <div className="bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 border border-gray-700">
+        <div className="bg-gray-800/40 backdrop-blur-md rounded-2xl shadow-md p-4 mb-5 border border-gray-700/30">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-lg font-semibold text-gray-100">Gérer vos projets</h2>
-              <p className="text-gray-400">Créez et gérez vos projets personnels ou collaboratifs</p>
+              <h2 className="text-base font-semibold text-gray-100">Gérer vos projets</h2>
+              <p className="text-sm text-gray-400">Créez et gérez vos projets personnels ou collaboratifs</p>
             </div>
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-indigo-600/90 text-white rounded-xl hover:bg-indigo-600 transition-colors text-sm backdrop-blur-sm border border-indigo-500/30"
             >
-              <FaPlus />
+              <FaPlus size={12} />
               <span>Créer un projet</span>
             </button>
           </div>
@@ -211,12 +211,12 @@ function ProjectsContent() {
       />
 
       {/* En-tête des résultats */}
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold text-white">
           {viewType === 'my-projects' ? 'Mes projets' : 
            viewType === 'my-collaborations' ? 'Mes collaborations' : 
            'Projets disponibles'}
-          <span className="ml-2 text-lg text-gray-500">
+          <span className="ml-2 text-sm text-gray-500">
             ({filteredProjects.length})
           </span>
         </h2>
@@ -225,9 +225,9 @@ function ProjectsContent() {
         {viewType === 'all' && session?.user && (
           <Link
             href="/projects?view=my-projects"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-indigo-600/90 text-white rounded-xl hover:bg-indigo-600 transition-colors text-sm backdrop-blur-sm border border-indigo-500/30"
           >
-            <FaPlus />
+            <FaPlus size={12} />
             <span>Mes projets</span>
           </Link>
         )}
@@ -235,10 +235,10 @@ function ProjectsContent() {
 
       {/* Liste des projets */}
       {filteredProjects.length === 0 ? (
-        <div className="text-center py-16 bg-gray-800 rounded-2xl shadow-xl border border-gray-700">
+        <div className="text-center py-10 bg-gray-800/40 backdrop-blur-md rounded-2xl shadow-md border border-gray-700/30">
           <div className="max-w-md mx-auto">
             <svg
-              className="mx-auto h-12 w-12 text-gray-500"
+              className="mx-auto h-10 w-10 text-gray-500"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -251,8 +251,8 @@ function ProjectsContent() {
                 d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <h3 className="mt-4 text-lg font-medium text-gray-100">Aucun projet trouvé</h3>
-            <p className="mt-2 text-gray-400">
+            <h3 className="mt-3 text-base font-medium text-gray-100">Aucun projet trouvé</h3>
+            <p className="mt-2 text-sm text-gray-400">
               {viewType === 'my-projects' ? 
                 "Vous n'avez pas encore créé de projets." : 
                 viewType === 'my-collaborations' ? 
@@ -263,9 +263,9 @@ function ProjectsContent() {
             {viewType === 'my-projects' && (
               <button
                 onClick={() => setIsCreateModalOpen(true)}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="mt-4 inline-flex items-center gap-2 px-3 py-2 bg-indigo-600/90 text-white rounded-xl hover:bg-indigo-600 transition-colors text-sm backdrop-blur-sm border border-indigo-500/30"
               >
-                <FaPlus />
+                <FaPlus size={12} />
                 <span>Créer un projet</span>
               </button>
             )}
@@ -273,7 +273,7 @@ function ProjectsContent() {
             {viewType === 'my-collaborations' && (
               <Link
                 href="/projects"
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="mt-4 inline-flex items-center gap-2 px-3 py-2 bg-indigo-600/90 text-white rounded-xl hover:bg-indigo-600 transition-colors text-sm backdrop-blur-sm border border-indigo-500/30"
               >
                 Découvrir des projets
               </Link>
@@ -281,11 +281,11 @@ function ProjectsContent() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
           {filteredProjects.map((project) => (
             <div
               key={project._id}
-              className="transform hover:scale-[1.02] transition-all duration-300"
+              className="transform transition-all duration-300"
             >
               <ProjectPreview 
                 project={project}

@@ -218,20 +218,20 @@ function MissionsContent() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-4">
       {/* Barre d'actions pour mes missions */}
       {viewType === 'my-missions' && (
-        <div className="bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 border border-gray-700">
+        <div className="bg-gray-800/40 backdrop-blur-md rounded-2xl shadow-md p-4 mb-5 border border-gray-700/30">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-lg font-semibold text-gray-100">Gérer vos missions</h2>
-              <p className="text-gray-400">Créez et suivez les missions que vous avez créées</p>
+              <h2 className="text-base font-semibold text-gray-100">Gérer vos missions</h2>
+              <p className="text-sm text-gray-400">Créez et suivez les missions que vous avez créées</p>
             </div>
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-indigo-600/90 text-white rounded-xl hover:bg-indigo-600 transition-colors text-sm backdrop-blur-sm border border-indigo-500/30"
             >
-              <FaPlus />
+              <FaPlus size={12} />
               <span>Nouvelle mission</span>
             </button>
           </div>
@@ -254,53 +254,58 @@ function MissionsContent() {
 
       {/* Affichage des missions en attente (pour la vue "assigned") */}
       {viewType === 'assigned' && pendingMissions.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Missions en attente d'acceptation ({pendingMissions.length})</h2>
+        <div className="mb-5">
+          <h2 className="text-base font-bold mb-3 flex items-center gap-2 text-white">
+            <span className="inline-flex items-center justify-center w-5 h-5 bg-amber-500/90 text-black text-xs font-bold rounded-full">
+              {pendingMissions.length}
+            </span>
+            <span>Missions en attente d'acceptation</span>
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pendingMissions.map((mission) => (
-              <div key={mission._id} className="bg-gray-800 rounded-xl shadow-md overflow-hidden border border-yellow-800">
-                <div className="p-4 bg-yellow-900/30 border-b border-yellow-800">
+              <div key={mission._id} className="bg-gray-800/40 backdrop-blur-md rounded-xl shadow-md overflow-hidden border border-amber-700/30">
+                <div className="p-3 bg-amber-900/20 border-b border-amber-800/20">
                   <div className="flex justify-between items-start">
-                    <h3 className="font-semibold text-lg text-gray-100 line-clamp-1">{mission.title}</h3>
-                    <span className="px-2 py-1 bg-yellow-900/50 text-yellow-200 rounded-full text-xs font-medium border border-yellow-800">
+                    <h3 className="font-medium text-base text-gray-100 line-clamp-1">{mission.title}</h3>
+                    <span className="px-2 py-0.5 bg-amber-500/30 text-amber-200 rounded-full text-xs font-medium border border-amber-500/20 backdrop-blur-sm">
                       En attente
                     </span>
                   </div>
                 </div>
-                <div className="p-4">
-                  <p className="text-gray-300 text-sm mb-3 line-clamp-2">{mission.description}</p>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+                <div className="p-3">
+                  <p className="text-gray-300 text-sm mb-2 line-clamp-2">{mission.description}</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
                       {mission.creatorId.image ? (
                         <Image 
                           src={mission.creatorId.image} 
                           alt={mission.creatorId.name} 
-                          width={24}
-                          height={24}
+                          width={20}
+                          height={20}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <FaUser className="text-gray-500 text-xs" />
                       )}
                     </div>
-                    <span className="text-sm text-gray-600">{mission.creatorId.name}</span>
+                    <span className="text-xs text-gray-400">{mission.creatorId.name}</span>
                   </div>
                   <div className="flex justify-between">
                     <Link 
                       href={`/mission/${mission._id}`}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      className="text-indigo-400 hover:text-indigo-300 text-xs font-medium"
                     >
                       Voir les détails
                     </Link>
                     <div className="flex gap-2">
                       <button 
-                        className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                        className="px-2 py-1 bg-emerald-600/70 text-white text-xs rounded-lg hover:bg-emerald-600 border border-emerald-500/30 backdrop-blur-sm"
                         onClick={() => handlePendingMissionAction(mission._id, 'accept')}
                       >
                         Accepter
                       </button>
                       <button 
-                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                        className="px-2 py-1 bg-red-600/70 text-white text-xs rounded-lg hover:bg-red-600 border border-red-500/30 backdrop-blur-sm"
                         onClick={() => handlePendingMissionAction(mission._id, 'reject')}
                       >
                         Refuser
@@ -316,14 +321,14 @@ function MissionsContent() {
 
       {/* Liste des missions */}
       {sortedMissions.length === 0 ? (
-        <div className="bg-gray-800 rounded-2xl shadow-xl p-8 text-center border border-gray-700">
-          <div className="mx-auto w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-4">
-            <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-gray-800/40 backdrop-blur-md rounded-2xl shadow-md p-8 text-center border border-gray-700/30">
+          <div className="mx-auto w-12 h-12 bg-gray-700/70 rounded-full flex items-center justify-center mb-3">
+            <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-100 mb-2">Aucune mission trouvée</h3>
-          <p className="text-gray-400 mb-4">
+          <h3 className="text-base font-medium text-gray-100 mb-2">Aucune mission trouvée</h3>
+          <p className="text-sm text-gray-400 mb-4">
             {viewType === 'my-missions' 
               ? "Vous n'avez pas encore créé de missions ou aucune mission ne correspond à vos filtres."
               : viewType === 'assigned'
@@ -333,52 +338,52 @@ function MissionsContent() {
           {viewType === 'my-missions' && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600/90 text-white rounded-xl hover:bg-indigo-600 transition-colors text-sm backdrop-blur-sm border border-indigo-500/30"
             >
-              <FaPlus />
+              <FaPlus size={12} />
               <span>Créer une mission</span>
             </button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-3">
           {sortedMissions.map((mission) => (
             <Link
               key={mission._id}
               href={`/mission/${mission._id}`}
-              className="block bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-700"
+              className="block bg-gray-800/40 backdrop-blur-md rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-700/30 hover:border-gray-600/50 group"
             >
-              <div className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+              <div className="p-3">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-100 mb-1">{mission.title}</h3>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(mission.status)}`}>
+                    <h3 className="text-base font-bold text-white group-hover:text-indigo-200 transition-colors mb-1">{mission.title}</h3>
+                    <div className="flex flex-wrap gap-1.5 mb-1">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(mission.status)} backdrop-blur-sm`}>
                         {mission.status}
                       </span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(mission.priority)}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(mission.priority)} backdrop-blur-sm`}>
                         {mission.priority}
                       </span>
                       {mission.projectId && (
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 backdrop-blur-sm">
                           Projet: {mission.projectId.title}
                         </span>
                       )}
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     {mission.deadline && (
-                      <div className="flex items-center gap-1 text-sm">
+                      <div className="flex items-center gap-1 text-xs">
                         {isOverdue(mission.deadline) && mission.status !== 'terminée' ? (
-                          <FaExclamationTriangle className="text-red-500" />
+                          <FaExclamationTriangle className="text-red-500" size={12} />
                         ) : (
-                          <FaClock className="text-gray-400" />
+                          <FaClock className="text-gray-400" size={12} />
                         )}
                         <span className={`${
                           isOverdue(mission.deadline) && mission.status !== 'terminée' 
-                            ? 'text-red-500 font-medium' 
-                            : 'text-gray-500'
+                            ? 'text-red-400 font-medium' 
+                            : 'text-gray-400'
                         }`}>
                           {formatDate(mission.deadline)}
                         </span>
@@ -387,36 +392,36 @@ function MissionsContent() {
                     
                     {mission.assignedTo ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+                        <div className="w-6 h-6 bg-gray-700/70 rounded-full flex items-center justify-center overflow-hidden border border-gray-600/30">
                           {mission.assignedTo.image ? (
                             <Image 
                               src={mission.assignedTo.image} 
                               alt={mission.assignedTo.name} 
-                              width={32}
-                              height={32}
+                              width={24}
+                              height={24}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <span className="text-xs font-medium text-gray-600">
+                            <span className="text-xs font-medium text-gray-500">
                               {mission.assignedTo.name.charAt(0).toUpperCase()}
                             </span>
                           )}
                         </div>
-                        <span className="text-sm text-gray-600">{mission.assignedTo.name}</span>
+                        <span className="text-xs text-gray-400">{mission.assignedTo.name}</span>
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-500 italic">Non assignée</span>
+                      <span className="text-xs text-gray-500 italic">Non assignée</span>
                     )}
                   </div>
                 </div>
                 
-                <p className="text-gray-600 line-clamp-2 mb-4">{mission.description}</p>
+                <p className="text-gray-400 text-sm line-clamp-2 mb-2">{mission.description}</p>
                 
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap gap-1.5 mt-1">
                   {mission.skills && mission.skills.slice(0, 3).map((skill: string, index: number) => (
                     <span
                       key={index}
-                      className="px-2 py-1 bg-gray-700 text-gray-100 rounded-md text-xs"
+                      className="px-2 py-0.5 bg-gray-800/70 text-gray-300 rounded text-xs border border-gray-700/50 backdrop-blur-sm"
                     >
                       {skill}
                     </span>
@@ -428,11 +433,11 @@ function MissionsContent() {
                   )}
                 </div>
                 
-                <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-700 text-sm text-gray-500">
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-700/30 text-xs text-gray-500">
                   <span>Créée le {formatDate(mission.createdAt)}</span>
                   {mission.estimatedHours && (
                     <div className="flex items-center gap-1">
-                      <FaClock className="text-gray-400" />
+                      <FaClock className="text-gray-500" size={10} />
                       <span>
                         {mission.completedHours}/{mission.estimatedHours}h
                       </span>
