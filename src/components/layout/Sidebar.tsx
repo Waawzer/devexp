@@ -90,6 +90,28 @@ export default function Sidebar() {
             </Link>
           </li>
 
+          <li>
+            <Link 
+              href="/messages" 
+              className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+                isActive('/messages') 
+                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-indigo-400'
+              }`}
+            >
+              <FaEnvelope className={`${collapsed ? 'mx-auto text-xl' : 'mr-3'}`} />
+              {!collapsed && (
+                <div className="flex justify-between items-center w-full">
+                  <span>Messages</span>
+                  <span className="bg-indigo-500 text-white text-xs px-2 py-1 rounded-full">Nouveau</span>
+                </div>
+              )}
+              {collapsed && (
+                <span className="absolute top-0 right-0 w-3 h-3 bg-indigo-500 rounded-full"></span>
+              )}
+            </Link>
+          </li>
+
           {/* Menu déroulant Projets */}
           <li className="relative">
             <button 
@@ -153,28 +175,6 @@ export default function Sidebar() {
                 </li>
               </ul>
             )}
-          </li>
-
-          <li>
-            <Link 
-              href="/messages" 
-              className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive('/messages') 
-                  ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg' 
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-indigo-400'
-              }`}
-            >
-              <FaEnvelope className={`${collapsed ? 'mx-auto text-xl' : 'mr-3'}`} />
-              {!collapsed && (
-                <div className="flex justify-between items-center w-full">
-                  <span>Messages</span>
-                  <span className="bg-indigo-500 text-white text-xs px-2 py-1 rounded-full">Nouveau</span>
-                </div>
-              )}
-              {collapsed && (
-                <span className="absolute top-0 right-0 w-3 h-3 bg-indigo-500 rounded-full"></span>
-              )}
-            </Link>
           </li>
 
           {/* Menu déroulant Missions */}

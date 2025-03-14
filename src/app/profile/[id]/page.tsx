@@ -53,96 +53,6 @@ interface Mission {
   projectId?: string;
 }
 
-// Simplifions la fonction getDisplayName
-const getDisplayName = (user: User) => {
-  return user.name || 'Utilisateur';
-};
-
-// Simplifions le rendu de l'avatar
-function ProfileImage({ user }: { user: User }) {
-  const renderAvatar = () => {
-    if (!user) return null;
-
-    if (user.image) {
-      return (
-        <Image
-          src={user.image}
-          alt={user.name || 'Avatar'}
-          width={120}
-          height={120}
-          className="rounded-full"
-        />
-      );
-    }
-
-    const initial = user.name ? user.name.charAt(0).toUpperCase() : '?';
-
-    return (
-      <div className="w-[120px] h-[120px] bg-gray-200 rounded-full flex items-center justify-center">
-        <span className="text-4xl text-gray-500">
-          {initial}
-        </span>
-      </div>
-    );
-  };
-
-  return (
-    <div className="flex-shrink-0">
-      {renderAvatar()}
-    </div>
-  );
-}
-
-function AvailabilityBadge({ availability }: { availability?: string }) {
-  if (!availability) return null;
-
-  const styles = {
-    disponible: 'bg-green-100 text-green-800 border-green-200',
-    occupé: 'bg-red-100 text-red-800 border-red-200',
-    en_recherche: 'bg-blue-100 text-blue-800 border-blue-200'
-  };
-
-  return (
-    <div className={`
-      flex items-center gap-2 px-4 py-2 rounded-full
-      ${styles[availability as keyof typeof styles]}
-      border-2 animate-pulse
-    `}>
-      <span className={`
-        w-2 h-2 rounded-full
-        ${availability === 'disponible' ? 'bg-green-500' :
-          availability === 'occupé' ? 'bg-red-500' : 'bg-blue-500'}
-      `}></span>
-      <span className="font-medium">
-        {availability.replace('_', ' ')}
-      </span>
-    </div>
-  );
-}
-
-function ProfessionalInfo({ user }: { user: User }) {
-  if (!user.hourlyRate && !user.yearsOfExperience) return null;
-
-  return (
-    <div className="flex flex-wrap gap-4 items-center mt-4">
-      {user.hourlyRate && (
-        <div className="bg-gray-100 px-4 py-2 rounded-full">
-          <span className="font-medium">{user.hourlyRate}€</span>
-          <span className="text-gray-600">/heure</span>
-        </div>
-      )}
-      {user.yearsOfExperience && (
-        <div className="bg-gray-100 px-4 py-2 rounded-full">
-          <span className="font-medium">{user.yearsOfExperience}</span>
-          <span className="text-gray-600">
-            {user.yearsOfExperience > 1 ? ' ans' : ' an'} d'expérience
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function MissionProposalModal({ isOpen, onClose, targetUserId, targetUserName, isAvailable }: {
   isOpen: boolean;
   onClose: () => void;
@@ -622,25 +532,7 @@ export default function UserProfilePage() {
                 </span>
               </div>
 
-              {/* Compétences */}
-              {userData?.user.skills && userData.user.skills.length > 0 && (
-                <div className="bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-700">
-                  <h3 className="text-lg font-semibold text-gray-100 mb-4">Compétences</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {userData.user.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-4 py-2 rounded-xl bg-indigo-900/50 text-indigo-300 
-                                 border border-indigo-500/50"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Technologies préférées */}
+              {/* Technologies préférées - Déplacé avant Compétences */}
               {userData?.user.favoriteTechnologies && userData.user.favoriteTechnologies.length > 0 && (
                 <div className="bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-700">
                   <h3 className="text-lg font-semibold text-gray-100 mb-4">Technologies préférées</h3>
@@ -652,6 +544,24 @@ export default function UserProfilePage() {
                                  border border-green-500/50"
                       >
                         {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Compétences - Déplacé après Technologies préférées */}
+              {userData?.user.skills && userData.user.skills.length > 0 && (
+                <div className="bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-100 mb-4">Compétences</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {userData.user.skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="px-4 py-2 rounded-xl bg-indigo-900/50 text-indigo-300 
+                                 border border-indigo-500/50"
+                      >
+                        {skill}
                       </span>
                     ))}
                   </div>

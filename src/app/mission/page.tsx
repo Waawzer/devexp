@@ -219,15 +219,6 @@ function MissionsContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* En-tête avec fond dégradé */}
-      <div className="relative mb-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-500 overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/10"></div>
-        <div className="relative px-8 py-12 text-white">
-          <h1 className="text-3xl font-bold mb-4">{title}</h1>
-          <p className="text-white/80 max-w-2xl">{description}</p>
-        </div>
-      </div>
-
       {/* Barre d'actions pour mes missions */}
       {viewType === 'my-missions' && (
         <div className="bg-gray-800 rounded-2xl shadow-xl p-6 mb-8 border border-gray-700">
