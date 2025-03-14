@@ -54,77 +54,99 @@ export default function CreateProjectModal({
 
     try {
       // Première étape : Génération du contenu par l'IA
-      const genResponse = await fetch("/api/ai-services", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "generate-project-content",
-          data: {
+      console.log("Début de la génération du contenu...");
+      
+      // Utiliser un timeout côté client pour éviter les attentes trop longues
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes timeout
+      
+      try {
+        const genResponse = await fetch("/api/ai-services", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "generate-project-content",
+            data: {
+              title,
+              description,
+              skills: selectedSkills.length > 0 ? selectedSkills.join(', ') : ''
+            }
+          }),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+
+        if (!genResponse.ok) {
+          // Vérifier si la réponse est du JSON valide
+          const contentType = genResponse.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await genResponse.json();
+            throw new Error(errorData.message || "Erreur lors de la génération du contenu");
+          } else {
+            // Si ce n'est pas du JSON, récupérer le texte brut
+            const errorText = await genResponse.text();
+            console.error("Réponse non-JSON reçue:", errorText);
+            throw new Error("Erreur lors de la génération du contenu. Vérifiez les logs pour plus de détails.");
+          }
+        }
+
+        const genData = await genResponse.json();
+        console.log("Contenu généré avec succès");
+        
+        // Deuxième étape : Création du projet
+        console.log("Création du projet...");
+        const response = await fetch("/api/projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             title,
             description,
-            skills: selectedSkills.length > 0 ? selectedSkills.join(', ') : ''
+            skills: selectedSkills, // Ici on garde le tableau pour la création du projet
+            specifications: genData.specifications,
+            img: genData.imageUrl,
+            githubUrl: formData.githubUrl,
+            projectType,
+            visibility,
+          }),
+        });
+
+        if (!response.ok) {
+          // Vérifier si la réponse est du JSON valide
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Erreur lors de la création du projet");
+          } else {
+            // Si ce n'est pas du JSON, récupérer le texte brut
+            const errorText = await response.text();
+            console.error("Réponse non-JSON reçue:", errorText);
+            throw new Error("Erreur lors de la création du projet. Vérifiez les logs pour plus de détails.");
           }
-        }),
-      });
+        }
 
-      if (!genResponse.ok) {
-        // Vérifier si la réponse est du JSON valide
-        const contentType = genResponse.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          const errorData = await genResponse.json();
-          throw new Error(errorData.message || "Erreur lors de la génération du contenu");
+        // Réinitialiser le formulaire et fermer le modal
+        setTitle("");
+        setDescription("");
+        setSelectedSkills([]);
+        setFormData({ githubUrl: '' });
+        setSpecifications(null);
+        setProjectType('personnel');
+        setVisibility('public');
+        onProjectCreated();
+        onClose();
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error("La requête a été interrompue après le délai d'attente");
+          setError("La génération du contenu prend trop de temps. Veuillez réessayer plus tard.");
         } else {
-          // Si ce n'est pas du JSON, récupérer le texte brut
-          const errorText = await genResponse.text();
-          console.error("Réponse non-JSON reçue:", errorText);
-          throw new Error("Erreur lors de la génération du contenu. Vérifiez les logs pour plus de détails.");
+          throw fetchError;
         }
       }
-
-      const genData = await genResponse.json();
-
-      // Deuxième étape : Création du projet
-      const response = await fetch("/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          skills: selectedSkills, // Ici on garde le tableau pour la création du projet
-          specifications: genData.specifications,
-          img: genData.imageUrl,
-          githubUrl: formData.githubUrl,
-          projectType,
-          visibility,
-        }),
-      });
-
-      if (!response.ok) {
-        // Vérifier si la réponse est du JSON valide
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Erreur lors de la création du projet");
-        } else {
-          // Si ce n'est pas du JSON, récupérer le texte brut
-          const errorText = await response.text();
-          console.error("Réponse non-JSON reçue:", errorText);
-          throw new Error("Erreur lors de la création du projet. Vérifiez les logs pour plus de détails.");
-        }
-      }
-
-      // Réinitialiser le formulaire et fermer le modal
-      setTitle("");
-      setDescription("");
-      setSelectedSkills([]);
-      setFormData({ githubUrl: '' });
-      setSpecifications(null);
-      setProjectType('personnel');
-      setVisibility('public');
-      onProjectCreated();
-      onClose();
     } catch (err) {
       console.error("Erreur:", err);
       setError((err as Error).message);

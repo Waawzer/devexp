@@ -2,7 +2,27 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  timeout: 60000, // 60 seconds timeout for API requests
 });
+
+// Helper function to implement timeout for promises
+const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error(`Operation timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    promise
+      .then((result) => {
+        clearTimeout(timeoutId);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+};
 
 /**
  * Génère une description améliorée pour un projet
@@ -18,15 +38,23 @@ Format souhaité:
 - Liste des fonctionnalités principales avec des puces (•)
 - Un paragraphe de conclusion sur les cas d'usage et l'impact potentiel du projet`;
 
-    const response = await openai.chat.completions.create({
+    // Add timeout of 30 seconds
+    const responsePromise = openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
     });
 
-    return response.choices[0].message.content;
+    try {
+      const response = await withTimeout(responsePromise, 30000);
+      return response.choices[0].message.content;
+    } catch (timeoutError) {
+      console.warn('Timeout lors de la génération de la description:', timeoutError);
+      return description; // Return original description on timeout
+    }
   } catch (error) {
     console.error('Erreur lors de la génération de la description de projet:', error);
-    throw error;
+    // Return the original description if there's an error
+    return description;
   }
 }
 
@@ -45,15 +73,21 @@ Format souhaité:
 - Précision des livrables attendus
 - Critères de succès pour évaluer l'achèvement de la mission`;
 
-    const response = await openai.chat.completions.create({
+    const responsePromise = openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
     });
 
-    return response.choices[0].message.content;
+    try {
+      const response = await withTimeout(responsePromise, 30000);
+      return response.choices[0].message.content;
+    } catch (timeoutError) {
+      console.warn('Timeout lors de la génération de la description de mission:', timeoutError);
+      return description; // Return original description on timeout
+    }
   } catch (error) {
     console.error('Erreur lors de la génération de la description de mission:', error);
-    throw error;
+    return description;
   }
 }
 
@@ -90,7 +124,7 @@ export async function generateSpecifications(
       Formate le texte en markdown.
     `;
 
-    const response = await openai.chat.completions.create({
+    const responsePromise = openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: "Tu es un expert en rédaction de cahiers des charges pour des projets de développement web." },
@@ -100,10 +134,18 @@ export async function generateSpecifications(
       max_tokens: 1500,
     });
 
-    return response.choices[0].message.content || "";
+    try {
+      const response = await withTimeout(responsePromise, 45000); // Longer timeout for specifications
+      return response.choices[0].message.content || "";
+    } catch (timeoutError) {
+      console.warn('Timeout lors de la génération des spécifications:', timeoutError);
+      // Return a basic specification on timeout
+      return `# Cahier des charges: ${title}\n\n## Contexte et objectifs\n${description}\n\n## Compétences techniques\n${skills}`;
+    }
   } catch (error) {
     console.error("Erreur lors de la génération du cahier des charges:", error);
-    throw error;
+    // Return a basic specification on error
+    return `# Cahier des charges: ${title}\n\n## Contexte et objectifs\n${description}\n\n## Compétences techniques\n${skills}`;
   }
 }
 
@@ -116,7 +158,7 @@ export async function generateProjectImage(title: string, description: string) {
     Le projet concerne: ${description}. 
     Style: Minimaliste, technologique, avec des couleurs douces et professionnelles.`;
 
-    const response = await openai.images.generate({
+    const responsePromise = openai.images.generate({
       model: "dall-e-3",
       prompt: imagePrompt,
       n: 1,
@@ -125,9 +167,16 @@ export async function generateProjectImage(title: string, description: string) {
       style: "natural"
     });
 
-    return response.data[0]?.url;
+    try {
+      const response = await withTimeout(responsePromise, 45000); // Longer timeout for image generation
+      return response.data[0]?.url;
+    } catch (timeoutError) {
+      console.warn('Timeout lors de la génération de l\'image:', timeoutError);
+      // Return null on timeout, the calling code should handle this
+      return null;
+    }
   } catch (error) {
     console.error('Erreur lors de la génération de l\'image:', error);
-    throw error;
+    return null;
   }
 } 

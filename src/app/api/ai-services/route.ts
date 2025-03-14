@@ -9,6 +9,11 @@ import {
 } from '@/lib/services/aiService';
 import cloudinary from '@/lib/cloudinary';
 
+// Configure the route for longer execution time
+export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // Increase to 5 minutes (300 seconds)
+export const runtime = 'nodejs';
+
 async function uploadImageToCloudinary(imageUrl: string, folder = 'project-images') {
   try {
     // Vérifier que l'URL est valide
@@ -81,55 +86,60 @@ export async function POST(req: NextRequest) {
             );
           }
 
+          // Générer les spécifications
+          console.log('Génération des spécifications pour:', data.title);
+          const projectSpecs = await generateSpecifications(
+            data.title,
+            data.description,
+            skillsString
+          ).catch(error => {
+            console.error('Erreur lors de la génération des spécifications:', error);
+            // Fallback pour les spécifications
+            return `# Cahier des charges: ${data.title}\n\n## Contexte et objectifs\n${data.description}\n\n## Compétences techniques\n${skillsString}`;
+          });
+
+          // Vérifier si Cloudinary est configuré avant de générer l'image
           if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_SECRET) {
             console.error('Configuration Cloudinary manquante');
-            return NextResponse.json(
-              { message: 'Configuration du service de stockage d\'images manquante' },
-              { status: 500 }
-            );
-          }
-
-          // Générer les spécifications et l'image en parallèle
-          const [projectSpecs, generatedImageUrl] = await Promise.all([
-            generateSpecifications(
-              data.title,
-              data.description,
-              skillsString
-            ).catch(error => {
-              console.error('Erreur lors de la génération des spécifications:', error);
-              return 'Erreur lors de la génération des spécifications. Veuillez réessayer.';
-            }),
-            generateProjectImage(data.title, data.description).catch(error => {
-              console.error('Erreur lors de la génération de l\'image:', error);
-              return null;
-            })
-          ]);
-
-          if (!generatedImageUrl) {
-            console.warn('Impossible de générer l\'image, utilisation d\'une image par défaut');
-            // Utiliser une image par défaut au lieu d'échouer
-            const defaultImageUrl = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg'; // Remplacez par votre URL d'image par défaut
-            
+            // Retourner les spécifications sans image
             return NextResponse.json({
               specifications: projectSpecs,
-              imageUrl: defaultImageUrl
+              imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg' // Image par défaut
             });
           }
 
+          // Générer l'image
+          console.log('Génération de l\'image pour:', data.title);
+          let imageUrl;
           try {
-            const uploadedImageUrl = await uploadImageToCloudinary(generatedImageUrl);
+            // Essayer de générer l'image
+            const generatedImageUrl = await generateProjectImage(data.title, data.description);
             
-            return NextResponse.json({
-              specifications: projectSpecs,
-              imageUrl: uploadedImageUrl
-            });
-          } catch (uploadError) {
-            console.error('Erreur lors de l\'upload sur Cloudinary:', uploadError);
-            return NextResponse.json(
-              { message: 'Erreur lors de l\'upload de l\'image', error: (uploadError as Error).message },
-              { status: 500 }
-            );
+            if (!generatedImageUrl) {
+              console.warn('Impossible de générer l\'image, utilisation d\'une image par défaut');
+              // Utiliser une image par défaut
+              imageUrl = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg';
+            } else {
+              // Essayer d'uploader l'image sur Cloudinary
+              try {
+                imageUrl = await uploadImageToCloudinary(generatedImageUrl);
+              } catch (uploadError) {
+                console.error('Erreur lors de l\'upload sur Cloudinary:', uploadError);
+                // Utiliser l'URL générée directement si l'upload échoue
+                imageUrl = generatedImageUrl;
+              }
+            }
+          } catch (imageError) {
+            console.error('Erreur lors de la génération de l\'image:', imageError);
+            // Utiliser une image par défaut en cas d'erreur
+            imageUrl = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg';
           }
+          
+          // Retourner les résultats
+          return NextResponse.json({
+            specifications: projectSpecs,
+            imageUrl: imageUrl
+          });
         } catch (error) {
           console.error('Erreur lors de la génération:', error);
           return NextResponse.json(
