@@ -11,14 +11,36 @@ import cloudinary from '@/lib/cloudinary';
 
 async function uploadImageToCloudinary(imageUrl: string, folder = 'project-images') {
   try {
+    // Vérifier que l'URL est valide
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      console.error('URL d\'image invalide pour Cloudinary:', imageUrl);
+      throw new Error('URL d\'image invalide');
+    }
+
+    // Vérifier que la configuration Cloudinary est présente
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.error('Configuration Cloudinary manquante');
+      throw new Error('Configuration Cloudinary manquante');
+    }
+
+    console.log('Tentative d\'upload sur Cloudinary:', { folder });
+    
     const uploadResponse = await cloudinary.uploader.upload(imageUrl, {
       folder: folder,
       resource_type: 'image',
     });
+    
+    console.log('Upload Cloudinary réussi, URL:', uploadResponse.secure_url);
     return uploadResponse.secure_url;
   } catch (error) {
-    console.error('Erreur lors de l\'upload sur Cloudinary:', error);
-    throw error;
+    console.error('Erreur détaillée lors de l\'upload sur Cloudinary:', error);
+    
+    // Fournir des informations plus détaillées sur l'erreur
+    if (error instanceof Error) {
+      throw new Error(`Erreur Cloudinary: ${error.message}`);
+    } else {
+      throw new Error('Erreur inconnue lors de l\'upload sur Cloudinary');
+    }
   }
 }
 
@@ -50,29 +72,64 @@ export async function POST(req: NextRequest) {
               ? data.skills 
               : '';
 
+          // Vérifier que les clés API sont configurées
+          if (!process.env.OPENAI_API_KEY) {
+            console.error('Clé API OpenAI manquante');
+            return NextResponse.json(
+              { message: 'Configuration du service IA manquante' },
+              { status: 500 }
+            );
+          }
+
+          if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_SECRET) {
+            console.error('Configuration Cloudinary manquante');
+            return NextResponse.json(
+              { message: 'Configuration du service de stockage d\'images manquante' },
+              { status: 500 }
+            );
+          }
+
           // Générer les spécifications et l'image en parallèle
           const [projectSpecs, generatedImageUrl] = await Promise.all([
             generateSpecifications(
               data.title,
               data.description,
               skillsString
-            ),
-            generateProjectImage(data.title, data.description)
+            ).catch(error => {
+              console.error('Erreur lors de la génération des spécifications:', error);
+              return 'Erreur lors de la génération des spécifications. Veuillez réessayer.';
+            }),
+            generateProjectImage(data.title, data.description).catch(error => {
+              console.error('Erreur lors de la génération de l\'image:', error);
+              return null;
+            })
           ]);
 
           if (!generatedImageUrl) {
+            console.warn('Impossible de générer l\'image, utilisation d\'une image par défaut');
+            // Utiliser une image par défaut au lieu d'échouer
+            const defaultImageUrl = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg'; // Remplacez par votre URL d'image par défaut
+            
+            return NextResponse.json({
+              specifications: projectSpecs,
+              imageUrl: defaultImageUrl
+            });
+          }
+
+          try {
+            const uploadedImageUrl = await uploadImageToCloudinary(generatedImageUrl);
+            
+            return NextResponse.json({
+              specifications: projectSpecs,
+              imageUrl: uploadedImageUrl
+            });
+          } catch (uploadError) {
+            console.error('Erreur lors de l\'upload sur Cloudinary:', uploadError);
             return NextResponse.json(
-              { message: 'Impossible de générer l\'image' },
+              { message: 'Erreur lors de l\'upload de l\'image', error: (uploadError as Error).message },
               { status: 500 }
             );
           }
-
-          const uploadedImageUrl = await uploadImageToCloudinary(generatedImageUrl);
-          
-          return NextResponse.json({
-            specifications: projectSpecs,
-            imageUrl: uploadedImageUrl
-          });
         } catch (error) {
           console.error('Erreur lors de la génération:', error);
           return NextResponse.json(

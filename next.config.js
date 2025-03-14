@@ -27,7 +27,12 @@ const nextConfig = {
         pathname: '/dpoi45ksk/**',
       },
     ],
-  }
+  },
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
 }
 
 module.exports = nextConfig 

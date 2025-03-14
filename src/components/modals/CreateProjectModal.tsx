@@ -70,8 +70,17 @@ export default function CreateProjectModal({
       });
 
       if (!genResponse.ok) {
-        const errorData = await genResponse.json();
-        throw new Error(errorData.message || "Erreur lors de la génération du contenu");
+        // Vérifier si la réponse est du JSON valide
+        const contentType = genResponse.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await genResponse.json();
+          throw new Error(errorData.message || "Erreur lors de la génération du contenu");
+        } else {
+          // Si ce n'est pas du JSON, récupérer le texte brut
+          const errorText = await genResponse.text();
+          console.error("Réponse non-JSON reçue:", errorText);
+          throw new Error("Erreur lors de la génération du contenu. Vérifiez les logs pour plus de détails.");
+        }
       }
 
       const genData = await genResponse.json();
@@ -93,8 +102,17 @@ export default function CreateProjectModal({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erreur lors de la création du projet");
+        // Vérifier si la réponse est du JSON valide
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Erreur lors de la création du projet");
+        } else {
+          // Si ce n'est pas du JSON, récupérer le texte brut
+          const errorText = await response.text();
+          console.error("Réponse non-JSON reçue:", errorText);
+          throw new Error("Erreur lors de la création du projet. Vérifiez les logs pour plus de détails.");
+        }
       }
 
       // Réinitialiser le formulaire et fermer le modal

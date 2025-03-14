@@ -48,12 +48,15 @@ const PROJECT_STATUSES: ProjectStatus[] = [
 ];
 
 export default function EditProjectModal({ project, isOpen, onClose, onProjectUpdated }: EditProjectModalProps) {
+  // S'assurer que les images sont correctement initialisées
+  const initialImages = Array.isArray(project.images) ? project.images : [];
+  
   const [formData, setFormData] = useState({
     title: project.title,
     description: project.description,
     skills: project.skills,
     img: project.img,
-    images: project.images || [],
+    images: initialImages,
     githubUrl: project.githubUrl || '',
     status: project.status || 'en développement',
     projectType: project.projectType || 'personnel',
@@ -72,19 +75,29 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
     setError(null);
 
     try {
+      // S'assurer que les images sont correctement formatées
+      const formattedImages = formData.images.map(img => ({
+        url: img.url,
+        caption: img.caption || ""
+      }));
+      
+      const dataToSend = {
+        ...formData,
+        images: formattedImages,
+        skills: selectedSkills,
+      };
+      
       const response = await fetch(`/api/projects/${project._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          skills: selectedSkills,
-        }),
+        body: JSON.stringify(dataToSend),
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
         throw new Error("Erreur lors de la modification du projet");
       }
 
@@ -133,10 +146,27 @@ export default function EditProjectModal({ project, isOpen, onClose, onProjectUp
 
   const addImage = () => {
     if (newImage.url) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, newImage]
-      }));
+      // Créer un nouvel objet image avec les propriétés requises
+      const imageToAdd = {
+        url: newImage.url,
+        caption: newImage.caption || ''
+      };
+      
+      // Mettre à jour le state avec la nouvelle image
+      setFormData(prev => {
+        // S'assurer que prev.images est un tableau
+        const currentImages = Array.isArray(prev.images) ? prev.images : [];
+        
+        // Ajouter la nouvelle image
+        const updatedImages = [...currentImages, imageToAdd];
+        
+        return {
+          ...prev,
+          images: updatedImages
+        };
+      });
+      
+      // Réinitialiser le formulaire d'ajout d'image
       setNewImage({ url: '', caption: '' });
     }
   };

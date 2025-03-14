@@ -96,9 +96,30 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       );
     }
 
+    // S'assurer que les images sont correctement formatées
+    if (data.images && Array.isArray(data.images)) {
+      // Vérifier que chaque image a une URL
+      data.images = data.images.filter((img: { url?: string; caption?: string }) => {
+        const isValid = img && typeof img === 'object' && img.url;
+        return isValid;
+      });
+      
+      // S'assurer que chaque image a le bon format
+      data.images = data.images.map((img: { url: string; caption?: string }) => ({
+        url: img.url,
+        caption: img.caption || ""
+      }));
+    }
+
+    // Utiliser directement l'opérateur $set pour mettre à jour le document
+    const updateData = { 
+      ...data,
+      updatedAt: new Date()
+    };
+
     const updatedProject = await Project.findByIdAndUpdate(
       params.id,
-      { $set: data },
+      { $set: updateData },
       { new: true }
     );
 
