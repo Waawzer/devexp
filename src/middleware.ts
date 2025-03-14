@@ -6,13 +6,8 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Configurer les limites de taille pour les routes spécifiques
+// Configurer les routes sur lesquelles le middleware s'applique
 export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
   matcher: [
     '/api/projects/project-services',
     '/api/users/me/image',

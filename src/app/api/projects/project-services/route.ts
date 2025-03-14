@@ -3,14 +3,10 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import cloudinary from '@/lib/cloudinary';
 
-export const config = {
-  api: {
-    // Augmenter la limite de taille à 10MB (10 * 1024 * 1024 octets)
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-};
+// The new way to configure route handlers in Next.js App Router
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Set maximum duration to 60 seconds
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {

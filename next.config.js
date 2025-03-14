@@ -28,10 +28,9 @@ const nextConfig = {
       },
     ],
   },
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
+  experimental: {
+    // This is the proper way to configure serverComponentsExternalPackages in Next.js 14
+    serverComponentsExternalPackages: ['cloudinary'],
   },
 }
 
