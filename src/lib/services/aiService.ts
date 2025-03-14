@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  timeout: 60000, // 60 seconds timeout for API requests
+  timeout: 30000, // 30 seconds timeout for API requests
 });
 
 // Helper function to implement timeout for promises
@@ -45,7 +45,7 @@ Format souhaité:
     });
 
     try {
-      const response = await withTimeout(responsePromise, 30000);
+      const response = await withTimeout(responsePromise, 20000);
       return response.choices[0].message.content;
     } catch (timeoutError) {
       console.warn('Timeout lors de la génération de la description:', timeoutError);
@@ -79,7 +79,7 @@ Format souhaité:
     });
 
     try {
-      const response = await withTimeout(responsePromise, 30000);
+      const response = await withTimeout(responsePromise, 20000);
       return response.choices[0].message.content;
     } catch (timeoutError) {
       console.warn('Timeout lors de la génération de la description de mission:', timeoutError);
@@ -135,7 +135,7 @@ export async function generateSpecifications(
     });
 
     try {
-      const response = await withTimeout(responsePromise, 45000); // Longer timeout for specifications
+      const response = await withTimeout(responsePromise, 25000);
       return response.choices[0].message.content || "";
     } catch (timeoutError) {
       console.warn('Timeout lors de la génération des spécifications:', timeoutError);
@@ -168,7 +168,7 @@ export async function generateProjectImage(title: string, description: string) {
     });
 
     try {
-      const response = await withTimeout(responsePromise, 45000); // Longer timeout for image generation
+      const response = await withTimeout(responsePromise, 25000);
       return response.data[0]?.url;
     } catch (timeoutError) {
       console.warn('Timeout lors de la génération de l\'image:', timeoutError);

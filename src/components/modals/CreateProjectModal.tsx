@@ -53,14 +53,14 @@ export default function CreateProjectModal({
     setIsGenerating(true);
 
     try {
-      // Première étape : Génération du contenu par l'IA
-      console.log("Début de la génération du contenu...");
-      
       // Utiliser un timeout côté client pour éviter les attentes trop longues
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes timeout
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout to match server limit
       
       try {
+        // Afficher un message d'attente
+        setError("Génération en cours... Cela peut prendre jusqu'à une minute.");
+        
         const genResponse = await fetch("/api/ai-services", {
           method: "POST",
           headers: {
@@ -142,7 +142,9 @@ export default function CreateProjectModal({
         
         if (fetchError instanceof Error && fetchError.name === 'AbortError') {
           console.error("La requête a été interrompue après le délai d'attente");
-          setError("La génération du contenu prend trop de temps. Veuillez réessayer plus tard.");
+          setError(
+            "La génération du contenu a pris trop de temps. Essayez avec une description plus courte ou réessayez plus tard quand le service sera moins chargé."
+          );
         } else {
           throw fetchError;
         }

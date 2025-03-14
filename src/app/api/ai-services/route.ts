@@ -11,7 +11,7 @@ import cloudinary from '@/lib/cloudinary';
 
 // Configure the route for longer execution time
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // Increase to 5 minutes (300 seconds)
+export const maxDuration = 60; // Set to 60 seconds (maximum allowed on Hobby plan)
 export const runtime = 'nodejs';
 
 async function uploadImageToCloudinary(imageUrl: string, folder = 'project-images') {
@@ -86,7 +86,8 @@ export async function POST(req: NextRequest) {
             );
           }
 
-          // Générer les spécifications
+          // Utiliser une approche séquentielle au lieu de parallèle pour éviter de surcharger
+          // Générer d'abord les spécifications (priorité plus haute)
           console.log('Génération des spécifications pour:', data.title);
           const projectSpecs = await generateSpecifications(
             data.title,
@@ -98,28 +99,26 @@ export async function POST(req: NextRequest) {
             return `# Cahier des charges: ${data.title}\n\n## Contexte et objectifs\n${data.description}\n\n## Compétences techniques\n${skillsString}`;
           });
 
-          // Vérifier si Cloudinary est configuré avant de générer l'image
+          // Vérifier le temps restant avant de générer l'image
+          // Utiliser une image par défaut si Cloudinary n'est pas configuré
           if (!process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_SECRET) {
             console.error('Configuration Cloudinary manquante');
             // Retourner les spécifications sans image
             return NextResponse.json({
               specifications: projectSpecs,
-              imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg' // Image par défaut
+              imageUrl: 'https://res.cloudinary.com/dpoi45ksk/image/upload/v1741953000/project-images/default-project_ixhzqz.jpg' // Image par défaut personnalisée
             });
           }
 
-          // Générer l'image
+          // Générer l'image avec un timeout plus court
           console.log('Génération de l\'image pour:', data.title);
-          let imageUrl;
+          let imageUrl = 'https://res.cloudinary.com/dpoi45ksk/image/upload/v1741953000/project-images/default-project_ixhzqz.jpg'; // Image par défaut
+          
           try {
-            // Essayer de générer l'image
+            // Essayer de générer l'image avec un timeout court
             const generatedImageUrl = await generateProjectImage(data.title, data.description);
             
-            if (!generatedImageUrl) {
-              console.warn('Impossible de générer l\'image, utilisation d\'une image par défaut');
-              // Utiliser une image par défaut
-              imageUrl = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg';
-            } else {
+            if (generatedImageUrl) {
               // Essayer d'uploader l'image sur Cloudinary
               try {
                 imageUrl = await uploadImageToCloudinary(generatedImageUrl);
@@ -131,8 +130,7 @@ export async function POST(req: NextRequest) {
             }
           } catch (imageError) {
             console.error('Erreur lors de la génération de l\'image:', imageError);
-            // Utiliser une image par défaut en cas d'erreur
-            imageUrl = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg';
+            // L'image par défaut sera utilisée
           }
           
           // Retourner les résultats
